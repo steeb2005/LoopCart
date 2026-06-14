@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+#root {
+    background-color: #222222;
+}
+
+
+
+@theme {
+    --color-bg-canvas: #222222;
+    --color-bg-surface: #353434;
+    --color-bg-inverse: #F5F5F5;
+
+    --color-border-color: #595959;
+    --color-border-color-inverse: #F5F5F5;
+    --color-message-color: #1A1A1A;
+
+
+    --color-primary-text: #F5F5F5;
+    --color-primary-text-inverse: #1A1A1A;
+    --color-tertiary-text: #9E9E9E;
+
+}

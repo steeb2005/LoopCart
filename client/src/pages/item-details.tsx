@@ -1,0 +1,111 @@
+import {useAppContext} from '../context/context'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import Back from '../assets/back.svg'
+import Goto from '../assets/goto.svg'
+import Heart from '../assets/Heart.svg'
+import Location from '../assets/location.svg'
+import Message from '../assets/message.svg'
+
+type Item = {
+  _id?: string;
+  title: string;
+  price: number;
+  category: string;
+  condition: string;
+  description: string;
+  createdAt: string;
+  sold: boolean;
+  soldAt: string;
+  seller: string;
+  buyer: string;
+  image: string;
+  likes: number;
+}
+
+function ItemDetails(){
+  
+  const {id} = useParams() 
+  const {items} = useAppContext()
+  const [item, setItem] = useState<Item | null>(null)
+
+  useEffect(() => {
+    const foundItem = items?.find(item => item._id === id)
+    setItem(foundItem)
+  }, [items, id])
+
+  if(!item){
+    return(
+      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex justify-center items-center">
+        <div className='text-primary-text gap-2 flex flex-col'>
+          <h1>Item not Found</h1>
+          <Link to={'/home'}>
+            <button className='rounded-md p-2 bg-bg-inverse text-primary-text-inverse font-semibold'>Back</button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+  return(
+    <>
+        <div className="mx-5 p-0 m-0 min-h-screen pb-5"> 
+          <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
+            <Link to={'/home'}>
+              <img src={Back} alt="back" />
+            </Link>
+            Item details
+          </div>
+          <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
+            
+            <div className='min-h-50 bg-bg-inverse border-2 rounded-md '>
+              {/* Add image here */}
+            </div>
+
+            <h1 className='font-semibold text-xl mt-2'>{item.title}</h1>
+            <h1 className='font-semibold text-xl mt-2'>PHP {item.price}</h1>
+            <h1 className='font-semibold text-xl mt-3'>Condition</h1>
+            <p className='mt-1'>{item.condition}</p>
+            <h1 className='font-semibold text-xl mt-3'>Description</h1>
+            <p className='mt-1'>{item.description}</p>
+          </div>
+          
+          
+          <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
+            <div className='flex'>
+              <h1>Seller</h1>
+              <img src={Goto} alt="goto" className='h-8'/>
+            </div>
+            <div className='flex flex-row gap-3 mr-4'>
+              <img src={Heart} alt="heart" />
+              <h1>{item.likes}</h1>
+            </div>
+          </div>
+
+          <div className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
+            <div className='bg-bg-inverse rounded-full w-8 h-8'></div>
+            <h1>@{item.seller}</h1>
+          </div>
+
+          <div className='text-primary-text mt-5'>
+            <h1 className='text-xl font-semibold'>Location</h1>
+            <div className='flex flex-row items-center gap-2 mt-2'>
+              <img src={Location} alt="location" />
+              <p>Butuan City</p>
+            </div>
+          </div>
+
+          
+
+            <button className='justify-center flex flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold mt-5 w-full'>
+              <img src={Message} alt="message" />
+              Make an Offer/Buy now
+            </button>
+          
+        </div>    
+
+    </>
+  )    
+}
+
+export default ItemDetails
