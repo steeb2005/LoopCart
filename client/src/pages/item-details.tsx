@@ -15,11 +15,11 @@ type Item = {
   category: string;
   condition: string;
   description: string;
-  createdAt: string;
-  sold: boolean;
-  soldAt: string;
-  seller: string;
-  buyer: string;
+  created_at: string;
+  status: string;
+  sold_at: string;
+  seller_id: string;
+  buyer_id: string;
   image: string;
   likes: number;
 }
@@ -27,14 +27,19 @@ type Item = {
 function ItemDetails(){
   
   const {id} = useParams() 
-  const {items} = useAppContext()
+  const {items, users} = useAppContext()
+  
   const [item, setItem] = useState<Item | null>(null)
+  const [sellerUsername, setSellerUsername] = useState('')
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
     setItem(foundItem)
+    const foundUser = users?.find(user => foundItem?.seller_id === user._id)
+    setSellerUsername(foundUser?.username || 'unkown seller')
   }, [items, id])
 
+  // Error handler if item is not found
   if(!item){
     return(
       <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex justify-center items-center">
@@ -63,7 +68,7 @@ function ItemDetails(){
             </div>
 
             <h1 className='font-semibold text-xl mt-2'>{item.title}</h1>
-            <h1 className='font-semibold text-xl mt-2'>PHP {item.price}</h1>
+            <h1 className='font-semibold text-xl mt-2'>PHP {item.price.toLocaleString('en-US')}</h1>
             <h1 className='font-semibold text-xl mt-3'>Condition</h1>
             <p className='mt-1'>{item.condition}</p>
             <h1 className='font-semibold text-xl mt-3'>Description</h1>
@@ -84,7 +89,7 @@ function ItemDetails(){
 
           <div className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
             <div className='bg-bg-inverse rounded-full w-8 h-8'></div>
-            <h1>@{item.seller}</h1>
+            <h1>@{sellerUsername}</h1>
           </div>
 
           <div className='text-primary-text mt-5'>

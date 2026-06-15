@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
 import Search from "../assets/Search.svg"
 import Add from "../assets/add.svg"
@@ -13,19 +13,21 @@ import { Link, useNavigate } from "react-router-dom"
 // TODO:
 // - Finish this page
 // - Try to add jwt to the api routes
-function ItemCard({id, title, price, description, seller, likes}: {
-  id: string,
+function ItemCard({item_id, title, price, description, seller_id, seller_name, likes}: {
+  item_id: string,
   title: string,
   price: number,
   description: string,
-  seller: string,
+  seller_id: string,
+  seller_name: string,
   likes: number
 }
 ){
   const navigate = useNavigate()
 
+  
   const handleItemClick = () => {
-    navigate(`/item/${id}`)
+    navigate(`/item/${item_id}`)
   }
 
 
@@ -41,10 +43,10 @@ function ItemCard({id, title, price, description, seller, likes}: {
       </div>
       <div className="title-section text-primary-text mt-2">
         <h1 className="line-clamp-1 ">{title}</h1>
-        <h1>PHP {price}</h1>
+        <h1>PHP {price.toLocaleString('en-US')}</h1>
         <p className="text-sm line-clamp-1">{description}</p>
         <div className="flex flex-row items-center justify-between mt-2">
-          <h1 className="text-sm font-light">@{seller}</h1>
+          <h1 className="text-sm font-light">@{seller_name}</h1>
           <div className="flex flex-row gap-2">
             <img src={Heart} alt="heart" />
             {likes}
@@ -60,18 +62,34 @@ function ItemCard({id, title, price, description, seller, likes}: {
 
 function Home(){
   
-  const { items } = useAppContext()
+  const { items, users } = useAppContext()
   const [isClicked, setIsClicked] = useState('Items')
+  const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
 
 
   const handleClick = (buttonId: string) =>{
     setIsClicked(buttonId)
   } 
   const scrollDirection = useScrollDirection();
-
   const isHidden = scrollDirection === 'down';
 
-  
+  useEffect(() => {
+    const map = new Map()
+    users.forEach(user => {
+      if (user._id && user.username) {
+        map.set(user._id, user.username);
+      }
+    })
+    setSellerMap(map)
+  }, [users])
+
+
+  const getSellerName = (seller_id: string) => {
+    if(!seller_id) return 'Unkown Seller'
+    return sellerMap.get(seller_id) || 'Unkown Seller'
+  }
+
+
   return(
     <>
       {/* Sidebar */}
@@ -125,12 +143,14 @@ function Home(){
             {
               items.map((items: any) => (
                 <ItemCard 
-                  id={items._id}
+                  item_id={items._id}
                   title={items.title}
                   price={items.price}
                   description={items.description}
-                  seller={"john doe"} // Change this TEMP
+                  seller_id={items.seller_id} 
+                  seller_name={getSellerName(items.seller_id)}
                   likes={items.likes}
+                  
                 />
               ))
             }

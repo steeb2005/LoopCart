@@ -18,36 +18,52 @@ import {NumericFormat} from 'react-number-format'
 function SellItem(){
   const navigate = useNavigate()
   const {user, post_item} = useAppContext() 
+
   const [item, setItem] = useState({
     title: '',
-    price: '',
+    price: 0, // default value 
     category: '',
     condition: '',
     description: '',
-    createdAt: Date.now().toString(),
-    soldAt: '',
-    sold: false,
-    seller: user.username.toString(),
-    buyer: '',
+    created_at: '',
+    sold_at: '',
+    status: 'available',
+    seller_id: '',
+    buyer_id: '',
     image: '',
     likes: 0
   })
 
   const handlePost = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    const cleanedForm = {...item, price: parseFloat(item.price)}
-    e.preventDefault()
+     e.preventDefault()
+    const created_at = new Date().toISOString();
+    const seller_id = user._id || ''
+    if(!seller_id){
+      console.error('user not logged in');
+      return
+    }
+
+    const itemToPost = {
+      ...item,
+      price: Number(item.price),
+      created_at: created_at,
+      seller_id: seller_id,
+      status: 'available'
+    }
+    
+   
     try{
-      const post = await post_item(cleanedForm)
+      const post = await post_item(itemToPost)
       if(post){
         navigate('/home')
       }
-    }catch{
-      console.error('error in posting item');
+    }catch(error){
+      console.error('error in posting item', error);
     }
   }
 
-  const handlePrice = (values: {value: string}) => {
-    setItem({...item, price: values.value})
+  const handlePrice = (values: {floatValue?: number}) => {
+    setItem({...item, price: values.floatValue || 0})
   }
   return(
     <>

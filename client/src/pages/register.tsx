@@ -27,12 +27,15 @@ function Register(){
     firstname: '',
     lastname: '',
     email: '',
-    password: ''
+    password: '',
+    join_date: '' 
   })
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try{
+      const current_date = new Date().toISOString();
+      formData.join_date = current_date
       const success = await register(formData)
       if(success){
         navigate('/login')

@@ -8,6 +8,7 @@ type User = {
   lastname: string;
   email: string;
   password: string;
+  join_date: string;
 }
 
 type RegisterData = {
@@ -17,10 +18,11 @@ type RegisterData = {
   lastname: string;
   email: string;
   password: string;
+  join_date: string;
 }
 
 
-type LoginData = {
+type LoginRequest = {
   email: string;
   password: string;
 }
@@ -33,27 +35,38 @@ type Item = {
   category: string;
   condition: string;
   description: string;
-  createdAt: string;
-  sold: boolean;
-  soldAt: string;
-  seller: string;
-  buyer: string;
+  created_at: string;
+  status: string;
+  sold_at: string;
+  seller_id: string;
+  buyer_id: string;
   image: string;
   likes: number;
 }
 
+
+
+type RequestUsers = {
+  _id?: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  join_date: string;
+}
+
+
 type ContextType = {
   user: User | null;
-  users: User[];
+  users: RequestUsers[];
   item: Item | null;
   items: Item[];
   register: (data: RegisterData) => Promise<boolean>;
-  login: (data: LoginData) => Promise<boolean>;
+  login: (data: LoginRequest) => Promise<boolean>;
   load_users: () => Promise<void>;
   post_item: (data: Item) => Promise<boolean>;
   load_items: () => Promise<void>;
 }
-
 
 
 const Context = createContext<ContextType | undefined>(undefined);
@@ -61,10 +74,10 @@ const Context = createContext<ContextType | undefined>(undefined);
 const API_URL = 'http://localhost:8000' // MongoDB Api
 
 export function AppContext({children}) {
-  const [user, setUser] = useState<User | null>(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [item, setItem] = useState<Item | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
+  const [user, setUser] = useState<User | null>(null);  // Current user
+  const [users, setUsers] = useState<RequestUsers[]>([]);       // All users
+  const [item, setItem] = useState<Item | null>(null);   
+  const [items, setItems] = useState<Item[]>([]);       // All items
 
   
 
@@ -86,6 +99,7 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if(res.ok){
+        
         setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
         console.log('item posted successfully: ' + data.title);
         return true
@@ -131,7 +145,7 @@ export function AppContext({children}) {
   
 
   // Sends the data to the backend to log the user in
-  const login = async(formData: LoginData) => {
+  const login = async(formData: LoginRequest) => {
     try{
       const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
@@ -142,9 +156,19 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if(res.ok){
-        setUser(data.user)
+        const userData = {
+          _id: data.user._id || '',  // Make sure _id is included
+          username: data.user.username,
+          firstname: data.user.firstname,
+          lastname: data.user.lastname,
+          email: data.user.email,
+          password: '', // Don't store password in state
+          join_date: data.user.join_date
+        }
+        setUser(userData)
         console.log('logged in as: ' + data.user.username)
-        await load_items()                // Loads Items after logging in
+        await load_items()                // Loads Items in useState after logging in
+        await load_users()                // Loads Users in useState after logging in
         return true
       }else{
         console.error('invalid email or password')

@@ -7,6 +7,7 @@ import { AppContext, useAppContext } from './context/context'
 import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
 import Layout from './pages/layout'
+import Test from './pages/test'
 
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
@@ -29,6 +30,7 @@ function App() {
             <Route path="/" element={<LandingPage/>} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path='/test' element={<Test/>}/>
             
             <Route element={<Layout/>}>
               <Route path='/home' element={
