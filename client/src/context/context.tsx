@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 
 
 type User = {
@@ -61,6 +61,8 @@ type ContextType = {
   users: RequestUsers[];
   item: Item | null;
   items: Item[];
+  token: string | null;
+  loading: boolean;
   register: (data: RegisterData) => Promise<boolean>;
   login: (data: LoginRequest) => Promise<boolean>;
   load_users: () => Promise<void>;
@@ -72,50 +74,79 @@ type ContextType = {
 const Context = createContext<ContextType | undefined>(undefined);
 
 const API_URL = 'http://localhost:8000' // MongoDB Api
+const TOKEN_KEY = 'loopcart_token'
+
+// JWT helpers -------------------------------------------------------------------------------------
+
+function saveToken(token: string){           // Saves the token to local storage
+  localStorage.setItem(TOKEN_KEY, token)
+} 
+
+function clearToken(){
+  localStorage.removeItem(TOKEN_KEY)
+}
+
+function getToken(): string | null{
+  return localStorage.getItem(TOKEN_KEY)
+}
+
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const token = getToken()
+  return{
+    'content-type': 'application/json',
+    ...(token ? {Authorization: `Bearer ${token}`} : {}),
+    ...extra,
+  }
+}
+
+
+// Providers ------------------------------------------------------------------------------------ 
 
 export function AppContext({children}) {
   const [user, setUser] = useState<User | null>(null);  // Current user
   const [users, setUsers] = useState<RequestUsers[]>([]);       // All users
   const [item, setItem] = useState<Item | null>(null);   
   const [items, setItems] = useState<Item[]>([]);       // All items
-
+  const [token, setToken] = useState<string | null>(getToken())
+  const [loading, setLoading] = useState(true)
   
 
-
-
-  // Creates a new item in the database
-  const post_item = async(formData: Item): Promise<boolean> => {
-    const tempId = `temp_${Date.now()}_${Math.random()}`  // Creates a temp item
-    const tempItem = {...formData, _id: tempId}
-
-    setItems(prev => [...items, tempItem])
-    try{
-      const res = await fetch(`${API_URL}/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      const data = await res.json()
-
-      if(res.ok){
-        
-        setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
-        console.log('item posted successfully: ' + data.title);
-        return true
-      }else{
-        setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
-        console.error('error in posting item');
-        return false
-      }
-    }catch{
-      setItems(prev => prev.filter(item => item._id !== tempId)) 
-      console.error('Network error or system error in posting item');
-      return false
+  useEffect(() => {
+    const stored = getToken()
+    load_items()  // Loads items on refresh
+    load_users()  // Loads users on refresh
+    
+    if(!stored){
+      setLoading(false)
+      return
     }
-  }
-
+    fetch(`${API_URL}/users/me`, {
+      headers: authHeaders()
+    })
+    .then(res =>{
+      if(!res.ok){
+        clearToken()
+        setToken(null)
+        return null
+      }
+      return res.json()
+    })
+    .then(data => {
+      if(data) setUser(data)
+    })
+    .catch(() => {
+      clearToken()
+      setToken(null)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
+    
   
+  }, [])
+
+
+  // Auth -------------------------------------------------------------------------------------
 
 
   // Sends the data to the backend to register the user
@@ -130,14 +161,17 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if (res.ok){
-        console.log('registered successfully as:' + data.username);
+        saveToken(data.access_token)
+        setToken(data.access_token)
+        setUser(data.user)
+        console.log('registered successfully as:' + data.user.username);
         return true;
       }else{
         console.error('registration failed');
         return false;
       }
     }catch{
-      console.error('error in registering');
+      console.error('network error in registering');
       return false
     }
   };
@@ -156,6 +190,8 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if(res.ok){
+        saveToken(data.access_token)
+        setToken(data.access_token)
         const userData = {
           _id: data.user._id || '',  // Make sure _id is included
           username: data.user.username,
@@ -163,35 +199,65 @@ export function AppContext({children}) {
           lastname: data.user.lastname,
           email: data.user.email,
           password: '', // Don't store password in state
-          join_date: data.user.join_date
+          join_date: data.user.join_date,
+          avatar_url: data.user.avatar_url
         }
         setUser(userData)
         console.log('logged in as: ' + data.user.username)
-        await load_items()                // Loads Items in useState after logging in
-        await load_users()                // Loads Users in useState after logging in
+
+       
         return true
       }else{
         console.error('invalid email or password')
         return false
       }
     }catch{
-      console.error('error in logging in');
+      console.error('network error in logging in');
       return false
     }
   }
 
 
-  // Test function, Loads all users
-  const load_users = async () => {
+
+  // Items ------------------------------------------------------------------------------------ 
+
+  // Creates a new item in the database
+  const post_item = async(formData: Item): Promise<boolean> => {
+    const tempId = `temp_${Date.now()}_${Math.random()}`  // Creates a temp item
+    const tempItem = {...formData, _id: tempId}
+
+    setItems(prev => [...items, tempItem])
     try{
-      const res = await fetch(`${API_URL}/users`);
-      const data = await res.json();
-      setUsers(data)
-      
+      const res = await fetch(`${API_URL}/items`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(formData)
+      })
+
+      const data = await res.json()
+
+      if(res.ok){
+        
+        setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
+        console.log('item posted successfully: ' + data.title);
+        return true
+      }else{
+        setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
+        if(res.status === 401){
+          console.log("not authenticated")
+        }else{
+          console.error('error in posting item');
+        }
+        return false
+      }
     }catch{
-      console.error('error in loading users');
+      setItems(prev => prev.filter(item => item._id !== tempId)) 
+      console.error('Network error or system error in posting item');
+      return false
     }
-  }; 
+  }
+
+  
 
   // Test function, Loads all Items
   const load_items = async () => {
@@ -206,12 +272,34 @@ export function AppContext({children}) {
   }
 
 
+  
+
+  // Users ------------------------------------------------------------------------------------
+
+
+  // Test function, Loads all users
+  const load_users = async () => {
+    try{
+      const res = await fetch(`${API_URL}/users`);
+      const data = await res.json();
+      setUsers(data)
+      
+    }catch{
+      console.error('error in loading users');
+    }
+  }; 
+
+  
+
+  // Context ----------------------------------------------------------------------------------
 
   const value = {
     user,
     users,
     item,
     items,
+    token,
+    loading,
     register,
     login,
     load_users,

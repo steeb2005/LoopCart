@@ -7,12 +7,19 @@ import { AppContext, useAppContext } from './context/context'
 import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
 import Layout from './pages/layout'
-import Test from './pages/test'
 
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
-  const { user } = useAppContext();
+  const { user, loading } = useAppContext();
+  if(loading){
 
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div>Page loading...</div>
+      </div>
+    )
+  }
+  
   if(!user){
     return <Navigate to="/login" replace/>
   }
@@ -20,40 +27,58 @@ function ProtectedRoute({children}){  // Frontend protection for login bypass
 
 }
 
-function App() {
+function AppRoute(){
+  const {loading} = useAppContext()
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center text-primary-text">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bg-inverse mx-auto"></div>
+          <p className="mt-4 text-xl">Loading your page...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return(
+    <Routes>
+      <Route path="/" element={<LandingPage/>} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      <Route element={<Layout/>}>
+        <Route path='/home' element={
+          <ProtectedRoute>
+            <Home/>
+          </ProtectedRoute>
+        }/>
+
+        <Route path='/sellItem' element={
+          <ProtectedRoute>
+            <SellItem/>
+          </ProtectedRoute>
+        }/>
+
+        <Route path='/item/:id' element={
+          <ProtectedRoute>
+            <ItemDetails/>
+          </ProtectedRoute>
+        }/>
+      </Route>
+    </Routes>
+  )
+}
+
+
+
+
+function App() {  
   return (
     <>
       <AppContext>
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage/>} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path='/test' element={<Test/>}/>
-            
-            <Route element={<Layout/>}>
-              <Route path='/home' element={
-                <ProtectedRoute>
-                  <Home/>
-                </ProtectedRoute>
-              }/>
-
-              <Route path='/sellItem' element={
-                <ProtectedRoute>
-                  <SellItem/>
-                </ProtectedRoute>
-              }/>
-
-              <Route path='/item/:id' element={
-                <ProtectedRoute>
-                  <ItemDetails/>
-                </ProtectedRoute>
-              }/>
-
-            </Route>
-              
-          </Routes>
+          <AppRoute/>
         </BrowserRouter>
       </AppContext>
     </>

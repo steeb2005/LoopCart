@@ -1,10 +1,19 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import jwt
+from datetime import datetime, timedelta, timezone
+from bson import ObjectId
 
-""" Finish this """
+SECRET_KEY = "your-super-secret-key-change-this-in-production-12345"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+
+
 app = FastAPI()
+security = HTTPBearer()
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,9 +26,35 @@ client = AsyncIOMotorClient("mongodb://localhost:27017")
 db = client.LoopCart
 users = db.users
 items = db.items
+likes = db.likes
+
+# JWT helpers ---------------------------------------------------------------
+
+def create_access_token(user_id: str, email: str) -> str:
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def decode_token(token: str) -> dict:
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    return decode_token(credentials.credentials)
 
 
 
+
+# Models ----------------------------------------------------------------------------------------------
 class User(BaseModel):
     username: str
     firstname: str
@@ -56,42 +91,9 @@ class Item(BaseModel):
     likes: int = 0
 
 
-
-
-#add item to database
-@app.post("/items")
-async def create_item(item: Item):
-
-    result = await items.insert_one({
-        "title": item.title,
-        "price": item.price,
-        "category": item.category,
-        "condition": item.condition,
-        "description": item.description,
-        "created_at": item.created_at,
-        "status": item.status,
-        "sold_at": item.sold_at,
-        "seller_id": item.seller_id,
-        "buyer_id": item.buyer_id,
-        "image": item.image,
-        "likes": item.likes
-    })
-
-    return {
-        "_id": str(result.inserted_id),
-        "title": item.title,
-        "price": item.price,
-        "category": item.category,
-        "condition": item.condition,
-        "description": item.description,
-        "created_at": item.created_at,
-        "status": item.status,
-        "sold_at": item.sold_at,
-        "seller_id": item.seller_id,
-        "buyer_id": item.buyer_id,
-        "image": item.image,
-        "likes": item.likes
-    }
+class LikeRequest(BaseModel):
+    user_id: str
+    item_id: str
 
 
 
@@ -99,7 +101,7 @@ async def create_item(item: Item):
 
 
 
-
+# Routes ----------------------------------------------------------------------------------------------
 
 
 #add user to database
@@ -117,33 +119,37 @@ async def create_user(user: User):
         "lastname": user.lastname, 
         "email": user.email, 
         "password": user.password,
-        "join_date": user.join_date
+        "join_date": user.join_date,
+        "avatar_url": user.avatar_url
     })
+
+    user_id = str(result.inserted_id) # Gets the id of the user created by mongodb
+    token = create_access_token(user_id, user.email)
+
     return {
-        "_id": str(result.inserted_id),
-        "username": user.username,
-        "firstname": user.firstname, 
-        "lastname": user.lastname, 
-        "email": user.email, 
-        "password": user.password,
-        "join_date": user.join_date
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "_id": user_id,
+            "username": user.username,
+            "firstname": user.firstname, 
+            "lastname": user.lastname, 
+            "email": user.email, 
+            "password": user.password,
+            "join_date": user.join_date,
+            "avatar_url": user.avatar_url
+        }
     }
+        
 
 
 
 
-
-
-
-
-
-
-
+    #simple login that checks email and password
 @app.post("/login")
 async def login(login_data: LoginRequest):
-    #simple login that checks email and password
-
-    user = await users.find_one({"email": login_data.email})
+    
+    user = await users.find_one({"email": login_data.email}) # Find user by email
 
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
@@ -151,9 +157,15 @@ async def login(login_data: LoginRequest):
     if user["password"] != login_data.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+
+    user_id = str(user["_id"])
+    token = create_access_token(user_id, login_data.email)
+
     return {
+        "access_token": token,
+        "token_type": "bearer",
         "user": {
-            "_id": str(user["_id"]),
+            "_id": user_id,
             "username": user["username"],
             "firstname": user["firstname"],
             "lastname": user["lastname"],
@@ -164,34 +176,64 @@ async def login(login_data: LoginRequest):
 
 
 
+# Protected routes ---------------------------------------------------------------------------
+
+@app.get("/users/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    user = await users.find_one({"_id" : ObjectId(current_user["sub"])})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "_id": str(user["_id"]),
+        "username": user["username"],
+        "firstname": user["firstname"],
+        "lastname": user["lastname"],
+        "email": user["email"],
+        "join_date": user["join_date"]
+    }
 
 
 
 
+#add item to database
+@app.post("/items")
+async def create_item(item: Item, current_user: dict = Depends(get_current_user)):
+    ''' This allows only authenticated users to create items '''
+    result = await items.insert_one({
+        "title": item.title,
+        "price": item.price,
+        "category": item.category,
+        "condition": item.condition,
+        "description": item.description,
+        "created_at": item.created_at,
+        "status": item.status,
+        "sold_at": item.sold_at,
+        "seller_id": current_user["sub"],
+        "buyer_id": item.buyer_id,
+        "image": item.image,
+        "likes": item.likes
+    })
+
+    return {
+        "_id": str(result.inserted_id),
+        "title": item.title,
+        "price": item.price,
+        "category": item.category,
+        "condition": item.condition,
+        "description": item.description,
+        "created_at": item.created_at,
+        "status": item.status,
+        "sold_at": item.sold_at,
+        "seller_id": current_user["sub"],
+        "buyer_id": item.buyer_id,
+        "image": item.image,
+        "likes": item.likes
+    }
 
 
 
 
-# Reads the whole db and returns the users
-@app.get('/users')
-async def get_users():
-    users_list = []
-    async for user in users.find():
-        users_list.append({
-            "_id": str(user["_id"]),
-            "username": user["username"],
-            "firstname": user["firstname"],
-            "lastname": user["lastname"],
-            "email": user["email"],
-        })
-    return users_list
-
-
-
-
-
-
-
+# Public routes --------------------------------------------------
 
 
 # Loads all items
@@ -213,6 +255,32 @@ async def get_items():
             "buyer_id": item["buyer_id"],
             "image": item["image"],
             "likes": item.get("likes", 0)
-            
         })
     return items_list
+
+
+
+
+
+# Reads the whole db and returns the users
+@app.get('/users')
+async def get_users():
+    users_list = []
+    async for user in users.find():
+        users_list.append({
+            "_id": str(user["_id"]),
+            "username": user["username"],
+            "firstname": user["firstname"],
+            "lastname": user["lastname"],
+            "email": user["email"],
+            "avatar_url": user.get("avatar_url")
+        })
+    return users_list
+
+
+
+
+
+# Likes ----------------------------------------------------------------------------------
+
+        
