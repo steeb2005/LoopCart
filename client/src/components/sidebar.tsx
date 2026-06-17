@@ -6,7 +6,8 @@ import Profile from '../assets/profile.svg'
 import History from '../assets/history.svg'
 import LikedItems from '../assets/Heart.svg'
 import ItemBox from '../assets/items.svg'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { useState } from 'react'  
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -14,8 +15,25 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
 }){
   const location = useLocation();
   const currentLocation = location.pathname.substring(1) || ' ';
-  const {user} = useAppContext()
+  const {user, logout} = useAppContext()
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleLogout = () => {
+    setIsLoading(true);    
+    logout()
+    navigate('/login');
+  }
+
+  if(isLoading){
+    return (
+      <div className="text-xl text-primary-text  fixed inset-0 z-100 flex items-center justify-center">
+        <div className='flex flex-col bg-bg-canvas px-10 py-8 rounded-xl'>
+          <p className="mt-4 text-xl">Logging out...</p>
+        </div>
+      </div>
+    )
+  }
   return(
     <>
       <AnimatePresence>
@@ -26,7 +44,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               animate={{x: 0}}
               exit={{x: "100%"}}
               transition={{type: "spring", damping: 25, stiffness: 200}}
-              className="pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] min-h-screen z-50"
+              className="pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] min-h-screen z-50 flex flex-col"
               onClick={(e) => e.stopPropagation()}
               
             >
@@ -59,19 +77,24 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                   <img src={History} alt="history" className='h-6'/>
                   History
                 </div>
-                <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
-                  <img src={LikedItems} alt="liked-items" className='h-6'/>
-                  Liked Items
-                </div>
+                <Link to={'/liked-items'}>
+                  <div className={`${currentLocation === 'liked-items' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
+                    <img src={LikedItems} alt="liked-items" className='h-6'/>
+                    Liked Items
+                  </div>
+                </Link>
                 <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
                   <img src={ItemBox} alt="my-items" className='h-6'/>
                   My Items
                 </div>
-                
-                
-                
-                
               </div>
+              <button onClick={handleLogout} className='mt-auto mb-3 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+                Logout
+              </button> 
+                
+                
+                
+              
             </motion.div>
           </div>
         )}

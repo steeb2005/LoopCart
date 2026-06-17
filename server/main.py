@@ -282,5 +282,81 @@ async def get_users():
 
 
 # Likes ----------------------------------------------------------------------------------
+@app.post('/likes')
+async def like_item(like: LikeRequest):
+    # Finds if the user has already liked the item
+    existing_like = await likes.find_one({
+        "item_id": like.item_id,
+        "user_id": like.user_id
+    })
+    if existing_like:
+        raise HTTPException(status_code=400, detail="Already liked")
 
+    try:
+        await likes.insert_one({
+            "item_id": like.item_id,
+            "user_id": like.user_id
+        })
+
+        await items.update_one(
+            {"_id": ObjectId(like.item_id)}, # Search condition and searches for the item id
+            {"$inc": {"likes": 1}}      # increements the like count of that item
+        )
+
+        return {"message": "Item liked successfully"} # Temp
+
+    except:
+        raise HTTPException(status_code=500, detail="Database Error")
+    
+
+
+
+@app.delete('/likes')
+async def unlike_item(user_id: str, item_id: str):
+    try:
+        await likes.delete_one({
+            "user_id": user_id,
+            "item_id": item_id
+        })
+
+        await items.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$inc": {"likes": -1}}
+        )
+
+        return {"message": "Item unliked successfully"}
+
+    except:
+        raise HTTPException(status_code=404, detail="Like not found")
         
+
+
+@app.get('/likes/{user_id}')
+async def get_user_liked_items(user_id: str):
+
+    liked_items = [] # Only stores the item ids
+    async for like in likes.find({"user_id": user_id}): # Searches the userId in the likes db and loads only the liked items of the logged in user
+        liked_items.append(like["item_id"]) 
+
+    items_list = [] # Stores the items full items
+
+    for item_id in liked_items:
+        item = await items.find_one({"_id": ObjectId(item_id)})
+        if item:
+            items_list.append({
+                "_id": str(item["_id"]),
+                "title": item["title"],
+                "price": item["price"],
+                "category": item["category"],
+                "condition": item["condition"],
+                "description": item["description"],
+                "created_at": item["created_at"],
+                "status": item["status"],
+                "sold_at": item["sold_at"],
+                "seller_id": item["seller_id"],
+                "buyer_id": item["buyer_id"],
+                "image": item["image"],
+                "likes": item.get("likes", 0)
+            })
+
+    return items_list

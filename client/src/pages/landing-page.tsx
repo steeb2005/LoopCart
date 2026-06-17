@@ -7,8 +7,7 @@ import Handshake from '../assets/handshake.svg'
 import { Link } from 'react-router-dom'
 
 function LandingPage(){
-  const dateToday = new Date().toISOString()
-  console.log(dateToday)
+ 
   return(
     
     <div className="mx-5 p-0 m-0 overflow-hidden min-h-screen py-5">

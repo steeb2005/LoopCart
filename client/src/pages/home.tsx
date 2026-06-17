@@ -6,32 +6,71 @@ import Category from "../assets/category.svg"
 import Filter from "../assets/filter.svg"
 import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
+import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import { Link, useNavigate } from "react-router-dom"
-
+import { useItemLike } from "../hooks/handle-like.tsx" 
 
 // TODO:
 // - Finish this page
 // - Try to add jwt to the api routes
-function ItemCard({item_id, title, price, description, seller_id, seller_name, likes}: {
+function ItemCard({item_id, title, price, description, seller_name, likes}: {
   item_id: string,
   title: string,
   price: number,
   description: string,
-  seller_id: string,
   seller_name: string,
   likes: number
 }
 ){
+  const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
   const navigate = useNavigate()
+  /**
+  const { like_item, unlike_item, user, likedItems } = useAppContext()
+  const [isLiked, setIsLiked] = useState(false)
+  const [likesCount, setLikesCount] = useState(likes) // count locally
+  
+  useEffect(() => {
+    const isAlreadyLiked = likedItems.some(item => item._id === item_id)
+    setIsLiked(isAlreadyLiked)
+  }, [likedItems, item_id, user])
 
+  useEffect(() => {
+    setLikesCount(likes)
+  }, [likes])
+
+
+
+  const handleLikeClick = async (e : React.MouseEvent) =>{
+    e.stopPropagation()
+    if(!user){
+      console.log('not logged in');
+    }
+
+    const newIsLiked = !isLiked
+    const prev = likesCount
+    setIsLiked(newIsLiked)
+    setLikesCount(newIsLiked ? likesCount + 1 : likesCount - 1) // Optimistic update 
+    
+    try{
+      if(newIsLiked){
+        const success = await like_item(user?._id, item_id) 
+        if(!success) throw new Error('Like Failed')
+      }else{
+        const success = await unlike_item(user?._id, item_id)
+        if(!success) throw new Error('Unlike Failed')
+      }
+    }catch{
+      setIsLiked(!newIsLiked) 
+      setLikesCount(prev)
+      console.error('network error in liking item');
+    }
+  }
+   */
   
   const handleItemClick = () => {
     navigate(`/item/${item_id}`)
   }
-
-
-
 
   return(
     <div  
@@ -48,8 +87,8 @@ function ItemCard({item_id, title, price, description, seller_id, seller_name, l
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
           <div className="flex flex-row gap-2">
-            <img src={Heart} alt="heart" />
-            {likes}
+            <img onClick={handleLikeClick}  src={isLiked ? HeartClicked : Heart} alt="heart" />
+            {likesCount}
           </div>
         </div>
       </div>
@@ -62,7 +101,7 @@ function ItemCard({item_id, title, price, description, seller_id, seller_name, l
 
 function Home(){
   
-  const { items, users } = useAppContext()
+  const { items, users} = useAppContext()
   const [isClicked, setIsClicked] = useState('Items')
   const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
 
@@ -70,6 +109,8 @@ function Home(){
   const handleClick = (buttonId: string) =>{
     setIsClicked(buttonId)
   } 
+
+
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
 
@@ -88,7 +129,6 @@ function Home(){
     if(!seller_id) return 'Unkown Seller'
     return sellerMap.get(seller_id) || 'Unkown Seller'
   }
-
 
   return(
     <>
@@ -147,7 +187,6 @@ function Home(){
                   title={items.title}
                   price={items.price}
                   description={items.description}
-                  seller_id={items.seller_id} 
                   seller_name={getSellerName(items.seller_id)}
                   likes={items.likes}
                   

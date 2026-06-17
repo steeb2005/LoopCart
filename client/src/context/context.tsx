@@ -63,6 +63,11 @@ type ContextType = {
   items: Item[];
   token: string | null;
   loading: boolean;
+  likedItems: Item[];
+  logout: () => void;
+  like_item: (userId: string, itemId: string) => Promise<boolean>;
+  unlike_item: (userId: string, itemId: string) => Promise<boolean>;    
+  load_liked_items: (user_id: string) => Promise<void>;
   register: (data: RegisterData) => Promise<boolean>;
   login: (data: LoginRequest) => Promise<boolean>;
   load_users: () => Promise<void>;
@@ -100,6 +105,21 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Providers ------------------------------------------------------------------------------------ 
 
 export function AppContext({children}) {
@@ -109,40 +129,60 @@ export function AppContext({children}) {
   const [items, setItems] = useState<Item[]>([]);       // All items
   const [token, setToken] = useState<string | null>(getToken())
   const [loading, setLoading] = useState(true)
+  const [likedItems, setLikedItems] = useState<Item[]>([])
   
 
-  useEffect(() => {
-    const stored = getToken()
-    load_items()  // Loads items on refresh
-    load_users()  // Loads users on refresh
-    
-    if(!stored){
-      setLoading(false)
-      return
+  // On Load -------------------------------------------------------------------------------------
+  const loadData = () => {
+    if(user){ // only loads the liked items if the user is logged in
+      load_liked_items(user._id)
     }
-    fetch(`${API_URL}/users/me`, {
-      headers: authHeaders()
-    })
-    .then(res =>{
-      if(!res.ok){
+
+    load_items()  
+    load_users()  
+
+    
+  }
+
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+
+      const stored = getToken()
+      if(!stored){
+        setLoading(false)
+        return
+      }
+      try{
+
+        const res = await fetch(`${API_URL}/users/me`, {
+          headers: authHeaders()
+        })
+        
+        if(!res.ok){
+          clearToken()
+          setToken(null)
+          setLoading(false)
+        }
+        const data = await res.json()
+
+        setUser(data)
+        if(data._id){
+          await load_liked_items(data._id)
+        }
+
+        await load_items()
+        await load_users()
+      }catch{
+        console.error('Error in loading initial data');
         clearToken()
         setToken(null)
-        return null
-      }
-      return res.json()
-    })
-    .then(data => {
-      if(data) setUser(data)
-    })
-    .catch(() => {
-      clearToken()
-      setToken(null)
-    })
-    .finally(() => {
-      setLoading(false)
-    })
-    
-  
+      }finally{
+        setLoading(false)
+      }  
+    }   
+    loadInitialData()
+
   }, [])
 
 
@@ -163,7 +203,6 @@ export function AppContext({children}) {
       if (res.ok){
         saveToken(data.access_token)
         setToken(data.access_token)
-        setUser(data.user)
         console.log('registered successfully as:' + data.user.username);
         return true;
       }else{
@@ -190,6 +229,7 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if(res.ok){
+        setLikedItems([])
         saveToken(data.access_token)
         setToken(data.access_token)
         const userData = {
@@ -203,8 +243,11 @@ export function AppContext({children}) {
           avatar_url: data.user.avatar_url
         }
         setUser(userData)
+        load_liked_items(userData?._id)
         console.log('logged in as: ' + data.user.username)
 
+        await load_items()
+        await load_users()
        
         return true
       }else{
@@ -217,6 +260,14 @@ export function AppContext({children}) {
     }
   }
 
+  const logout = () => {
+    clearToken()
+    setUser(null)
+    setToken(null)
+    setUsers([])
+    setItems([])
+    setLikedItems([])
+  }
 
 
   // Items ------------------------------------------------------------------------------------ 
@@ -265,7 +316,7 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/items`);
       const data = await res.json();
       setItems(data)
-      
+      console.log('loaded items');
     }catch{
       console.error('error in loading items');
     }
@@ -274,8 +325,8 @@ export function AppContext({children}) {
 
   
 
+  
   // Users ------------------------------------------------------------------------------------
-
 
   // Test function, Loads all users
   const load_users = async () => {
@@ -284,15 +335,86 @@ export function AppContext({children}) {
       const data = await res.json();
       setUsers(data)
       
+      console.log('loaded users');
     }catch{
       console.error('error in loading users');
     }
   }; 
 
+
+
+
+  // Likes ---------------------------------------------------------------------------------------
+
+  
+  const load_liked_items = async(user_id: string) => {
+    try{
+      const res = await fetch(`${API_URL}/likes/${user_id}`);
+      const data = await res.json();
+      setLikedItems(data) // Optimize (load only the liked items of the logged in user)
+      console.log('loaded liked items');
+    }catch{
+      console.error('error in loading liked items');
+    }
+  }
+
+
+
+  const like_item = async (userId: string, itemId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/likes`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: userId, item_id: itemId})
+      })
+
+      if(res.ok){
+        if(userId){ // only logged in users can like
+          await load_liked_items(userId) // Loads the liked items of the logged in user
+        }
+        await load_items() // Reloads the items that have been liked
+        console.log('liked item: ' + itemId);
+        return true
+      }else{
+
+        console.error('error in liking item');
+        return false
+      }
+    }catch{
+      console.error('network error in liking item');
+      return false
+    }
+  } 
   
 
-  // Context ----------------------------------------------------------------------------------
+  const unlike_item = async (userId: string, itemId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/likes?user_id=${userId}&item_id=${itemId}`, {
+        method: 'DELETE'
+      }) 
+      
+      if(res.ok){
+        if(userId){
+          await load_liked_items(userId)
+        }
+        await load_items()
+        console.log('unliked item: ' + itemId);
+        return true
+      }else{
+        console.error('error in unliking item');
+        return false
+      }
+    }catch{
+      console.error('network error in unliking item');
+      return false
+    }
+  }
 
+  
+  
+
+
+  // Context values ----------------------------------------------------------------------------------
   const value = {
     user,
     users,
@@ -300,6 +422,12 @@ export function AppContext({children}) {
     items,
     token,
     loading,
+    likedItems,
+
+    logout,
+    like_item,
+    unlike_item,
+    load_liked_items,
     register,
     login,
     load_users,
@@ -327,3 +455,45 @@ export function useAppContext(){
 }
 
 
+
+/**
+  const loadInitialData = async () => {
+
+      const stored = getToken()
+      if(!stored){
+        setLoading(false)
+        return
+      }
+     
+
+      fetch(`${API_URL}/users/me`, {
+        headers: authHeaders()
+      })
+      .then(res =>{
+        if(!res.ok){
+          clearToken()
+          setToken(null)
+          return null
+        }
+        return res.json()
+      })
+      .then(data => {
+        if(data) setUser(data)
+        
+      })
+      .catch(() => {
+        clearToken()
+        setToken(null)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+    
+        
+    }   
+    loadInitialData()
+    load_liked_items(user?._id)
+    load_items()
+    load_users()
+
+ */

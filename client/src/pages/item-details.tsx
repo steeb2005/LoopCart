@@ -7,6 +7,8 @@ import Goto from '../assets/goto.svg'
 import Heart from '../assets/Heart.svg'
 import Location from '../assets/location.svg'
 import Message from '../assets/message.svg'
+import { useItemLike } from '../hooks/handle-like'
+import HeartClicked from '../assets/clickedHeart.svg'
 
 type Item = {
   _id?: string;
@@ -25,7 +27,7 @@ type Item = {
 }
 
 function ItemDetails(){
-  
+
   const {id} = useParams() 
   const {items, users} = useAppContext()
   
@@ -38,6 +40,9 @@ function ItemDetails(){
     const foundUser = users?.find(user => foundItem?.seller_id === user._id)
     setSellerUsername(foundUser?.username || 'unkown seller')
   }, [items, id])
+
+  const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id, item?.likes || 0)
+
 
   // Error handler if item is not found
   if(!item){
@@ -82,8 +87,8 @@ function ItemDetails(){
               <img src={Goto} alt="goto" className='h-8'/>
             </div>
             <div className='flex flex-row gap-3 mr-4'>
-              <img src={Heart} alt="heart" />
-              <h1>{item.likes}</h1>
+              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" />
+              <h1>{likesCount}</h1>
             </div>
           </div>
 

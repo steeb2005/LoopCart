@@ -7,7 +7,7 @@ import { AppContext, useAppContext } from './context/context'
 import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
 import Layout from './pages/layout'
-
+import LikedItems from './pages/liked-items'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, loading } = useAppContext();
@@ -63,6 +63,12 @@ function AppRoute(){
         <Route path='/item/:id' element={
           <ProtectedRoute>
             <ItemDetails/>
+          </ProtectedRoute>
+        }/>
+
+        <Route path='/liked-items' element={
+          <ProtectedRoute>
+            <LikedItems/>
           </ProtectedRoute>
         }/>
       </Route>
