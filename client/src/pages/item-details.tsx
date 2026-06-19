@@ -9,6 +9,10 @@ import Location from '../assets/location.svg'
 import Message from '../assets/message.svg'
 import { useItemLike } from '../hooks/handle-like'
 import HeartClicked from '../assets/clickedHeart.svg'
+import { useNavigate } from 'react-router-dom'
+
+
+
 
 type Item = {
   _id?: string;
@@ -27,23 +31,34 @@ type Item = {
 }
 
 function ItemDetails(){
-
+  const naviagte = useNavigate()
   const {id} = useParams() 
-  const {items, users} = useAppContext()
+  const {items, user, getSellerName} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
+  
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
     setItem(foundItem)
-    const foundUser = users?.find(user => foundItem?.seller_id === user._id)
-    setSellerUsername(foundUser?.username || 'unkown seller')
-  }, [items, id])
+    setSellerUsername(getSellerName(foundItem?.seller_id || 'Unkown Seller'))
+  }, [items, id, getSellerName])
+
+  
+  const isUserItem = item?.seller_id === user?._id
 
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id, item?.likes || 0)
 
+  const handleBackClick = () => {
+    naviagte(-1)
+  }
 
+  const handleChatClick = () => {
+    naviagte(`/chat/${item?._id}/${item?.seller_id}`)
+  }
+
+  
   // Error handler if item is not found
   if(!item){
     return(
@@ -59,11 +74,13 @@ function ItemDetails(){
   }
   return(
     <>
-        <div className="mx-5 p-0 m-0 min-h-screen pb-5"> 
+        <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col"> 
+          
+
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-            <Link to={'/home'}>
-              <img src={Back} alt="back" />
-            </Link>
+          
+            <img onClick={handleBackClick} src={Back} alt="back" />
+            
             Item details
           </div>
           <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
@@ -97,20 +114,24 @@ function ItemDetails(){
             <h1>@{sellerUsername}</h1>
           </div>
 
-          <div className='text-primary-text mt-5'>
+          <div className='text-primary-text mt-5 mb-5'>
             <h1 className='text-xl font-semibold'>Location</h1>
             <div className='flex flex-row items-center gap-2 mt-2'>
               <img src={Location} alt="location" />
               <p>Butuan City</p>
             </div>
           </div>
-
           
-
-            <button className='justify-center flex flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold mt-5 w-full'>
+          {isUserItem ? (
+            <button className='justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+              Edit Listing
+            </button>
+          ) : (
+            <button onClick={handleChatClick} className='justify-center flex mt-auto flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
               <img src={Message} alt="message" />
               Make an Offer/Buy now
             </button>
+            )}
           
         </div>    
 

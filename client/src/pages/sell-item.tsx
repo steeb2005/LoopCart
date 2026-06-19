@@ -67,76 +67,74 @@ function SellItem(){
   }
   return(
     <>
-      <div className="mx-5 p-0 m-0 min-h-screen pb-5"> 
+      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
         <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
           <Link to={'/home'}>
             <img src={Back} alt="back" />
           </Link>
           Sell Item
         </div>
-        <div className='flex flex-col mx-5'>
+        <div className='flex flex-col mx-5 flex-1'>
           
           <div className='min-h-50 bg-bg-canvas border-2 border-border-color rounded-md mt-7'>
             {/* Add image here */}
           </div>
 
-          <div>
-            <form id='form' onSubmit={handlePost}>
-              <TextareaAutosize
-                value={item.title}
-                onChange={(e) => setItem({...item, title: e.target.value})}
-                className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 '
-                placeholder='Title'
-                required
-              />
+          <form id='form' onSubmit={handlePost}>
+            <TextareaAutosize
+              value={item.title}
+              onChange={(e) => setItem({...item, title: e.target.value})}
+              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 '
+              placeholder='Title'
+              required
+            />
 
-              <NumericFormat
-                allowNegative={false}
-                thousandSeparator={","}
-                decimalScale={2}
-                inputMode='decimal'
-                value={item.price}
-                onValueChange={handlePrice}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-                placeholder='Price'
-                required
-              />
+            <NumericFormat
+              allowNegative={false}
+              thousandSeparator={","}
+              decimalScale={2}
+              inputMode='decimal'
+              value={item.price}
+              onValueChange={handlePrice}
+              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              placeholder='Price'
+              required
+            />
 
-              <TextareaAutosize  
-                value={item.category}
-                onChange={(e) => setItem({...item, category: e.target.value})}
-                className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-                placeholder='Category'
-                required
-              />
+            <TextareaAutosize  
+              value={item.category}
+              onChange={(e) => setItem({...item, category: e.target.value})}
+              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              placeholder='Category'
+              required
+            />
 
-              <TextareaAutosize 
-                
-                value={item.condition}
-                onChange={(e) => setItem({...item, condition: e.target.value})}
-                className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-                placeholder='Condition'
-                required
-              />
+            <TextareaAutosize 
+              
+              value={item.condition}
+              onChange={(e) => setItem({...item, condition: e.target.value})}
+              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              placeholder='Condition'
+              required
+            />
 
-              <TextareaAutosize 
-                value={item.description}
-                onChange={(e) => setItem({...item, description: e.target.value})}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-                placeholder='Description'
-                required
-              />
-            </form>
-          </div>          
+            <TextareaAutosize 
+              value={item.description}
+              onChange={(e) => setItem({...item, description: e.target.value})}
+              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              placeholder='Description'
+              required
+            />
+          </form>
 
           <h1 className='text-md text-primary-text font-semibold mt-5 mb-1'>Location</h1>
-          <div className='flex flex-row gap-2'>
+          <div className='flex flex-row gap-2 mb-5'>
             <img src={Location} alt="Location" />
             <h1 className='font-light text-primary-text'>Butuan City</h1>
           </div>
           
           
-          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-10 w-full bg-bg-surface font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
+          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-bg-surface font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
             <p>Post to the Loop</p>
             <img src={Logo} alt="logo" className='h-7'/>
           </button>

@@ -27,6 +27,10 @@ type LoginRequest = {
   password: string;
 }
 
+type SellerMap = {
+  [user_id: string]: string
+}
+
 
 type Item = {
   _id?: string;
@@ -64,6 +68,8 @@ type ContextType = {
   token: string | null;
   loading: boolean;
   likedItems: Item[];
+
+  getSellerName: (user_id: string) => string;
   logout: () => void;
   like_item: (userId: string, itemId: string) => Promise<boolean>;
   unlike_item: (userId: string, itemId: string) => Promise<boolean>;    
@@ -130,24 +136,12 @@ export function AppContext({children}) {
   const [token, setToken] = useState<string | null>(getToken())
   const [loading, setLoading] = useState(true)
   const [likedItems, setLikedItems] = useState<Item[]>([])
-  
+  const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map())
 
   // On Load -------------------------------------------------------------------------------------
-  const loadData = () => {
-    if(user){ // only loads the liked items if the user is logged in
-      load_liked_items(user._id)
-    }
-
-    load_items()  
-    load_users()  
-
-    
-  }
-
-
+  
   useEffect(() => {
     const loadInitialData = async () => {
-
       const stored = getToken()
       if(!stored){
         setLoading(false)
@@ -184,6 +178,23 @@ export function AppContext({children}) {
     loadInitialData()
 
   }, [])
+
+
+  useEffect(() => {
+    const map = new Map()
+    users.forEach(user => {
+    if (user._id && user.username) {
+        map.set(user._id, user.username);
+    }
+    })
+    setSellerMap(map)
+  }, [users])
+
+
+  const getSellerName = (seller_id: string) => {      // Gets the sellerName user the sellerid
+    if(!seller_id) return 'Unkown Seller'
+    return sellerMap.get(seller_id) || 'Unkown Seller'
+  }
 
 
   // Auth -------------------------------------------------------------------------------------
@@ -424,6 +435,7 @@ export function AppContext({children}) {
     loading,
     likedItems,
 
+    getSellerName,
     logout,
     like_item,
     unlike_item,

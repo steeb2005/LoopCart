@@ -2,6 +2,8 @@ import Logo from '../assets/Logo.svg'
 import Menu from '../assets/Menu.svg'
 import { useScrollDirection } from '../hooks/scrollDirection';
 import Message from '../assets/message.svg'
+import { Link } from 'react-router-dom';
+
 
 export function Header({openInbox, openSidebar}: {
   openInbox: () => void,
@@ -22,7 +24,9 @@ export function Header({openInbox, openSidebar}: {
           <img src={Logo} alt="logo" className='h-7 '/>
         </div>
         <div className='flex flex-row items-center gap-4'>
-          <img onClick={openInbox} src={Message} alt="message" className='cursor-pointer h-7'/>
+          <Link to={'/inbox'}>
+            <img src={Message} alt="message" className='cursor-pointer h-7'/>
+          </Link>
           <img onClick={openSidebar} src={Menu} alt="menu" className='cursor-pointer'/>
         </div>
       </div>

@@ -10,10 +10,12 @@ import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import { Link, useNavigate } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
-
+import { useOpenInbox } from "../hooks/open-inbox.tsx"
 // TODO:
 // - Finish this page
 // - Try to add jwt to the api routes
+
+
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
   item_id: string,
   title: string,
@@ -25,49 +27,6 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 ){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
   const navigate = useNavigate()
-  /**
-  const { like_item, unlike_item, user, likedItems } = useAppContext()
-  const [isLiked, setIsLiked] = useState(false)
-  const [likesCount, setLikesCount] = useState(likes) // count locally
-  
-  useEffect(() => {
-    const isAlreadyLiked = likedItems.some(item => item._id === item_id)
-    setIsLiked(isAlreadyLiked)
-  }, [likedItems, item_id, user])
-
-  useEffect(() => {
-    setLikesCount(likes)
-  }, [likes])
-
-
-
-  const handleLikeClick = async (e : React.MouseEvent) =>{
-    e.stopPropagation()
-    if(!user){
-      console.log('not logged in');
-    }
-
-    const newIsLiked = !isLiked
-    const prev = likesCount
-    setIsLiked(newIsLiked)
-    setLikesCount(newIsLiked ? likesCount + 1 : likesCount - 1) // Optimistic update 
-    
-    try{
-      if(newIsLiked){
-        const success = await like_item(user?._id, item_id) 
-        if(!success) throw new Error('Like Failed')
-      }else{
-        const success = await unlike_item(user?._id, item_id)
-        if(!success) throw new Error('Unlike Failed')
-      }
-    }catch{
-      setIsLiked(!newIsLiked) 
-      setLikesCount(prev)
-      console.error('network error in liking item');
-    }
-  }
-   */
-  
   const handleItemClick = () => {
     navigate(`/item/${item_id}`)
   }
@@ -101,9 +60,9 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 function Home(){
   
-  const { items, users} = useAppContext()
+  const { items, users, getSellerName} = useAppContext()
   const [isClicked, setIsClicked] = useState('Items')
-  const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
+  // const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
 
 
   const handleClick = (buttonId: string) =>{
@@ -114,6 +73,7 @@ function Home(){
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
 
+  /**
   useEffect(() => {
     const map = new Map()
     users.forEach(user => {
@@ -129,7 +89,7 @@ function Home(){
     if(!seller_id) return 'Unkown Seller'
     return sellerMap.get(seller_id) || 'Unkown Seller'
   }
-
+   */
   return(
     <>
       {/* Sidebar */}
@@ -183,6 +143,7 @@ function Home(){
             {
               items.map((items: any) => (
                 <ItemCard 
+                  key={items._id}
                   item_id={items._id}
                   title={items.title}
                   price={items.price}

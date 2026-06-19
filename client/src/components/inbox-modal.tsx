@@ -1,6 +1,7 @@
 import {motion, AnimatePresence} from 'framer-motion'
 import { useEffect, useState } from "react"
 import Close from '../assets/close.svg'
+// NOTE: MIGHT REMOVE
 
 function InboxEntry(){
   return(

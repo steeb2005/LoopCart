@@ -7,7 +7,7 @@ import History from '../assets/history.svg'
 import LikedItems from '../assets/Heart.svg'
 import ItemBox from '../assets/items.svg'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'  
+import { useState, useEffect } from 'react'  
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -24,6 +24,18 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     logout()
     navigate('/login');
   }
+
+  useEffect(() => { // Disable scroll when modal is active
+    if(isOpenSidebar){
+      document.body.style.overflow = "hidden"
+
+    }else{
+      document.body.style.overflow = "unset"
+    }
+    return () => {
+      document.body.style.overflow = "unset"
+    }
+  }, [isOpenSidebar])
 
   if(isLoading){
     return (
@@ -57,7 +69,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                   <div className="bg-bg-inverse rounded-full h-16 w-16">
                     {/* User profile image */}
                   </div>
-                  <h1 className="text-4xl font-semibold">{user?.username}</h1>
+                  <h1 className="text-3xl font-semibold">{user?.username}</h1>
                   <p className="font-light text-md">{user?.email}</p>
                 </div>
               </div>
