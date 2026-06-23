@@ -60,7 +60,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 function Home(){
   
-  const { items, users, getSellerName} = useAppContext()
+  const { items, users, getUsername} = useAppContext()
   const [isClicked, setIsClicked] = useState('Items')
   // const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
 
@@ -73,23 +73,6 @@ function Home(){
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
 
-  /**
-  useEffect(() => {
-    const map = new Map()
-    users.forEach(user => {
-      if (user._id && user.username) {
-        map.set(user._id, user.username);
-      }
-    })
-    setSellerMap(map)
-  }, [users])
-
-
-  const getSellerName = (seller_id: string) => {
-    if(!seller_id) return 'Unkown Seller'
-    return sellerMap.get(seller_id) || 'Unkown Seller'
-  }
-   */
   return(
     <>
       {/* Sidebar */}
@@ -141,17 +124,19 @@ function Home(){
             
             {/* Item Entry */}
             {
-              items.map((items: any) => (
-                <ItemCard 
-                  key={items._id}
-                  item_id={items._id}
-                  title={items.title}
-                  price={items.price}
-                  description={items.description}
-                  seller_name={getSellerName(items.seller_id)}
-                  likes={items.likes}
-                  
-                />
+              items.map((item: any) => (
+                item.status === 'available' && (
+                  <ItemCard 
+                    key={item._id}
+                    item_id={item._id}
+                    title={item.title}
+                    price={item.price}
+                    description={item.description}
+                    seller_name={getUsername(item.seller_id)}
+                    likes={item.likes}
+                    
+                  />
+                )
               ))
             }
 

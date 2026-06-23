@@ -27,10 +27,6 @@ type LoginRequest = {
   password: string;
 }
 
-type SellerMap = {
-  [user_id: string]: string
-}
-
 
 type Item = {
   _id?: string;
@@ -60,6 +56,35 @@ type RequestUsers = {
 }
 
 
+type ChatMessage = {
+  sender_id: string;
+  text: string;
+  read: boolean;
+  sent_at: string;
+}
+
+
+type MessageSend = {
+  sender_id: string;
+  receiver_id: string;
+  item_id: string;
+  text: string;
+}
+
+type Conversation = {
+  conversation_id: string;
+  item_id: string;
+  other_user: string;
+  unread_count: number;
+  last_message: string;
+  last_updated: string;
+}
+
+
+
+
+
+
 type ContextType = {
   user: User | null;
   users: RequestUsers[];
@@ -68,8 +93,15 @@ type ContextType = {
   token: string | null;
   loading: boolean;
   likedItems: Item[];
+  inbox: Conversation[];
 
-  getSellerName: (user_id: string) => string;
+  update_item_sold: (itemId: string, userId: string, status: string) => Promise<void>;
+  read_messages: (conversationId: string, userId: string) => Promise<void>;
+  fetch_conversation_id: (sender_id: string, item_id: string) => Promise<{conversation_id: string} | null>;
+  load_messages: (conversation_id: string) => Promise<{conversation_id: string, item_id: string, participants: string[], messages: ChatMessage[]} | null>;
+  send_message: (message: MessageSend ) => Promise<{ success: boolean; conversation_id?: string }>;
+  load_inbox: (user_id: string) => Promise<void>;
+  getUsername: (user_id: string) => string;
   logout: () => void;
   like_item: (userId: string, itemId: string) => Promise<boolean>;
   unlike_item: (userId: string, itemId: string) => Promise<boolean>;    
@@ -104,7 +136,7 @@ function getToken(): string | null{
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
   const token = getToken()
   return{
-    'content-type': 'application/json',
+    'Content-type': 'application/json',
     ...(token ? {Authorization: `Bearer ${token}`} : {}),
     ...extra,
   }
@@ -136,7 +168,8 @@ export function AppContext({children}) {
   const [token, setToken] = useState<string | null>(getToken())
   const [loading, setLoading] = useState(true)
   const [likedItems, setLikedItems] = useState<Item[]>([])
-  const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map())
+  const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map())
+  const [inbox, setInbox] = useState<Conversation[]>([])
 
   // On Load -------------------------------------------------------------------------------------
   
@@ -167,6 +200,8 @@ export function AppContext({children}) {
 
         await load_items()
         await load_users()
+        await load_inbox(data._id)
+
       }catch{
         console.error('Error in loading initial data');
         clearToken()
@@ -187,13 +222,13 @@ export function AppContext({children}) {
         map.set(user._id, user.username);
     }
     })
-    setSellerMap(map)
+    setUsersMap(map)
   }, [users])
 
 
-  const getSellerName = (seller_id: string) => {      // Gets the sellerName user the sellerid
-    if(!seller_id) return 'Unkown Seller'
-    return sellerMap.get(seller_id) || 'Unkown Seller'
+  const getUsername = (user_id: string) => {      // Gets the sellerName user the sellerid
+    if(!user_id) return 'Unkown Seller'
+    return usersMap.get(user_id) || 'Unkown Seller'
   }
 
 
@@ -259,7 +294,7 @@ export function AppContext({children}) {
 
         await load_items()
         await load_users()
-       
+        await load_inbox(data.user._id)
         return true
       }else{
         console.error('invalid email or password')
@@ -278,6 +313,7 @@ export function AppContext({children}) {
     setUsers([])
     setItems([])
     setLikedItems([])
+    setInbox([])
   }
 
 
@@ -375,7 +411,7 @@ export function AppContext({children}) {
     try{
       const res = await fetch(`${API_URL}/likes`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: authHeaders(),
         body: JSON.stringify({user_id: userId, item_id: itemId})
       })
 
@@ -421,8 +457,136 @@ export function AppContext({children}) {
     }
   }
 
+
+
+
+  // Message ------------------------------------------------------------------------------------
+
+  const load_inbox = async(userId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/inbox`) 
+      if(res.ok){
+        const data = await res.json()
+        setInbox(data)
+      }else{
+        console.error('error in loading inbox: client');
+      }
+    }catch{
+      console.error('network error in loading inbox');
+    }
+  }
+
   
+
+
+
+
   
+  const send_message = async(message: MessageSend) => {
+    try{
+      const res = await fetch(`${API_URL}/messages/send`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          sender_id: message.sender_id, 
+          receiver_id: message.receiver_id, 
+          item_id: message.item_id, 
+          text: message.text})
+      })
+
+      const data = await res.json()
+
+
+      if(res.ok){
+        console.log('message sent successfully');
+        await load_inbox(message.sender_id) // updates it to inbox
+        return {
+          success: true,
+          conversation_id: data.conversation_id
+        };
+      }else{
+        console.error('error in sending message');
+        return {success: false};
+      }
+    }catch{
+      console.error('network error in sending message');
+      return {success: false};
+    }
+  }
+
+
+  const load_messages = async(conversation_id: string) => {
+    try{
+      const res = await fetch(`${API_URL}/conversation/${conversation_id}/messages`)
+      if(!res.ok) {
+        console.error('Error in loading messages')
+        return null
+      }
+
+      const data = await res.json()
+      return data
+    }catch{
+      console.error('Error in loading messages')
+      return null
+    }
+  }
+
+
+  const fetch_conversation_id = async (sender_id: string, item_id: string) => {
+    try{
+      const res = await fetch(`${API_URL}/conversations/${sender_id}/${item_id}`)
+      if(res.ok){
+        const data = await res.json()
+        return data
+      }else{
+        console.log('No conversation yet');
+        return 
+      }
+    }catch{
+      console.error('network error in fetching conversation id');
+      return 
+    }
+  }
+
+
+  const read_messages = async (conversationId: string, userId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/conversations/${conversationId}/read?user_id=${userId}`, {
+        method: 'PUT',
+        headers: authHeaders()
+      })
+      if(res.ok){
+        console.log('messages read successfully');
+      }else{
+        console.error('error in reading messages');
+      }
+    }catch{
+      console.error(`failed in reading messages`);
+    }
+  }
+
+
+
+
+  const update_item_sold = async (itemId: string, userId: string, status: string) => {
+    try{
+      const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold`, {
+        method: 'PATCH',
+        headers: authHeaders()
+      })
+
+      if(res.ok){
+        await load_items()
+        console.log('successfully updated item to sold');
+      }else{
+        console.error('error in updating item to sold');
+      }
+    }catch{
+      console.error('network error in updating item to sold');
+    }
+  }
+
+
 
 
   // Context values ----------------------------------------------------------------------------------
@@ -434,8 +598,15 @@ export function AppContext({children}) {
     token,
     loading,
     likedItems,
-
-    getSellerName,
+    inbox,
+  
+    update_item_sold,
+    read_messages,
+    fetch_conversation_id,
+    load_messages,
+    send_message,
+    load_inbox,
+    getUsername,
     logout,
     like_item,
     unlike_item,
@@ -467,45 +638,3 @@ export function useAppContext(){
 }
 
 
-
-/**
-  const loadInitialData = async () => {
-
-      const stored = getToken()
-      if(!stored){
-        setLoading(false)
-        return
-      }
-     
-
-      fetch(`${API_URL}/users/me`, {
-        headers: authHeaders()
-      })
-      .then(res =>{
-        if(!res.ok){
-          clearToken()
-          setToken(null)
-          return null
-        }
-        return res.json()
-      })
-      .then(data => {
-        if(data) setUser(data)
-        
-      })
-      .catch(() => {
-        clearToken()
-        setToken(null)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
-    
-        
-    }   
-    loadInitialData()
-    load_liked_items(user?._id)
-    load_items()
-    load_users()
-
- */

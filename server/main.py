@@ -22,11 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True
 )
+
 client = AsyncIOMotorClient("mongodb://localhost:27017")
 db = client.LoopCart
 users = db.users
 items = db.items
 likes = db.likes
+conversations = db.conversations
+
+
 
 # JWT helpers ---------------------------------------------------------------
 
@@ -96,13 +100,22 @@ class LikeRequest(BaseModel):
     item_id: str
 
 
+class MessageSend(BaseModel):
+    sender_id: str
+    receiver_id: str
+    item_id: str
+    text: str 
 
 
-
+class MessageRead(BaseModel):
+    conversation_id: str
+    user_id: str
 
 
 # Routes ----------------------------------------------------------------------------------------------
 
+
+# Auth ------------------------------------------------------------------------------------------------
 
 #add user to database
 @app.post("/users")
@@ -233,7 +246,7 @@ async def create_item(item: Item, current_user: dict = Depends(get_current_user)
 
 
 
-# Public routes --------------------------------------------------
+# Get routes --------------------------------------------------
 
 
 # Loads all items
@@ -360,3 +373,192 @@ async def get_user_liked_items(user_id: str):
             })
 
     return items_list
+
+
+
+
+
+
+# Messages ----------------------------------------------------------------------------------
+
+@app.get('/users/{user_id}/inbox')
+async def get_inbox(user_id: str):
+    conversations_list = []
+
+    async for conversation in conversations.find({"participants": user_id}):
+        try:
+            participants = conversation.get("participants", [])
+            other_participant = [p for p in participants if p != user_id]
+            
+            if not other_participant:
+                continue
+            
+            other_participant_id = other_participant[0]
+            unread_count = 0    # Counter for unread messages (placeholder for now)
+            for msg in conversation.get("messages", []):
+                if msg["sender_id"] != user_id and not msg["read"]:
+                    unread_count += 1
+
+            messages = conversation.get("messages", [])
+            last_message = messages[-1] if messages else None
+            
+            
+            conversations_list.append({
+                "conversation_id": str(conversation["_id"]),
+                "item_id": conversation["item_id"],
+                "other_user": other_participant_id,
+                "unread_count": unread_count,
+                "last_message": last_message,
+                "last_updated": conversation["last_updated"]
+            })
+        except Exception as e:
+            print(f"Error processing conversation {conversation.get('_id')}: {e}")
+            continue
+
+    return conversations_list
+
+
+
+
+
+@app.post('/messages/send')
+async def send_message(message: MessageSend):
+    participants = sorted([message.sender_id, message.receiver_id])
+
+    new_message = {
+        "sender_id": message.sender_id, 
+        "text": message.text,
+        "read": False,
+        "sent_at": datetime.now(tz=timezone.utc).isoformat()
+    }
+
+    # Find existing conversation between partiicipants
+    conversation = await conversations.find_one({ 
+        "participants": participants,
+        "item_id": message.item_id
+    })
+
+    # If Found
+    if conversation:
+        await conversations.update_one(
+            {"_id": conversation["_id"]},
+            {
+                "$push": {"messages": new_message},
+                "$set": {"last_updated": datetime.now(tz=timezone.utc).isoformat()}
+            }
+        )
+        return {"conversation_id": str(conversation["_id"])}
+    else:
+        new_conversation = { # this inserted into the db
+            "participants": participants,
+            "item_id": message.item_id,
+            "messages" : [new_message],
+            "last_updated": datetime.now(tz=timezone.utc).isoformat()
+        }
+
+        result = await conversations.insert_one(new_conversation)
+        return {"conversation_id": str(result.inserted_id)}
+
+
+
+
+
+# Load messages of a conversation
+@app.get('/conversation/{conversation_id}/messages')
+async def load_messages(conversation_id: str):
+    try:
+        conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        return {
+            "conversation_id": str(conversation["_id"]),
+            "item_id": conversation["item_id"],
+            "participants": conversation["participants"],
+            "messages": conversation.get("messages", [])
+        }
+    except:
+        raise HTTPException(status_code=400, detail="Invalid conversation ID")
+
+
+
+# Get conversationID
+@app.get('/conversations/{user_id}/{item_id}')
+async def fetch_conversation_id(user_id: str, item_id: str):
+    try:
+        conversation = await conversations.find_one({
+            "participants": user_id,
+            "item_id": item_id})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid user ID or item ID")
+
+    if not conversation:
+        #raise HTTPException(status_code=404, detail="Conversation not found")
+        return {"conversation_id": None}    # Returns None if there is no conversation_id for that entry
+    return {"conversation_id": str(conversation["_id"])}
+
+
+
+# Marks messages as read
+@app.put('/conversations/{conversation_id}/read')
+async def mark_message_as_read(conversation_id: str, user_id: str):
+    try:
+        conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        updated = False
+        for msg in conversation.get("messages", []):
+            if msg["sender_id"] != user_id and not msg["read"]: # if the message is not sent by the user and is not already read then set to read
+                msg["read"] = True
+                updated = True
+
+        if updated:
+            await conversations.update_one(
+                {"_id": ObjectId(conversation_id)},
+                {"$set": {"messages": conversation["messages"]}}
+            )
+
+        return {"success": True}
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+
+
+
+# Update ------------------------------------------------------------------
+
+@app.patch('/items/{item_id}/{user_id}/{status}/sold')
+async def update_item_sold(item_id: str, user_id: str, status: str):
+    try:
+        item = await items.find_one({"_id": ObjectId(item_id)})
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        if status != "sold":
+            await items.update_one(
+                {"_id": ObjectId(item_id)},
+                {"$set": {
+                    "status": "sold",
+                    "buyer_id": user_id,
+                    "sold_at": datetime.now(tz=timezone.utc).isoformat()
+                    }
+                }
+            )
+        else:
+
+            await items.update_one(
+                {"_id": ObjectId(item_id)},
+                {"$set": {
+                    "status": "available",
+                    "buyer_id": None,
+                    "sold_at": None
+                    }
+                }
+            )
+        return {"success": True}
+
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+            

@@ -33,7 +33,7 @@ type Item = {
 function ItemDetails(){
   const naviagte = useNavigate()
   const {id} = useParams() 
-  const {items, user, getSellerName} = useAppContext()
+  const {items, user, getUsername} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
@@ -42,8 +42,8 @@ function ItemDetails(){
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
     setItem(foundItem)
-    setSellerUsername(getSellerName(foundItem?.seller_id || 'Unkown Seller'))
-  }, [items, id, getSellerName])
+    setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
+  }, [items, id, getUsername])
 
   
   const isUserItem = item?.seller_id === user?._id

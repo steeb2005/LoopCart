@@ -82,7 +82,7 @@ function AppRoute(){
         }/>
 
       </Route>
-      <Route path='/chat/:itemId/:sellerId' element={
+      <Route path='/chat/:itemId/:userId' element={
           <ProtectedRoute>
             <Chat/>
           </ProtectedRoute>

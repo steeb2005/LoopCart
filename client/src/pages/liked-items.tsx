@@ -1,11 +1,9 @@
 import Back from '../assets/back.svg'
-import { Link } from 'react-router-dom'
 import { useAppContext } from '../context/context'
 import { useItemLike } from '../hooks/handle-like'
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
 
@@ -62,7 +60,7 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
 
 
 function LikedItems() {
-  const {likedItems, getSellerName} = useAppContext()
+  const {likedItems, getUsername} = useAppContext()
   const navigate = useNavigate()
   const [copyItems, setCopyItems] = useState([])
 
@@ -95,7 +93,7 @@ function LikedItems() {
             title={item.title}
             price={item.price}
             status={item.status}
-            seller_name={getSellerName(item.seller_id)}
+            seller_name={getUsername(item.seller_id)}
             likes={item.likes}
             />
             
