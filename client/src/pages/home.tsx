@@ -60,7 +60,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 function Home(){
   
-  const { items, users, getUsername} = useAppContext()
+  const { items, getUsername} = useAppContext()
   const [isClicked, setIsClicked] = useState('Items')
   // const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
 
@@ -68,6 +68,7 @@ function Home(){
   const handleClick = (buttonId: string) =>{
     setIsClicked(buttonId)
   } 
+
 
 
   const scrollDirection = useScrollDirection();

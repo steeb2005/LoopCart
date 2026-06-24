@@ -38,7 +38,7 @@ function ItemDetails(){
   const [item, setItem] = useState<Item | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
   
-
+  
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
     setItem(foundItem)

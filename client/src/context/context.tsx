@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 
 
 type User = {
@@ -95,7 +95,8 @@ type ContextType = {
   likedItems: Item[];
   inbox: Conversation[];
 
-  update_item_sold: (itemId: string, userId: string, status: string) => Promise<void>;
+  get_item: (itemId: string) => Promise<Item | null>;
+  update_item_sold: (itemId: string, userId: string, status: string, conversationId?: string) => Promise<void>;
   read_messages: (conversationId: string, userId: string) => Promise<void>;
   fetch_conversation_id: (sender_id: string, item_id: string) => Promise<{conversation_id: string} | null>;
   load_messages: (conversation_id: string) => Promise<{conversation_id: string, item_id: string, participants: string[], messages: ChatMessage[]} | null>;
@@ -116,8 +117,11 @@ type ContextType = {
 
 const Context = createContext<ContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:8000' // MongoDB Api
+const API_URL = 'http://localhost:8000' // backend url
+const WS_URL = 'ws://localhost:8000'
 const TOKEN_KEY = 'loopcart_token'
+
+
 
 // JWT helpers -------------------------------------------------------------------------------------
 
@@ -196,6 +200,7 @@ export function AppContext({children}) {
         setUser(data)
         if(data._id){
           await load_liked_items(data._id)
+          connectInboxSocket(data._id)
         }
 
         await load_items()
@@ -291,10 +296,11 @@ export function AppContext({children}) {
         setUser(userData)
         load_liked_items(userData?._id)
         console.log('logged in as: ' + data.user.username)
-
+        
         await load_items()
-        await load_users()
+        await load_users()  
         await load_inbox(data.user._id)
+        connectInboxSocket(userData._id)
         return true
       }else{
         console.error('invalid email or password')
@@ -307,6 +313,8 @@ export function AppContext({children}) {
   }
 
   const logout = () => {
+    wsRef.current?.close()
+    wsRef.current = null
     clearToken()
     setUser(null)
     setToken(null)
@@ -314,6 +322,7 @@ export function AppContext({children}) {
     setItems([])
     setLikedItems([])
     setInbox([])
+    
   }
 
 
@@ -372,6 +381,15 @@ export function AppContext({children}) {
 
   
 
+  const get_item = async (itemId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/items/${itemId}`);
+      const data = await res.json();
+      return data
+    }catch{
+      console.error('error in getting item');
+    }
+  }
   
   // Users ------------------------------------------------------------------------------------
 
@@ -568,9 +586,9 @@ export function AppContext({children}) {
 
 
 
-  const update_item_sold = async (itemId: string, userId: string, status: string) => {
+  const update_item_sold = async (itemId: string, userId: string, status: string, conversationId?: string) => {
     try{
-      const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold`, {
+      const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
         method: 'PATCH',
         headers: authHeaders()
       })
@@ -588,7 +606,32 @@ export function AppContext({children}) {
 
 
 
+  
+  // Websocket ------------------------------------------------------------------------------------
+  const wsRef = useRef<WebSocket | null>(null)
+  const wsIntentionalClose = useRef(false)
+  const connectInboxSocket = (user_id: string) => {
+    wsIntentionalClose.current = false
+    const ws = new WebSocket(`${WS_URL}/ws/inbox/${user_id}`)
+    
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      if(data.type === 'new_message'){
+        load_inbox(user_id)
+      }
+    }
+    console.log("connected to inbox socket")
+    ws.onclose = () => {
+      if(wsIntentionalClose.current) return
+      if(wsRef.current !== ws) return
+      setTimeout(() => connectInboxSocket(user_id), 3000) // auto-reconnect
+    }
 
+    wsRef.current = ws
+  }
+    
+ 
   // Context values ----------------------------------------------------------------------------------
   const value = {
     user,
@@ -600,6 +643,7 @@ export function AppContext({children}) {
     likedItems,
     inbox,
   
+    get_item,
     update_item_sold,
     read_messages,
     fetch_conversation_id,

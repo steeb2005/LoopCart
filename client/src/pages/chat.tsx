@@ -33,7 +33,11 @@ type ChatMessage = {
 }
 
 
+
+
 function useViewportHeight() {
+
+
   useEffect(() => {
     const setHeight = () => {
       document.documentElement.style.setProperty(
@@ -78,7 +82,7 @@ function Chat(){
   const navigate = useNavigate()
 
   const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {items, getUsername, user, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold} = useAppContext()
+  const {items, getUsername, user, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item} = useAppContext()
    
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
@@ -88,7 +92,7 @@ function Chat(){
   const [conversationId, setConversationId] = useState('')
   const [soldConfirmation, setSoldConfirmation] = useState(false)
   const [revertSold, setRevertSold] = useState(false)
-
+  const [isLoading, setIsLoading] = useState(true)
   const messageEndRef = useRef<HTMLDivElement>(null);
   const scrollToBottom = () => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -97,8 +101,6 @@ function Chat(){
   useEffect(() => { // Scrolls to bottom as messages are added
     scrollToBottom()
   }, [messageList])
-
-
 
   
   const handleBackClick = () => { 
@@ -111,6 +113,17 @@ function Chat(){
     setItem(foundItem)
     setOtherUsername(getUsername(userId || 'Unkown User'))   // Gets the username of the other person
     
+
+    const findItem = async () => {
+      setIsLoading(true)  
+      const res = await get_item(itemId)
+      if(res){
+        setItem(res)
+        setIsLoading(false)  
+      }
+    }
+
+    
     const loadMessages = async () => {
       if(!user?._id || !itemId) return
 
@@ -120,7 +133,8 @@ function Chat(){
         const result = await fetch_conversation_id(user._id, itemId)
         if(result?.conversation_id){
           conv_id = result.conversation_id
-          setConversationId(conv_id)
+          setConversationId(conv_id)          
+          connectChatSocket(conv_id) // connects to chat socket
         }else{
           console.log('no conversation yet');
           setMessageList([])
@@ -138,12 +152,59 @@ function Chat(){
       }
     }
     
-    
     loadMessages() // loads messages
-  }, [items, itemId, getUsername ])
+    findItem()
+  }, [items, itemId, getUsername, get_item ])
 
+
+  const chatWsRef = useRef<WebSocket | null>(null)
+  const chatWsIntentionalClose = useRef(false)
+
+  // TODO:
+  // FIX SOCKET CONNECTION ERROR
+  // socket closes before connecting
+
+  const connectChatSocket = (conv_id: string) => {
+    
+    if(chatWsRef.current) chatWsRef.current.close()
+    chatWsIntentionalClose.current = false
+
+    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${conv_id}`) // Change the URL in production
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      if(data.type === 'new_message'){
+        setMessageList(prev => [...prev, data.message])
+      }
+      if(data.type === "update_status"){
+        setItem(prev => prev ? {...prev, status: data.status} : prev)
+      }
+    }
+    console.log('connected to chat socket')
+    ws.onclose = () => {
+      if(chatWsIntentionalClose.current) return
+      if(chatWsRef.current !== ws) return
+      setTimeout(() => connectChatSocket(conv_id), 3000)
+    }
+    
+    
+    chatWsRef.current = ws
+  }
+
+  // Closes the websocket when leaving the chatroom
+  useEffect(() => {
+    return () => {
+      console.log('closing chat socket')
+      chatWsIntentionalClose.current = true
+      
+      if(chatWsRef.current){
+        chatWsRef.current?.close()
+        chatWsRef.current = null
+      }
+    }
+  }, [itemId])
   
-
+  
   
   const isOwn = (id: string) => {
     return id === user?._id
@@ -151,6 +212,9 @@ function Chat(){
 
   const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if(isSold) return // if the item is sold, do not allow sending messages
+
     const messageData = {
       sender_id: user?._id,
       receiver_id: userId,
@@ -158,8 +222,8 @@ function Chat(){
       text: message.trim(),
     }
 
-    const prev = messageList // rollback
     
+    const prev = messageList // rollback
     const optimisticMessage: ChatMessage = {
       sender_id: user!._id!,
       text: message.trim()
@@ -168,14 +232,17 @@ function Chat(){
     setMessageList((prev) => [...prev, optimisticMessage])
     try{
       const res = await send_message(messageData) 
-
       if(res.success){
         if(res.conversation_id && !conversationId){
           setConversationId(res.conversation_id)
+          connectChatSocket(res.conversation_id)
         }
         
-        const reset_msg = await load_messages(res.conversation_id || conversationId)
-        setMessageList(reset_msg.messages)
+        // NOTE: this is for updating the message list
+        //const reset_msg = await load_messages(res.conversation_id || conversationId)
+        //setMessageList(reset_msg.messages)
+      }else{
+        setMessageList(prev)
       }
     }catch{
       console.error('error in sending message: client')
@@ -207,7 +274,8 @@ function Chat(){
       }else{
         setItem({...prev, status: 'sold'})
       }
-      await update_item_sold(itemId, userId, item?.status)
+      await update_item_sold(itemId, userId, item?.status, conversationId)
+      await load_items()
     }catch{
       setItem(prev)
       console.error('error in updating item status');
@@ -290,6 +358,14 @@ function Chat(){
           {isSold && 
             <div className="text-primary-text mt-auto mb-5 text-center ">This item has been sold. <br />This conversation is closed.</div>
           }
+
+          {isLoading && (
+            <div className="text-primary-text mt-auto mb-5 text-center flex flex-row items-center justify-center gap-3 "> 
+              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse"></div>
+              Loading messages...
+            </div>
+          )}
+
         </div>
 
         <form 
@@ -305,7 +381,7 @@ function Chat(){
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold}
+            disabled={isSold || isLoading}
           />
           <button className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer`} disabled={message.length === 0}>
             <img src={Send} alt="send" />

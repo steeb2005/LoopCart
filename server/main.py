@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -29,6 +29,30 @@ users = db.users
 items = db.items
 likes = db.likes
 conversations = db.conversations
+
+
+
+# Websocket connection manager ------------------------------------------------------------------
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: dict[str, list[WebSocket]] = {}
+
+    async def connect(self, conversation_id: str, websocket: WebSocket):
+        await websocket.accept()
+        if conversation_id not in self.active_connections:
+            self.active_connections[conversation_id] = []
+        self.active_connections[conversation_id].append(websocket)
+
+    def disconnect(self, conversation_id: str, websocket: WebSocket):
+        if conversation_id in self.active_connections:
+            self.active_connections[conversation_id].remove(websocket)
+
+    async def broadcast(self, conversation_id: str, data: dict):
+        for ws in self.active_connections.get(conversation_id, []):
+            await ws.send_json(data)
+
+manager = ConnectionManager()
 
 
 
@@ -248,6 +272,31 @@ async def create_item(item: Item, current_user: dict = Depends(get_current_user)
 
 # Get routes --------------------------------------------------
 
+# Get specific item
+@app.get('/items/{item_id}')
+async def get_single_item(item_id: str):
+    item = await items.find_one({"_id": ObjectId(item_id)})
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    return {
+        "_id": str(item["_id"]),
+        "title": item["title"],
+        "price": item["price"],
+        "category": item["category"],
+        "condition": item["condition"],
+        "description": item["description"],
+        "created_at": item["created_at"],
+        "status": item["status"],
+        "sold_at": item["sold_at"],
+        "seller_id": item["seller_id"],
+        "buyer_id": item["buyer_id"],
+        "image": item["image"],
+        "likes": item.get("likes", 0)
+    }
+
+
+
 
 # Loads all items
 @app.get('/items')
@@ -270,6 +319,7 @@ async def get_items():
             "likes": item.get("likes", 0)
         })
     return items_list
+
 
 
 
@@ -447,7 +497,7 @@ async def send_message(message: MessageSend):
                 "$set": {"last_updated": datetime.now(tz=timezone.utc).isoformat()}
             }
         )
-        return {"conversation_id": str(conversation["_id"])}
+        conversation_id = str(conversation["_id"])
     else:
         new_conversation = { # this inserted into the db
             "participants": participants,
@@ -457,8 +507,19 @@ async def send_message(message: MessageSend):
         }
 
         result = await conversations.insert_one(new_conversation)
-        return {"conversation_id": str(result.inserted_id)}
+        conversation_id = str(result.inserted_id)
 
+    await manager.broadcast(conversation_id, {
+        "type": "new_message",
+        "message": new_message
+    })
+
+    await manager.broadcast(message.receiver_id, {
+        "type": "new_message",
+        "conversation_id": conversation_id
+    })
+
+    return {"conversation_id": conversation_id}
 
 
 
@@ -530,7 +591,7 @@ async def mark_message_as_read(conversation_id: str, user_id: str):
 # Update ------------------------------------------------------------------
 
 @app.patch('/items/{item_id}/{user_id}/{status}/sold')
-async def update_item_sold(item_id: str, user_id: str, status: str):
+async def update_item_sold(item_id: str, user_id: str, status: str, conversation_id: str | None = None):
     try:
         item = await items.find_one({"_id": ObjectId(item_id)})
         if not item:
@@ -547,7 +608,6 @@ async def update_item_sold(item_id: str, user_id: str, status: str):
                 }
             )
         else:
-
             await items.update_one(
                 {"_id": ObjectId(item_id)},
                 {"$set": {
@@ -557,8 +617,44 @@ async def update_item_sold(item_id: str, user_id: str, status: str):
                     }
                 }
             )
+
+        # Broadcasts to other users
+        if conversation_id: 
+            new_status = "available" if status == "sold" else "sold"
+            await manager.broadcast(conversation_id, {
+                "type": "update_status",
+                "item_id": item_id,
+                "status": new_status
+            })
+        
         return {"success": True}
 
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
             
+
+
+# Websocket Connection ----------------------------------------------------------------
+@app.websocket("/ws/chat/{conversation_id}")
+async def chat_websocket(conversation_id: str, websocket: WebSocket):
+    await manager.connect(conversation_id, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(conversation_id, websocket)
+
+
+@app.websocket("/ws/inbox/{user_id}")
+async def inbox_websocket(user_id: str, websocket: WebSocket):
+
+    await websocket.accept()
+    if user_id not in manager.active_connections:
+        manager.active_connections[user_id] = []
+    manager.active_connections[user_id].append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        print("Disconnected inbox websocket")
+        manager.disconnect(user_id, websocket)
