@@ -8,12 +8,9 @@ import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
 import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
-import { useOpenInbox } from "../hooks/open-inbox.tsx"
-// TODO:
-// - Finish this page
-// - Try to add jwt to the api routes
+
 
 
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
@@ -41,7 +38,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
       </div>
       <div className="title-section text-primary-text mt-2">
         <h1 className="line-clamp-1 ">{title}</h1>
-        <h1>PHP {price.toLocaleString('en-US')}</h1>
+        <h1 className="font-bold">₱{price.toLocaleString('en-US')}</h1>
         <p className="text-sm line-clamp-1">{description}</p>
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
@@ -58,21 +55,73 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 
 
+
+function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: string, email: string}){
+  const navigate = useNavigate()
+  const {getUsername} = useAppContext()
+
+  const handleNavigate = () => {
+    navigate(`/users/${userId}`)
+  }
+
+
+  return(
+    <div
+      onClick={handleNavigate} 
+      className="bg-bg-surface p-3 text-primary-text rounded-md flex flex-row justify-between">
+      <div className="flex flex-row items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-bg-inverse"></div>
+        <div className="flex flex-col ">
+          <p>{getUsername(userId)}</p>
+          <p className="text-gray-300 text-sm">{email}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center text-sm">
+        View profile
+      </div>
+    </div>
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function Home(){
   
-  const { items, getUsername} = useAppContext()
-  const [isClicked, setIsClicked] = useState('Items')
-  // const [sellerMap, setSellerMap] = useState<Map<string, string>>(new Map()) // Creates 
-
-
+  const {items, getUsername, users, user} = useAppContext()
+  const [searchParams, setSearchParams] = useSearchParams()
+  
+  const [isClicked, setIsClicked] = useState(searchParams.get('tab') || 'Items')
+  
+  
   const handleClick = (buttonId: string) =>{
     setIsClicked(buttonId)
+    setSearchParams({tab: buttonId})
   } 
-
 
 
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
+
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if(tab && (tab === 'Items' || tab === 'Sellers')){
+      setIsClicked(tab)
+    }
+  },[searchParams])
 
   return(
     <>
@@ -86,7 +135,9 @@ function Home(){
           <input 
             type="text" 
             className="pl-14 text-sm items-center text-primary-text bg-bg-surface py-3 w-full rounded-md decoration-none outline-0" 
-            placeholder="search"/>
+            placeholder="search"
+            
+          />
         </div>
         <div className="top-section flex flex-col">
           
@@ -124,7 +175,8 @@ function Home(){
           <div className="border px-2 py-2 border-border-color rounded-md mt-2 flex flex-col gap-2">
             
             {/* Item Entry */}
-            {
+
+            {isClicked === 'Items' &&
               items.map((item: any) => (
                 item.status === 'available' && (
                   <ItemCard 
@@ -141,10 +193,23 @@ function Home(){
               ))
             }
 
+
+            {isClicked === 'Sellers' && 
+            users
+            .filter((u: any) => u._id !== user._id) // Removes the current loggedin user
+            .map((user: any) => (
+              <UserCard 
+                key={user._id}
+                userId={user._id}
+                avatar_url={user.avatar_url}
+                email={user.email}
+              />
+            ))}
+
           </div>
         </div>
 
-        <p className="mt-5 text-center text-primary-text font-light">No more items to show</p>
+        <p className="mt-5 text-center text-primary-text font-light">No more to show</p>
       </div>
     </>
   )

@@ -53,6 +53,11 @@ type RequestUsers = {
   lastname: string;
   email: string;
   join_date: string;
+  avatar_url?: string | null;
+  address?: string 
+  gender?: string 
+  bio?: string 
+  birthdate?: string
 }
 
 
@@ -117,8 +122,11 @@ type ContextType = {
 
 const Context = createContext<ContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:8000' // backend url
-const WS_URL = 'ws://localhost:8000'
+//const API_URL = 'http://localhost:8000' // backend url
+const API_URL = 'http://192.168.1.19:8000' // backend url
+
+//const WS_URL = 'ws://localhost:8000'
+const WS_URL = 'ws://192.168.1.19:8000'
 const TOKEN_KEY = 'loopcart_token'
 
 

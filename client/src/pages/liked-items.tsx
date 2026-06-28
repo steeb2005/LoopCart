@@ -6,8 +6,6 @@ import HeartClicked from '../assets/clickedHeart.svg'
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
-
-
 function ItemCard({item_id, title, price, status, seller_name, likes}: {
   item_id: string,
   title: string,
@@ -36,14 +34,14 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
 
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-semibold'>@{seller_name}</h1>
-          <p className='font-light text-sm'>{status}</p>
+          <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
         </div>
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-light line-clamp-1'>{title}</h1>
         
         </div>
+          <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>  
         <div className='last-message items-center flex flex-row justify-between'>
-          <h1 className='font-semibold'>PHP {price.toLocaleString('en-US')}</h1>  
           <div className='flex flex-row gap-2'>
             <img onClick={handleLikeClick} src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
             {likesCount}
@@ -75,7 +73,7 @@ function LikedItems() {
   }
   
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5"> 
+    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         
         <img onClick={handleBackClick} src={Back} alt="back" />
@@ -98,7 +96,8 @@ function LikedItems() {
             />
             
         )))}
-            
+        {copyItems?.length !== 0 && <p className="mt-10 text-center text-primary-text font-light">No more items to show</p>}
+
       </div>
 
     </div>

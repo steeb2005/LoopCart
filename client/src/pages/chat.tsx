@@ -40,6 +40,27 @@ function useViewportHeight() {
 
   useEffect(() => {
     const setHeight = () => {
+      const height = window.visualViewport?.height ?? window.innerHeight
+      document.documentElement.style.setProperty('--vh', `${height}px`)
+      
+      window.scrollTo(0, height)
+    }
+    setHeight()
+    window.visualViewport?.addEventListener('resize', setHeight)
+    window.visualViewport?.addEventListener('scroll', setHeight)
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', setHeight)
+      window.visualViewport?.removeEventListener('scroll', setHeight)
+    }
+  }, [])
+}
+
+
+/*
+
+  useEffect(() => {
+    const setHeight = () => {
       document.documentElement.style.setProperty(
         '--vh', 
         `${window.visualViewport?.height ?? window.innerHeight}px`
@@ -48,9 +69,7 @@ function useViewportHeight() {
     setHeight()
     window.visualViewport?.addEventListener('resize', setHeight)
     return () => window.visualViewport?.removeEventListener('resize', setHeight)
-  }, [])
-}
-
+  }, []) */
 
 
 function Message({isOwn, message}: {
@@ -165,8 +184,19 @@ function Chat(){
   // socket closes before connecting
 
   const connectChatSocket = (conv_id: string) => {
+
+    // Dont reconnect if already connected
+    if(
+      chatWsRef.current && chatWsRef.current.url.endsWith(conv_id) && (
+      chatWsRef.current.readyState === WebSocket.OPEN ||
+      chatWsRef.current.readyState === WebSocket.CONNECTING)
+    ) return 
     
-    if(chatWsRef.current) chatWsRef.current.close()
+    // Close existing socket if open
+    if(chatWsRef.current && chatWsRef.current.readyState !== WebSocket.CLOSED){
+      chatWsRef.current.close()
+    }  
+
     chatWsIntentionalClose.current = false
 
     const ws = new WebSocket(`ws://localhost:8000/ws/chat/${conv_id}`) // Change the URL in production
@@ -282,7 +312,6 @@ function Chat(){
     }
   }
 
-  useViewportHeight()
   
 
 
@@ -297,7 +326,7 @@ function Chat(){
 
   return (
     <>
-      <div className="flex flex-col h-[calc(var(--vh))]">
+      <div className="flex flex-col h-dvh">
 
         <div className={`top-0 pt-5 sticky bg-bg-canvas m-0 `}>
           <div className='head flex flex-col text-primary-text font-semibold'>
@@ -318,7 +347,7 @@ function Chat(){
                 </div>
 
                 <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
-                  <h1>PHP {item?.price.toLocaleString('en-US')}</h1>
+                  <h1>₱{item?.price.toLocaleString('en-US')}</h1>
                   <h1 className="font-light line-clamp-1">{item?.title}</h1>
                   <div className="flex flex-row ">
                     <div className="font-light ml-2 bg-bg-surface rounded-full py-1 px-3 text-sm">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
@@ -339,7 +368,7 @@ function Chat(){
           </div>
         </div>
 
-        <div className="mx-5 chat-body pr-1 grow overflow-y-auto scrollbar-none items-section gap-1 flex flex-col mt-3">
+        <div className="px-3 chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3">
 
           {messageList.length === 0 ? (
             <div className="flex flex-row justify-center items-center h-full">
@@ -377,7 +406,7 @@ function Chat(){
             maxRows={5}
             value={message}
             placeholder="message"
-            className={`scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-3 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
+            className={`touch-none scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-3 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}

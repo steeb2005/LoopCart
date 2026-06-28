@@ -10,6 +10,8 @@ import Layout from './pages/layout'
 import LikedItems from './pages/liked-items'
 import Inbox from './pages/inbox'
 import Chat from './pages/chat'
+import MyItems from './pages/my-items'
+import SellerProfile from './pages/seller-profile'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, loading } = useAppContext();
@@ -81,12 +83,25 @@ function AppRoute(){
           </ProtectedRoute>
         }/>
 
-      </Route>
-      <Route path='/chat/:itemId/:userId' element={
+        <Route path='/my-items' element={
           <ProtectedRoute>
-            <Chat/>
+            <MyItems/>
           </ProtectedRoute>
         }/>
+
+        <Route path='/users/:userId' element={
+          <ProtectedRoute>
+            <SellerProfile/>
+          </ProtectedRoute>
+        }/>
+      
+      </Route>
+
+      <Route path='/chat/:itemId/:userId' element={
+        <ProtectedRoute>
+          <Chat/>
+        </ProtectedRoute>
+      }/>
     </Routes>
   )
 }

@@ -58,6 +58,9 @@ function ItemDetails(){
     naviagte(`/chat/${item?._id}/${item?.seller_id}`)
   }
 
+  const handleSellerClick = () => {
+    naviagte(`/users/${item?.seller_id}`)
+  }
   
   // Error handler if item is not found
   if(!item){
@@ -90,7 +93,7 @@ function ItemDetails(){
             </div>
 
             <h1 className='font-semibold text-xl mt-2'>{item.title}</h1>
-            <h1 className='font-semibold text-xl mt-2'>PHP {item.price.toLocaleString('en-US')}</h1>
+            <h1 className='font-semibold text-xl mt-2'>₱{item.price.toLocaleString('en-US')}</h1>
             <h1 className='font-semibold text-xl mt-3'>Condition</h1>
             <p className='mt-1'>{item.condition}</p>
             <h1 className='font-semibold text-xl mt-3'>Description</h1>
@@ -109,7 +112,9 @@ function ItemDetails(){
             </div>
           </div>
 
-          <div className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
+          <div  
+            onClick={handleSellerClick}
+            className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
             <div className='bg-bg-inverse rounded-full w-8 h-8'></div>
             <h1>@{sellerUsername}</h1>
           </div>

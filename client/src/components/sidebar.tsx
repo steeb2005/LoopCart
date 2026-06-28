@@ -56,9 +56,8 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               animate={{x: 0}}
               exit={{x: "100%"}}
               transition={{type: "spring", damping: 25, stiffness: 200}}
-              className="pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] min-h-screen z-50 flex flex-col"
+              className="pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] h-full z-50 flex flex-col"
               onClick={(e) => e.stopPropagation()}
-              
             >
                 
               <div className="flex flex-row justify-end">
@@ -95,10 +94,12 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     Liked Items
                   </div>
                 </Link>
-                <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
-                  <img src={ItemBox} alt="my-items" className='h-6'/>
-                  My Items
-                </div>
+                <Link to={'/my-items'}>
+                  <div className={`${currentLocation === 'my-items' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
+                    <img src={ItemBox} alt="my-items" className='h-6'/>
+                    My Items
+                  </div>
+                </Link>
               </div>
               <button onClick={handleLogout} className='mt-auto mb-3 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
                 Logout

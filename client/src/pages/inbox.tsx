@@ -45,17 +45,17 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
       <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
         {/* Image */}
       </div>
-      <div className='data-entry w-full min-w-0 flex flex-col flex-1  text-primary-text'>
+      <div className='data-entry w-full min-w-0 flex flex-col flex-1 justify-center text-primary-text'>
         <div className='flex flex-row justify-between'>
           <h1 className="font-semibold">@{otherUsername}</h1>
           <p className='font-light'>{item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
         </div>
         <div className='flex flex-row justify-between items-center'>
           <h1>{item?.title}</h1>
-          <h1 className="font-semibold">PHP {item?.price.toLocaleString('en-US')}</h1>
+          <h1 className="font-semibold">₱{item?.price.toLocaleString('en-US')}</h1>
         </div>
         <div className='last-message items-center'>
-          <p className={`line-clamp-1 ${lastSender ===  user._id ? 'font-light' : read ? 'font-light': 'font-semibold'}`}>
+          <p className={`text-sm line-clamp-1 ${lastSender ===  user._id ? 'font-extralight text-gray-300' : read ? 'font-extralight text-gray-300' : 'font-bold'}`}>
             {unreadCount > 2 ? `${unreadCount} new messages` : `${lastSenderUsername}: ${lastMessage}`} 
           </p>
         </div>
