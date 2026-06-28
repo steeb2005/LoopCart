@@ -75,7 +75,8 @@ export default function MyItems(){
     const filteredItems = items?.filter(item => item.seller_id === user._id)
     setMyItems(filteredItems)
   }, [items])
-
+  
+  const myUsername = getUsername(user._id)
   const handleBackClick = () => {
     navigate(-1)
   }
@@ -97,7 +98,7 @@ export default function MyItems(){
             title={item.title}
             price={item.price}
             description={item.description}
-            seller_name={getUsername(item.seller_id)}
+            seller_name={myUsername}
             likes={item.likes}
           />
         )))}

@@ -8,6 +8,8 @@ import LikedItems from '../assets/Heart.svg'
 import ItemBox from '../assets/items.svg'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'  
+import Message from '../assets/message.svg'
+
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -15,7 +17,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
 }){
   const location = useLocation();
   const currentLocation = location.pathname.substring(1) || ' ';
-  const {user, logout} = useAppContext()
+  const {user, logout, inbox} = useAppContext()
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,6 +39,14 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     }
   }, [isOpenSidebar])
 
+
+  let unreadMessages = 0
+
+  inbox.forEach((conversation) => {
+    unreadMessages += conversation.unread_count
+  })
+
+
   if(isLoading){
     return (
       <div className="text-xl text-primary-text  fixed inset-0 z-100 flex items-center justify-center">
@@ -46,6 +56,10 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
       </div>
     )
   }
+
+  
+
+
   return(
     <>
       <AnimatePresence>
@@ -74,10 +88,12 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               </div>
 
               <div className="font-semibold text-primary-text navlinks flex flex-col ">
-                <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
-                  <img src={Profile} alt="profile" className='h-6'/>
-                  Profile
-                </div>
+                <Link to={'/user-profile'}>
+                  <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
+                    <img src={Profile} alt="profile" className='h-6'/>
+                    Profile
+                  </div>
+                </Link>
                 <Link to={'/home'}>
                   <div className={`${currentLocation === 'home' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={Home} alt="home" className='h-6'/>
@@ -94,10 +110,25 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     Liked Items
                   </div>
                 </Link>
+
                 <Link to={'/my-items'}>
                   <div className={`${currentLocation === 'my-items' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={ItemBox} alt="my-items" className='h-6'/>
                     My Items
+                  </div>
+                </Link>
+
+                <Link to={'/inbox'}>
+                  <div className={`${currentLocation === 'inbox' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
+                    <div className='relative'>
+                      <img src={Message} alt="message" className='h-6'/>
+                      
+                      {unreadMessages > 0 && 
+                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-sm h-5 w-5 text-primary-text-inverse'>
+                          {unreadMessages > 9 ? '9+' : unreadMessages}
+                        </div>}
+                    </div>
+                    Messages
                   </div>
                 </Link>
               </div>

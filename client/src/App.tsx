@@ -12,6 +12,8 @@ import Inbox from './pages/inbox'
 import Chat from './pages/chat'
 import MyItems from './pages/my-items'
 import SellerProfile from './pages/seller-profile'
+import UserProfile from './pages/user-profile'
+
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, loading } = useAppContext();
@@ -58,7 +60,7 @@ function AppRoute(){
           </ProtectedRoute>
         }/>
 
-        <Route path='/sellItem' element={
+        <Route path='/sell-item' element={
           <ProtectedRoute>
             <SellItem/>
           </ProtectedRoute>
@@ -94,6 +96,12 @@ function AppRoute(){
             <SellerProfile/>
           </ProtectedRoute>
         }/>
+
+         <Route path='user-profile' element={
+            <ProtectedRoute>
+              <UserProfile/>
+            </ProtectedRoute>
+          }/>
       
       </Route>
 
@@ -102,6 +110,8 @@ function AppRoute(){
           <Chat/>
         </ProtectedRoute>
       }/>
+
+     
     </Routes>
   )
 }

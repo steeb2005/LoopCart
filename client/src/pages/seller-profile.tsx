@@ -133,8 +133,6 @@ export default function SellerProfile(){
         <div className="flex flex-col text-primary-text px-5 mt-5">
           <h1 className="text-xl font-bold mb-2">About</h1>
           <p className="text-gray-300 text-sm">{user?.bio || 'No bio yet'}</p>
-          
-
         </div>
 
         <div className="flex flex-col text-primary-text mt-5 border-b border-border-color pb-3">

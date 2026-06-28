@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
-import Search from "../assets/Search.svg"
+import Search from '../assets/search.svg'
 import Add from "../assets/add.svg"
 import Category from "../assets/category.svg"
 import Filter from "../assets/filter.svg"
@@ -127,18 +127,17 @@ function Home(){
     <>
       {/* Sidebar */}
       <div className=" mx-5 p-0 m-0 min-h-screen pb-5  ">
-          
-        {/* Displays the inbox modal */}
         
+        {/* SEARCH BAR
         <div className={`search-bar sticky ${isHidden ? 'top-2' : 'top-14'} z-50 transition-all duration-300 ease-in-out`}>
           <img src={Search} alt="searchsvg" className="absolute left-5 top-3"/>
           <input 
             type="text" 
             className="pl-14 text-sm items-center text-primary-text bg-bg-surface py-3 w-full rounded-md decoration-none outline-0" 
-            placeholder="search"
-            
+            placeholder="search"  
           />
-        </div>
+        </div> */}
+
         <div className="top-section flex flex-col">
           
           <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
@@ -158,12 +157,6 @@ function Home(){
             </button>
 
             <div className="flex flex-row gap-3">
-              <Link to={'/sellItem'}>
-                <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
-                  <img src={Add} alt="add" />
-                  Sell
-                </button>
-              </Link>
               <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
                 <img src={Filter} alt="filter" />
                 Filter

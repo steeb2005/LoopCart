@@ -9,6 +9,11 @@ type User = {
   email: string;
   password: string;
   join_date: string;
+  avatar_url?: string 
+  address?: string 
+  gender?: string 
+  bio?: string 
+  birthdate?: string 
 }
 
 type RegisterData = {
@@ -401,7 +406,6 @@ export function AppContext({children}) {
   
   // Users ------------------------------------------------------------------------------------
 
-  // Test function, Loads all users
   const load_users = async () => {
     try{
       const res = await fetch(`${API_URL}/users`);

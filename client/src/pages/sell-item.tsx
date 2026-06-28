@@ -21,7 +21,7 @@ function SellItem(){
 
   const [item, setItem] = useState({
     title: '',
-    price: 0, // default value 
+    price: null as number | null, 
     category: '',
     condition: '',
     description: '',
@@ -45,7 +45,7 @@ function SellItem(){
 
     const itemToPost = {
       ...item,
-      price: Number(item.price),
+      price: Number(item.price) || 0, // If price has no value automatically be zero
       created_at: created_at,
       seller_id: seller_id,
       status: 'available'
@@ -63,8 +63,10 @@ function SellItem(){
   }
 
   const handlePrice = (values: {floatValue?: number}) => {
-    setItem({...item, price: values.floatValue || 0})
+    setItem({...item, price: values.floatValue ?? null})
   }
+
+
   return(
     <>
       <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
