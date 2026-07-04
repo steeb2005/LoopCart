@@ -46,7 +46,7 @@ export function Header({openInbox, openSidebar}: {
           <div onClick={openSidebar} className='relative cursor-pointer'>
             <img src={Menu} alt="menu" className='cursor-pointer'/>
             {unreadMessages > 0 && 
-            <div className='absolute top-0 -right-1 flex border-2 border-bg-canvas justify-center bg-primary-text rounded-full items-center text-center align-middle text-sm h-5 w-5 text-primary-text-inverse'>
+            <div className='absolute top-0 -right-1 flex border-2 border-bg-canvas justify-center bg-primary-text rounded-full items-center text-center align-middle text-xs h-5 w-5 text-primary-text-inverse'>
               {unreadMessages}
             </div>}
           </div>

@@ -30,20 +30,40 @@ type Item = {
   likes: number;
 }
 
+
+
+type User = {
+  _id?: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  join_date: string;
+  avatar_url?: string 
+  address?: string 
+  gender?: string 
+  bio?: string 
+  birthdate?: string 
+}
+
+
 function ItemDetails(){
   const naviagte = useNavigate()
   const {id} = useParams() 
-  const {items, user, getUsername} = useAppContext()
+  const {items, user, getUsername, users} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
+  const [otherUser, setOtherUser] = useState<User | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
   
   
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
+    const founduser = users?.find(user => user._id === foundItem?.seller_id)
+    setOtherUser(founduser)
     setItem(foundItem)
     setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
-  }, [items, id, getUsername])
+  }, [items, id, getUsername, users])
 
   
   const isUserItem = item?.seller_id === user?._id
@@ -115,7 +135,10 @@ function ItemDetails(){
           <div  
             onClick={handleSellerClick}
             className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
-            <div className='bg-bg-inverse rounded-full w-8 h-8'></div>
+            <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
+              {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+
+            </div>
             <h1>@{sellerUsername}</h1>
           </div>
 

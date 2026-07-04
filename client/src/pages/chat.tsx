@@ -25,6 +25,19 @@ type Item = {
 }
 
 
+type User = {
+  _id?: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  join_date: string;
+  avatar_url?: string 
+  address?: string 
+  gender?: string 
+  bio?: string 
+  birthdate?: string 
+}
 
 
 type ChatMessage = {
@@ -101,7 +114,7 @@ function Chat(){
   const navigate = useNavigate()
 
   const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {items, getUsername, user, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item} = useAppContext()
+  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item} = useAppContext()
    
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
@@ -111,13 +124,21 @@ function Chat(){
   const [conversationId, setConversationId] = useState('')
   const [soldConfirmation, setSoldConfirmation] = useState(false)
   const [revertSold, setRevertSold] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [otherUser, setOtherUser] = useState<User | null>(null)
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
+
   const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messageEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'});
+    setTimeout(() => {
+      messageEndRef.current?.scrollIntoView({block: 'end'});
+    }, 300)
   }
 
-  useEffect(() => { // Scrolls to bottom as messages are added
+
+
+  useEffect(() => { // Scrolls to bottom upon opening
     scrollToBottom()
   }, [messageList])
 
@@ -129,6 +150,9 @@ function Chat(){
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === itemId)
+    const otheruser = users?.find(user => user._id === userId)
+    setOtherUser(otheruser)
+
     setItem(foundItem)
     setOtherUsername(getUsername(userId || 'Unkown User'))   // Gets the username of the other person
     
@@ -173,15 +197,12 @@ function Chat(){
     
     loadMessages() // loads messages
     findItem()
-  }, [items, itemId, getUsername, get_item ])
+  }, [items, itemId, getUsername, get_item, users])
 
 
   const chatWsRef = useRef<WebSocket | null>(null)
   const chatWsIntentionalClose = useRef(false)
 
-  // TODO:
-  // FIX SOCKET CONNECTION ERROR
-  // socket closes before connecting
 
   const connectChatSocket = (conv_id: string) => {
 
@@ -235,15 +256,19 @@ function Chat(){
   }, [itemId])
   
   
-  
   const isOwn = (id: string) => {
     return id === user?._id
   }
 
+
   const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
 
     if(isSold) return // if the item is sold, do not allow sending messages
+    
+    setMessage('')
+    setTimeout(() => messageInputRef.current?.focus(), 0)
 
     const messageData = {
       sender_id: user?._id,
@@ -258,7 +283,6 @@ function Chat(){
       sender_id: user!._id!,
       text: message.trim()
     }
-
     setMessageList((prev) => [...prev, optimisticMessage])
     try{
       const res = await send_message(messageData) 
@@ -278,21 +302,25 @@ function Chat(){
       console.error('error in sending message: client')
       setMessageList(prev)
     }
-    setMessage('')
   }
+
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault(); 
       
       if (message.trim().length > 0) {  
-        e.currentTarget.form?.requestSubmit(); 
+        handleSendMessage(e as any); 
+        setTimeout(() => messageInputRef.current?.focus(), 0)
+
       }
     }
   }
   
+  
   const role = userId === item?.seller_id ? 'buyer' : 'seller' 
   const isSold = item?.status === 'sold'
+
 
   const handleSetToSold = async () => {
     const prev = item
@@ -311,9 +339,6 @@ function Chat(){
       console.error('error in updating item status');
     }
   }
-
-  
-
 
 
 
@@ -334,7 +359,10 @@ function Chat(){
             <div className="mx-5 flex flex-row gap-5 mb-3">
               <img onClick={handleBackClick} src={Back} alt="back" />
               <div className="flex flex-row gap-2 items-center">
-                <div className="h-7 w-7 rounded-full bg-bg-inverse"></div>
+                <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
+                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+
+                </div>
                 <h1>{otherUsername}</h1>
               </div>
             </div>
@@ -350,10 +378,10 @@ function Chat(){
                   <h1>₱{item?.price.toLocaleString('en-US')}</h1>
                   <h1 className="font-light line-clamp-1">{item?.title}</h1>
                   <div className="flex flex-row ">
-                    <div className="font-light ml-2 bg-bg-surface rounded-full py-1 px-3 text-sm">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
+                    <div className="font-light ml-2 bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
                     {role === 'seller' && 
                     <div 
-                      className={` ml-2 ${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-1 px-3 text-sm`}
+                      className={` ml-2 ${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
                       onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
                       
                     >
@@ -385,13 +413,17 @@ function Chat(){
 
 
           {isSold && 
-            <div className="text-primary-text mt-auto mb-5 text-center ">This item has been sold. <br />This conversation is closed.</div>
+            <div className="mt-auto">
+              <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
+            </div>
           }
 
           {isLoading && (
-            <div className="text-primary-text mt-auto mb-5 text-center flex flex-row items-center justify-center gap-3 "> 
-              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse"></div>
-              Loading messages...
+            <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
+              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse "></div>
+              <div className="mt-5">
+                Loading messages...
+              </div>
             </div>
           )}
 
@@ -400,32 +432,49 @@ function Chat(){
         <form 
           onSubmit={handleSendMessage}
           className="shrink-0 flex flex-row gap-2 items-end py-2 px-5 bg-bg-canvas"
+          onTouchStart={(e) => {
+            if(e.target === e.currentTarget){
+              e.preventDefault();
+              messageInputRef.current?.focus();
+            }
+          }}
         >
           <TextareaAutosize 
+            ref={messageInputRef}
             rows={1}
             maxRows={5}
             value={message}
             placeholder="message"
-            className={`touch-none scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-3 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
+            className={`scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-3 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
+            enterKeyHint="send"
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
             disabled={isSold || isLoading}
           />
-          <button className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer`} disabled={message.length === 0}>
+          <button 
+            type="submit"
+
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }} 
+            onTouchStart={(e) => {
+              e.preventDefault()}}
+            className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer`} 
+            disabled={message.length === 0}
+          >
             <img src={Send} alt="send" />
           </button>
-
         </form>
             
-            
+          
           {revertSold && (
             <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
               <div className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
 
                 {/* Header with accent */}
                 <div className="relative">
-                  <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-accent to-accent/60" />
                   <div className="px-6 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
@@ -469,15 +518,14 @@ function Chat(){
             >
               {/* Header with accent */}
               <div className="relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-accent to-accent/60" />
-                <div className="p-6 pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <img src={CheckCircle} alt="check" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-primary-text">Confirm Sale</h3>
-                    </div>
+                  <div className="p-6 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                        <img src={CheckCircle} alt="check" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-primary-text">Confirm Sale</h3>
+                      </div>
                   </div>
                 </div>
               </div>

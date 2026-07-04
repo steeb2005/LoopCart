@@ -1,32 +1,105 @@
 import Back from '../assets/back.svg'
-import {Link} from 'react-router-dom'
 import {useAppContext} from '../context/context'
+import ItemBox from '../assets/items.svg'
+import HeartClicked from '../assets/clickedHeart.svg'
+import HeartDefault from '../assets/Heart.svg'
+import { useNavigate } from 'react-router-dom'
+import { useItemLike } from '../hooks/handle-like'
+import Edit from '../assets/edit.svg'
+
+
+
+function ItemCard({item_id, title, price, description, seller_name, likes}: {
+  item_id: string,
+  title: string,
+  price: number,
+  description: string,
+  seller_name: string,
+  likes: number
+}
+){
+  const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
+  const navigate = useNavigate()
+  const handleItemClick = () => {
+    navigate(`/item/${item_id}`)
+  }
+
+  return(
+    <div  
+      className="curor-pointer bg-bg-surface rounded-md p-3"
+      onClick={handleItemClick}
+    >
+      <div className="img-section bg-bg-inverse w-100% min-h-37 rounded-md">
+        {/* Image goes here */}
+      </div>
+      <div className="title-section text-primary-text mt-2">
+        <h1 className="line-clamp-1 ">{title}</h1>
+        <h1 className='font-bold'>₱{price.toLocaleString('en-US')}</h1>
+        <p className="text-sm line-clamp-1">{description}</p>
+        <div className="flex flex-row items-center justify-between mt-2">
+          <h1 className="text-sm font-light">@{seller_name}</h1>
+          <div className="flex flex-row gap-2">
+            <img onClick={handleLikeClick}  src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
+            {likesCount}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
+
+
 
 
 
 
 export default function UserProfile() {
-  const {user} = useAppContext()
+  const navigate = useNavigate()
+  const {user, items, getUsername} = useAppContext()
 
-  const date = new Date(user?.join_date)
-  const formattedDate = date.toLocaleDateString('en-US', {
+
+  const handleBackClick = () => {
+    navigate(-1)
+  }
+
+  const joinDate = new Date(user?.join_date)
+  const formattedJoinDate = joinDate.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
 
+
+  const birthdate = new Date(user?.birthdate)
+  const formattedBirthdate = birthdate.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+
+
+  const username = getUsername(user?._id)
+
+  const handelEditClick = () => {
+    navigate(`/edit-profile/${user?._id}`)
+  }
+
+
   return (
     <div className="p-0 m-0 min-h-screen pb-5 flex flex-col"> 
       <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <Link to={'/home'}>
-          <img src={Back} alt="back" />
-        </Link>
+          <img onClick={handleBackClick} src={Back} alt="back" />
         User Profile
       </div>
 
       <div className="flex flex-col">
         <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
-          <div className="w-20 h-20 bg-bg-inverse rounded-full"></div>
+          <div className="w-20 h-20 bg-bg-inverse rounded-full items-center justify-center flex">
+            {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+          </div>
             <div className="flex flex-col justify-center">
               <h1 className="font-bold text-2xl">
                 {user?.firstname} {user?.lastname}
@@ -44,8 +117,10 @@ export default function UserProfile() {
 
         <div className="flex flex-col text-primary-text mt-5 border-b border-border-color pb-3">
           <div className="mx-5">
-
-            <h1 className="text-xl font-bold">Personal Details</h1>
+            <div className='flex flex-row justify-between items-center'>
+              <h1 className="text-xl font-bold">Personal Details</h1>
+              <img onClick={handelEditClick} src={Edit} alt="edit" className='cursor-pointer'/>
+            </div>
             
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Email Address</h1>
@@ -54,12 +129,12 @@ export default function UserProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Join Date</h1>
-              <p className="text-gray-300">{formattedDate}</p>
+              <p className="text-gray-300">{formattedJoinDate}</p>
             </div>
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Birthdate</h1>
-              <p className="text-gray-300">{user?.birthdate || 'No birthdate yet'}</p>
+              <p className="text-gray-300">{formattedBirthdate || 'No birthdate yet'}</p>
             </div>
 
             <div className="flex flex-col">
@@ -73,7 +148,37 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
-    </div>
+
+        <div className='flex flex-col mx-5 text-primary-text'>
+            <div className="flex flex-row gap-3 mb-5 mt-5">
+              <img src={ItemBox} alt="items-svg" />
+              <h1 className="font-bold text-xl">My Items</h1>
+            </div>
+            <div className="flex flex-col gap-3">
+
+              {(() => {
+                const filteredItems = items.filter(item => item.seller_id === user._id)
+                if(filteredItems.length === 0){
+                  return(<div className="text-primary-text text-center mt-5 justify-center font-light">You don't have any items</div>)
+                }
+                return(
+                  filteredItems.map((item: any) => (
+                    <ItemCard 
+                      key={item._id}
+                      item_id={item._id}
+                      title={item.title}
+                      description={item.description}
+                      price={item.price}
+                      seller_name={username}
+                      likes={item.likes}
+                    />
+                  )))
+                })()
+              }
+            
+            </div>
+          </div>
+      </div>
     </div>
 
   )

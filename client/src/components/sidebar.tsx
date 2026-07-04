@@ -79,17 +79,18 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               </div>
               <div className="head mb-3 text-primary-text font-semibold border-b border-b-border-color">
                 <div className="py-3 flex flex-col gap-1 justify-center">
-                  <div className="bg-bg-inverse rounded-full h-16 w-16">
-                    {/* User profile image */}
+                  <div className="bg-bg-inverse rounded-full h-16 w-16 flex items-center justify-center">
+                    {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+
                   </div>
                   <h1 className="text-3xl font-semibold">{user?.username}</h1>
                   <p className="font-light text-md">{user?.email}</p>
                 </div>
               </div>
 
-              <div className="font-semibold text-primary-text navlinks flex flex-col ">
+              <div className={`font-semibold text-primary-text navlinks flex flex-col `}>
                 <Link to={'/user-profile'}>
-                  <div className='py-2 px-3 rounded-md flex flex-row items-center gap-3'>
+                  <div className={`${currentLocation === 'user-profile' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={Profile} alt="profile" className='h-6'/>
                     Profile
                   </div>
@@ -110,21 +111,13 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     Liked Items
                   </div>
                 </Link>
-
-                <Link to={'/my-items'}>
-                  <div className={`${currentLocation === 'my-items' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
-                    <img src={ItemBox} alt="my-items" className='h-6'/>
-                    My Items
-                  </div>
-                </Link>
-
                 <Link to={'/inbox'}>
                   <div className={`${currentLocation === 'inbox' ? 'bg-bg-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <div className='relative'>
                       <img src={Message} alt="message" className='h-6'/>
                       
                       {unreadMessages > 0 && 
-                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-sm h-5 w-5 text-primary-text-inverse'>
+                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-[10px] h-5 w-5 text-primary-text-inverse'>
                           {unreadMessages > 9 ? '9+' : unreadMessages}
                         </div>}
                     </div>

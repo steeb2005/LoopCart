@@ -17,7 +17,7 @@ security = HTTPBearer()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://192.168.1.19:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:5173", "http://192.168.1.15:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True
@@ -136,6 +136,11 @@ class MessageRead(BaseModel):
     user_id: str
 
 
+class BioUpdate(BaseModel):
+    bio: str
+
+class BirthdateUpdate(BaseModel):
+    birthdate: str
 # Routes ----------------------------------------------------------------------------------------------
 
 
@@ -146,9 +151,13 @@ class MessageRead(BaseModel):
 async def create_user(user: User):
 
     #check if user already exists
-    existing_user = await users.find_one({"email": user.email})
-    if existing_user:
+    existing_email = await users.find_one({"email": user.email})
+    if existing_email:
         raise HTTPException(status_code=400, detail="User already exists")
+
+    existing_username = await users.find_one({"username": user.username})
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
 
     result = await users.insert_one({
         "username": user.username,
@@ -206,7 +215,13 @@ async def login(login_data: LoginRequest):
             "username": user["username"],
             "firstname": user["firstname"],
             "lastname": user["lastname"],
-            "email": user["email"]
+            "email": user["email"],
+            "join_date": user["join_date"],
+            "avatar_url": user.get("avatar_url"),
+            "address": user.get("address"),
+            "gender": user.get("gender"),
+            "bio": user.get("bio"),
+            "birthdate": user.get("birthdate")
         }
     }
 
@@ -215,7 +230,7 @@ async def login(login_data: LoginRequest):
 
 # Protected routes ---------------------------------------------------------------------------
 
-@app.get("/users/me")
+@app.get("/users/me")       
 async def get_me(current_user: dict = Depends(get_current_user)):
     user = await users.find_one({"_id" : ObjectId(current_user["sub"])})
     if not user:
@@ -226,7 +241,12 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         "firstname": user["firstname"],
         "lastname": user["lastname"],
         "email": user["email"],
-        "join_date": user["join_date"]
+        "join_date": user["join_date"],
+        "avatar_url": user.get("avatar_url"),
+        "address": user.get("address"),
+        "gender": user.get("gender"),
+        "bio": user.get("bio"),
+        "birthdate": user.get("birthdate")
     }
 
 
@@ -266,6 +286,41 @@ async def create_item(item: Item, current_user: dict = Depends(get_current_user)
         "image": item.image,
         "likes": item.likes
     }
+
+
+
+
+@app.get('/likes/{user_id}')
+async def get_user_liked_items(user_id: str ,current_user: dict = Depends(get_current_user)):
+    if current_user["sub"] != user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    liked_items = [] # Only stores the item ids
+    async for like in likes.find({"user_id": user_id}): # Searches the userId in the likes db and loads only the liked items of the logged in user
+        liked_items.append(like["item_id"]) 
+
+    items_list = [] # Stores the items full items
+
+    for item_id in liked_items:
+        item = await items.find_one({"_id": ObjectId(item_id)})
+        if item:
+            items_list.append({
+                "_id": str(item["_id"]),
+                "title": item["title"],
+                "price": item["price"],
+                "category": item["category"],
+                "condition": item["condition"],
+                "description": item["description"],
+                "created_at": item["created_at"],
+                "status": item["status"],
+                "sold_at": item["sold_at"],
+                "seller_id": item["seller_id"],
+                "buyer_id": item["buyer_id"],
+                "image": item["image"],
+                "likes": item.get("likes", 0)
+            })
+
+    return items_list
 
 
 
@@ -337,7 +392,11 @@ async def get_users():
             "lastname": user["lastname"],
             "email": user["email"],
             "avatar_url": user.get("avatar_url"),
-            "join_date": user["join_date"]
+            "join_date": user["join_date"],
+            "address": user.get("address"),
+            "gender": user.get("gender"),
+            "bio": user.get("bio"),
+            "birthdate": user.get("birthdate")
         })
     return users_list
 
@@ -347,11 +406,13 @@ async def get_users():
 
 # Likes ----------------------------------------------------------------------------------
 @app.post('/likes')
-async def like_item(like: LikeRequest):
+async def like_item(like: LikeRequest, current_user: dict = Depends(get_current_user)):
+
+    logged_in_user = current_user["sub"]
     # Finds if the user has already liked the item
     existing_like = await likes.find_one({
         "item_id": like.item_id,
-        "user_id": like.user_id
+        "user_id": logged_in_user
     })
     if existing_like:
         raise HTTPException(status_code=400, detail="Already liked")
@@ -359,7 +420,7 @@ async def like_item(like: LikeRequest):
     try:
         await likes.insert_one({
             "item_id": like.item_id,
-            "user_id": like.user_id
+            "user_id": logged_in_user
         })
 
         await items.update_one(
@@ -395,36 +456,6 @@ async def unlike_item(user_id: str, item_id: str):
         
 
 
-@app.get('/likes/{user_id}')
-async def get_user_liked_items(user_id: str):
-
-    liked_items = [] # Only stores the item ids
-    async for like in likes.find({"user_id": user_id}): # Searches the userId in the likes db and loads only the liked items of the logged in user
-        liked_items.append(like["item_id"]) 
-
-    items_list = [] # Stores the items full items
-
-    for item_id in liked_items:
-        item = await items.find_one({"_id": ObjectId(item_id)})
-        if item:
-            items_list.append({
-                "_id": str(item["_id"]),
-                "title": item["title"],
-                "price": item["price"],
-                "category": item["category"],
-                "condition": item["condition"],
-                "description": item["description"],
-                "created_at": item["created_at"],
-                "status": item["status"],
-                "sold_at": item["sold_at"],
-                "seller_id": item["seller_id"],
-                "buyer_id": item["buyer_id"],
-                "image": item["image"],
-                "likes": item.get("likes", 0)
-            })
-
-    return items_list
-
 
 
 
@@ -433,7 +464,10 @@ async def get_user_liked_items(user_id: str):
 # Messages ----------------------------------------------------------------------------------
 
 @app.get('/users/{user_id}/inbox')
-async def get_inbox(user_id: str):
+async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["sub"] != user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
     conversations_list = []
 
     async for conversation in conversations.find({"participants": user_id}):
@@ -527,12 +561,16 @@ async def send_message(message: MessageSend):
 
 # Load messages of a conversation
 @app.get('/conversation/{conversation_id}/messages')
-async def load_messages(conversation_id: str):
+async def load_messages(conversation_id: str, current_user: dict = Depends(get_current_user)):
+    
     try:
         conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
         
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
+        
+        if current_user["sub"] not in conversation["participants"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
         
         return {
             "conversation_id": str(conversation["_id"]),
@@ -547,13 +585,16 @@ async def load_messages(conversation_id: str):
 
 # Get conversationID
 @app.get('/conversations/{user_id}/{item_id}')
-async def fetch_conversation_id(user_id: str, item_id: str):
+async def fetch_conversation_id(user_id: str, item_id: str, current_user: dict = Depends(get_current_user)):
     try:
         conversation = await conversations.find_one({
             "participants": user_id,
             "item_id": item_id})
     except:
         raise HTTPException(status_code=400, detail="Invalid user ID or item ID")
+
+    if current_user["sub"] != user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
     if not conversation:
         #raise HTTPException(status_code=404, detail="Conversation not found")
@@ -633,6 +674,30 @@ async def update_item_sold(item_id: str, user_id: str, status: str, conversation
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
             
+# update user bio
+@app.patch('/users/{user_id}/bio')
+async def update_bio(user_id: str, bioData: BioUpdate): # Needs to use pydantic
+    try:
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"bio": bioData.bio}}  
+        )   
+        return {"success": True}
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+# Update user birthdate
+@app.patch('/users/{user_id}/birthdate')
+async def update_birthdate(user_id: str, birthdateData: BirthdateUpdate): 
+    try:
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"birthdate": birthdateData.birthdate}}  
+        )   
+        return {"success": True}
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
 
 
 # Websocket Connection ----------------------------------------------------------------

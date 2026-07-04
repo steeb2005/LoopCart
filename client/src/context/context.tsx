@@ -1,3 +1,4 @@
+import { UserIcon } from "lucide-react";
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
 
@@ -7,7 +8,6 @@ type User = {
   firstname: string;
   lastname: string;
   email: string;
-  password: string;
   join_date: string;
   avatar_url?: string 
   address?: string 
@@ -105,6 +105,8 @@ type ContextType = {
   likedItems: Item[];
   inbox: Conversation[];
 
+  update_birthdate: (userId: string, birthdate: string) => Promise<void>;
+  update_bio: (userId: string, bio: string) => Promise<void>;
   get_item: (itemId: string) => Promise<Item | null>;
   update_item_sold: (itemId: string, userId: string, status: string, conversationId?: string) => Promise<void>;
   read_messages: (conversationId: string, userId: string) => Promise<void>;
@@ -117,8 +119,11 @@ type ContextType = {
   like_item: (userId: string, itemId: string) => Promise<boolean>;
   unlike_item: (userId: string, itemId: string) => Promise<boolean>;    
   load_liked_items: (user_id: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<boolean>;
-  login: (data: LoginRequest) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<{success: boolean; error?: string}>;
+  login: (data: LoginRequest) => Promise<{
+    success: boolean; 
+    error?: string}
+  >;
   load_users: () => Promise<void>;
   post_item: (data: Item) => Promise<boolean>;
   load_items: () => Promise<void>;
@@ -128,10 +133,10 @@ type ContextType = {
 const Context = createContext<ContextType | undefined>(undefined);
 
 //const API_URL = 'http://localhost:8000' // backend url
-const API_URL = 'http://192.168.1.19:8000' // backend url
+const API_URL = 'http://192.168.1.15:8000' // backend url
 
 //const WS_URL = 'ws://localhost:8000'
-const WS_URL = 'ws://192.168.1.19:8000'
+const WS_URL = 'ws://192.168.1.15:8000'
 const TOKEN_KEY = 'loopcart_token'
 
 
@@ -183,10 +188,10 @@ export function AppContext({children}) {
   const [item, setItem] = useState<Item | null>(null);   
   const [items, setItems] = useState<Item[]>([]);       // All items
   const [token, setToken] = useState<string | null>(getToken())
-  const [loading, setLoading] = useState(true)
   const [likedItems, setLikedItems] = useState<Item[]>([])
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map())
   const [inbox, setInbox] = useState<Conversation[]>([])
+  const [loading, setLoading] = useState(true)
 
   // On Load -------------------------------------------------------------------------------------
   
@@ -207,6 +212,7 @@ export function AppContext({children}) {
           clearToken()
           setToken(null)
           setLoading(false)
+        
         }
         const data = await res.json()
 
@@ -254,7 +260,7 @@ export function AppContext({children}) {
 
 
   // Sends the data to the backend to register the user
-  const register = async (formData: RegisterData): Promise<boolean> => {
+  const register = async (formData: RegisterData) => {
     try{
       const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
@@ -268,14 +274,14 @@ export function AppContext({children}) {
         saveToken(data.access_token)
         setToken(data.access_token)
         console.log('registered successfully as:' + data.user.username);
-        return true;
+        return {success: true}
       }else{
         console.error('registration failed');
-        return false;
+        return {success: false, error: data.detail};
       }
     }catch{
       console.error('network error in registering');
-      return false
+      return {success: false, error: 'Something went wrong please try again'};
     }
   };
 
@@ -286,7 +292,7 @@ export function AppContext({children}) {
     try{
       const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders(),
         body: JSON.stringify(formData)
       })
 
@@ -304,7 +310,10 @@ export function AppContext({children}) {
           email: data.user.email,
           password: '', // Don't store password in state
           join_date: data.user.join_date,
-          avatar_url: data.user.avatar_url
+          avatar_url: data.user.avatar_url,
+          address: data.user.address,
+          gender: data.user.gender,
+          bio: data.user.bio
         }
         setUser(userData)
         load_liked_items(userData?._id)
@@ -314,14 +323,14 @@ export function AppContext({children}) {
         await load_users()  
         await load_inbox(data.user._id)
         connectInboxSocket(userData._id)
-        return true
+        return {success: true}
       }else{
         console.error('invalid email or password')
-        return false
+        return {success: false, error: data.detail}
       }
     }catch{
       console.error('network error in logging in');
-      return false
+      return {success: false, error: 'Network Error, please try again'}
     }
   }
 
@@ -426,7 +435,9 @@ export function AppContext({children}) {
   
   const load_liked_items = async(user_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/likes/${user_id}`);
+      const res = await fetch(`${API_URL}/likes/${user_id}`, {
+        headers: authHeaders()
+      });
       const data = await res.json();
       setLikedItems(data) // Optimize (load only the liked items of the logged in user)
       console.log('loaded liked items');
@@ -494,7 +505,10 @@ export function AppContext({children}) {
 
   const load_inbox = async(userId: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/inbox`) 
+      const res = await fetch(`${API_URL}/users/${userId}/inbox`, {   
+        headers: authHeaders()      // 
+      }) 
+      
       if(res.ok){
         const data = await res.json()
         setInbox(data)
@@ -547,7 +561,9 @@ export function AppContext({children}) {
 
   const load_messages = async(conversation_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversation/${conversation_id}/messages`)
+      const res = await fetch(`${API_URL}/conversation/${conversation_id}/messages`, {
+        headers: authHeaders()
+      })
       if(!res.ok) {
         console.error('Error in loading messages')
         return null
@@ -564,7 +580,9 @@ export function AppContext({children}) {
 
   const fetch_conversation_id = async (sender_id: string, item_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversations/${sender_id}/${item_id}`)
+      const res = await fetch(`${API_URL}/conversations/${sender_id}/${item_id}`, {
+        headers: authHeaders()
+      })
       if(res.ok){
         const data = await res.json()
         return data
@@ -597,6 +615,7 @@ export function AppContext({children}) {
 
 
 
+  // Updates ------------------------------------------------------------------------------------
 
   const update_item_sold = async (itemId: string, userId: string, status: string, conversationId?: string) => {
     try{
@@ -616,6 +635,43 @@ export function AppContext({children}) {
     }
   }
 
+
+  const update_bio = async (userId: string, bio: string) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/bio`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({bio: bio})
+      })
+
+      if(res.ok){
+        console.log('successfully updated bio');
+      }
+    }catch{
+      console.error('error in updating bio');
+    }
+  }
+
+
+  const update_birthdate = async(userId: string, birthdate: string) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/birthdate`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({birthdate: birthdate})
+      })
+
+      if(res.ok){
+        console.log('successfully updated birthdate');
+      }else{
+        console.error('error in updating birthdate');
+      }
+    }catch{
+      console.error('network error in updating birthdate');
+    }
+
+
+  }
 
 
   
@@ -654,7 +710,9 @@ export function AppContext({children}) {
     loading,
     likedItems,
     inbox,
-  
+    
+    update_birthdate,
+    update_bio,
     get_item,
     update_item_sold,
     read_messages,

@@ -10,21 +10,21 @@ import Layout from './pages/layout'
 import LikedItems from './pages/liked-items'
 import Inbox from './pages/inbox'
 import Chat from './pages/chat'
-import MyItems from './pages/my-items'
 import SellerProfile from './pages/seller-profile'
 import UserProfile from './pages/user-profile'
-
+import EditProfile from './pages/edit-profile'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, loading } = useAppContext();
   if(loading){
-
+    
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div>Page loading...</div>
+        
       </div>
     )
   }
+
   
   if(!user){
     return <Navigate to="/login" replace/>
@@ -33,19 +33,16 @@ function ProtectedRoute({children}){  // Frontend protection for login bypass
 
 }
 
-function AppRoute(){
-  const {loading} = useAppContext()
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center text-primary-text">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-bg-inverse mx-auto"></div>
-          <p className="mt-4 text-xl">Loading your page...</p>
-        </div>
-      </div>
-    );
-  }
+
+
+
+
+
+
+
+
+function AppRoute(){
 
   return(
     <Routes>
@@ -85,23 +82,23 @@ function AppRoute(){
           </ProtectedRoute>
         }/>
 
-        <Route path='/my-items' element={
-          <ProtectedRoute>
-            <MyItems/>
-          </ProtectedRoute>
-        }/>
-
         <Route path='/users/:userId' element={
           <ProtectedRoute>
             <SellerProfile/>
           </ProtectedRoute>
         }/>
 
-         <Route path='user-profile' element={
-            <ProtectedRoute>
-              <UserProfile/>
-            </ProtectedRoute>
-          }/>
+        <Route path='/user-profile' element={
+          <ProtectedRoute>
+            <UserProfile/>
+          </ProtectedRoute>
+        }/>
+
+        <Route path='/edit-profile/:userId' element={
+          <ProtectedRoute>
+            <EditProfile/>
+          </ProtectedRoute>
+        }/>
       
       </Route>
 
@@ -119,7 +116,17 @@ function AppRoute(){
 
 
 
+
+
+
+
+
+
+
+
 function App() {  
+ 
+
   return (
     <>
       <AppContext>

@@ -10,7 +10,7 @@ import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
-
+import { Skeleton } from "../components/ui/skeleton.tsx"
 
 
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
@@ -33,7 +33,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
       className="curor-pointer bg-bg-surface rounded-md p-3"
       onClick={handleItemClick}
     >
-      <div className="img-section bg-bg-inverse w-100% min-h-37 rounded-md">
+      <div className="img-section bg-bg-inverse w-full min-h-37 rounded-md">
         {/* Image goes here */}
       </div>
       <div className="title-section text-primary-text mt-2">
@@ -64,15 +64,18 @@ function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: stri
     navigate(`/users/${userId}`)
   }
 
-
+  const username = getUsername(userId)
   return(
     <div
       onClick={handleNavigate} 
       className="bg-bg-surface p-3 text-primary-text rounded-md flex flex-row justify-between">
       <div className="flex flex-row items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-bg-inverse"></div>
+        <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
+          {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
+
+        </div>
         <div className="flex flex-col ">
-          <p>{getUsername(userId)}</p>
+          <p>{username}</p>
           <p className="text-gray-300 text-sm">{email}</p>
         </div>
       </div>
@@ -88,10 +91,31 @@ function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: stri
 
 
 
+function SkeletonCard(){
+  return(
+    <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
+      <Skeleton className="h-48 bg-border-color" />
+      <div className="p-2 space-y-3">
+        <Skeleton className="h-4 w-3/4 bg-border-color" />
+        <Skeleton className="h-4 w-1/2 bg-border-color" />
+        <Skeleton className="h-4 w-2/3 bg-border-color" />
+      </div>
+    </Skeleton>
+  )
+}
 
 
-
-
+function SkeletonUsers(){
+  return(
+    <Skeleton className="items-center rounded-lg bg-bg-surface flex flex-row gap-3 p-3">
+      <Skeleton className="h-10 w-10 rounded-full bg-border-color" />
+      <div className="flex flex-col space-y-2 flex-1">
+        <Skeleton className="h-4 w-3/4 bg-border-color" />
+        <Skeleton className="h-4 w-1/2 bg-border-color" />
+      </div>
+    </Skeleton>
+  )
+}
 
 
 
@@ -100,12 +124,34 @@ function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: stri
 
 function Home(){
   
-  const {items, getUsername, users, user} = useAppContext()
+  const {items, getUsername, users, user, load_items, load_users} = useAppContext()
   const [searchParams, setSearchParams] = useSearchParams()
   
   const [isClicked, setIsClicked] = useState(searchParams.get('tab') || 'Items')
+  const [pageLoading, setPageLoading] = useState(true)
   
+
   
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if(tab && (tab === 'Items' || tab === 'Sellers')){
+      setIsClicked(tab)
+    }
+
+  },[searchParams])
+
+  useEffect(() => {
+    const loadItems = async() =>{
+      setPageLoading(true)
+      await load_items()
+      await load_users()
+      setPageLoading(false) 
+    }
+
+    loadItems()
+  }, [])
+
+
   const handleClick = (buttonId: string) =>{
     setIsClicked(buttonId)
     setSearchParams({tab: buttonId})
@@ -115,13 +161,6 @@ function Home(){
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
 
-
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if(tab && (tab === 'Items' || tab === 'Sellers')){
-      setIsClicked(tab)
-    }
-  },[searchParams])
 
   return(
     <>
@@ -168,6 +207,29 @@ function Home(){
           <div className="border px-2 py-2 border-border-color rounded-md mt-2 flex flex-col gap-2">
             
             {/* Item Entry */}
+            
+            {pageLoading && isClicked === 'Items' &&
+            <>
+              <SkeletonCard/>
+              <SkeletonCard/>
+              <SkeletonCard/>
+              <SkeletonCard/>
+              <SkeletonCard/>
+            </>
+            }
+
+            {pageLoading && isClicked === 'Sellers' &&
+            <>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+              <SkeletonUsers/>
+            </>
+            }
+
 
             {isClicked === 'Items' &&
               items.map((item: any) => (
@@ -185,7 +247,6 @@ function Home(){
                 )
               ))
             }
-
 
             {isClicked === 'Sellers' && 
             users

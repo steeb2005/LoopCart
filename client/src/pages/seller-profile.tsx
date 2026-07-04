@@ -94,7 +94,6 @@ export default function SellerProfile(){
   useEffect(() => {
     const user = users.find(user => user._id === userId)
     const filteredItems = items?.filter(item => item.seller_id === userId)
-
     setSellerItems(filteredItems)
     setUser(user)
   }, [])
@@ -119,9 +118,12 @@ export default function SellerProfile(){
       </div>
       <div className="flex flex-col">
         <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
-          <div className="w-20 h-20 bg-bg-inverse rounded-full"></div>
+          <div className="w-20 h-20 bg-bg-inverse rounded-full items-center flex justify-center">
+            {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+
+          </div>
           <div className="flex flex-col justify-center">
-            <h1 className="font-bold text-lg">
+            <h1 className="font-bold text-2xl">
               {user?.firstname} {user?.lastname}
             </h1>
             <h1 className="text-gray-300">@{user?.username}</h1>

@@ -27,10 +27,10 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
       onClick={handleItemClick} 
       className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row m-0'>
 
-      <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
+      <div className='image-entry h-20 min-w-20 bg-bg-inverse rounded-md shrink-0'>
         {/* Image */}
       </div>
-      <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
+      <div className='data-entry flex flex-col w-full text-primary-text'>
 
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-semibold'>@{seller_name}</h1>
@@ -38,10 +38,11 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
         </div>
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-light line-clamp-1'>{title}</h1>
-        
         </div>
-          <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>  
+          
         <div className='last-message items-center flex flex-row justify-between'>
+          <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
+
           <div className='flex flex-row gap-2'>
             <img onClick={handleLikeClick} src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
             {likesCount}

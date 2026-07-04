@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom"
 import Back from '../assets/back.svg'
 import {useEffect, useState} from 'react'
 import { useAppContext } from "../context/context";
+import { Skeleton } from "../components/ui/skeleton";
+
 
 type Item = {
   _id?: string;
@@ -69,6 +71,19 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
 
 
 
+function InboxSkeleton(){
+  return(
+    <Skeleton className="rounded-lg flex flex-row bg-bg-surface gap-1 items-center overflow-hidden p-2">
+      <Skeleton className="h-20 w-20 bg-border-color"/>
+      <div className="p-2 space-y-3 flex-1 flex flex-col">
+        <Skeleton className="h-4 w-3/4 bg-border-color" />
+        <Skeleton className="h-4 w-1/2 bg-border-color" />
+        <Skeleton className="h-4 w-2/3 bg-border-color" />
+      </div>
+    </Skeleton>
+  )
+}
+
 
 
 
@@ -87,9 +102,16 @@ function Inbox(){
   
   const {inbox, items, user, load_inbox} = useAppContext()
   const [clickedFilter, setClickedFilter] = useState('buying')
+  const [pageLoading, setPageLoading] = useState(true)
   
   useEffect(() => {
-    load_inbox(user._id)
+    const loadInbox = async () => {
+      setPageLoading(true)
+      await load_inbox(user._id)
+      setPageLoading(false)
+    }
+
+    loadInbox()
   }, [])
 
 
@@ -139,24 +161,35 @@ function Inbox(){
           </div>
         </div>
 
-        {/* Item Entry */}
-        {filteredInbox.length === 0 ? 
-          (
-            <div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any messages</div>
+         {/* Item Entry */}
+
+        {pageLoading ? (
+            <>
+              <InboxSkeleton/>
+              <InboxSkeleton/>
+              <InboxSkeleton/>
+              <InboxSkeleton/>
+            </>
+          ) : (
+            filteredInbox.length === 0 ? (
+              <div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any messages</div>
+            )
+            : (
+                filteredInbox?.map((entry: any) => (
+                <InboxEntry 
+                  key={entry._id} 
+                  itemId={entry.item_id} 
+                  otherId={entry.other_user} 
+                  unreadCount={entry.unread_count} 
+                  lastMessage={entry.last_message.text} 
+                  lastSender={entry.last_message.sender_id}
+                  read={entry.last_message.read}
+                />
+            )))
           )
-          : (
-            filteredInbox?.map((entry: any) => (
-            <InboxEntry 
-              key={entry._id} 
-              itemId={entry.item_id} 
-              otherId={entry.other_user} 
-              unreadCount={entry.unread_count} 
-              lastMessage={entry.last_message.text} 
-              lastSender={entry.last_message.sender_id}
-              read={entry.last_message.read}
-            />
-          )))
         }
+       
+        
         
       </div>
 

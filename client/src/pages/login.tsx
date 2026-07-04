@@ -1,5 +1,6 @@
 import Logo from '../assets/Logo.svg'
 import Eye from '../assets/Eye.svg'
+import EyeOff from '../assets/eye_off.svg'
 import { Link } from 'react-router-dom'
 import BackArrow from '../assets/arrow_back.svg'
 import { useState } from 'react'
@@ -9,30 +10,39 @@ import { useNavigate } from 'react-router-dom'
 function Login(){
   const navigate = useNavigate()
   const { login } = useAppContext()
+  const [ showPassword, setShowPassword ] = useState(false)
   const [ formData, setFormData ] = useState({
     email: '',
     password: ''
   })
+  const [error, setError] = useState('')
+
+  const handleShowPassword = () => {
+    setShowPassword(!showPassword)
+  }
 
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      try{
-        const success = await login(formData)
-        if(success){
-          navigate('/home')
-        }
-      }catch{
-        console.log('Login failed');
+    setError('')
+    e.preventDefault();
+    try{
+      const res = await login(formData)
+      if(res.success){
+        navigate('/home')
+      }else{
+        setError(res.error || 'Login failed')
       }
+    }catch{
+      setError('Something went wrong please try again')
     }
+  }
 
 
   return(
     <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
       <div>
         <Link to={'/'}>
-          <img src={BackArrow} alt="arrow" />
+          <img src={BackArrow} alt="arrow"/>
         </Link>
       </div>
       <div className="text-primary-text flex flex-col mt-20">
@@ -58,7 +68,7 @@ function Login(){
 
           <div className='relative'>
             <input 
-              type="password" 
+              type={showPassword ? "text" : "password"} 
               value={formData.password}
               onChange={(e) => setFormData({...formData, password: e.target.value})}
               className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
@@ -66,13 +76,16 @@ function Login(){
               required
             />
             <img 
-              src={Eye} 
+              src={showPassword ? Eye : EyeOff} 
               alt="eye" 
               className='absolute right-3 top-10 cursor-pointer'  
+              onClick={handleShowPassword}
             />
           </div>
-          
-          <div className='mt-5 flex flex-row text-primary-text' >
+          <div className='mt-3'>
+            <p className='text-sm text-red-400'>{error}</p>
+          </div>
+          <div className='mt-3 flex flex-row text-primary-text' >
             <input type="checkbox" className='
               outline-none
               appreance-none
@@ -81,10 +94,12 @@ function Login(){
               bg-transparent'/>
             <p className='ml-2'>Remember Me</p>
           </div>
-
-          <button className='mt-10 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+          
+          <button className='mt-5 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
             Login
           </button>
+          
+
         </form>
 
 
