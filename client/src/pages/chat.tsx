@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import Back from '../assets/back.svg'
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAppContext } from "../context/context";
 import Send from '../assets/send.svg'
 import TextareaAutosize from "react-textarea-autosize";
@@ -129,14 +129,24 @@ function Chat(){
   const messageEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
 
+  const isMobile = () => navigator.maxTouchPoints > 0 // checks if its mobile
+
   const scrollToBottom = () => {
-    messageEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'});
-    setTimeout(() => {
-      messageEndRef.current?.scrollIntoView({block: 'end'});
-    }, 300)
+    if(isMobile()){
+       
+      setTimeout(() => {        
+        messageEndRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'nearest' 
+        });
+      }, 50);
+    }else{
+      messageEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'});
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({block: 'end'});
+      }, 300)
+    }
   }
-
-
 
   useEffect(() => { // Scrolls to bottom upon opening
     scrollToBottom()
@@ -263,12 +273,11 @@ function Chat(){
 
   const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
+    messageInputRef.current?.focus();
 
     if(isSold) return // if the item is sold, do not allow sending messages
     
     setMessage('')
-    setTimeout(() => messageInputRef.current?.focus(), 0)
 
     const messageData = {
       sender_id: user?._id,
@@ -283,7 +292,10 @@ function Chat(){
       sender_id: user!._id!,
       text: message.trim()
     }
+
     setMessageList((prev) => [...prev, optimisticMessage])
+
+  
     try{
       const res = await send_message(messageData) 
       if(res.success){
@@ -302,17 +314,20 @@ function Chat(){
       console.error('error in sending message: client')
       setMessageList(prev)
     }
+
+
   }
+
 
   
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      if(isMobile()) return
+
       e.preventDefault(); 
       
       if (message.trim().length > 0) {  
         handleSendMessage(e as any); 
-        setTimeout(() => messageInputRef.current?.focus(), 0)
-
       }
     }
   }
@@ -341,7 +356,9 @@ function Chat(){
   }
 
 
-
+  const preventKeyboardDismiss = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault()
+  }
 
 
 
@@ -396,7 +413,7 @@ function Chat(){
           </div>
         </div>
 
-        <div className="px-3 chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3">
+        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3">
 
           {messageList.length === 0 ? (
             <div className="flex flex-row justify-center items-center h-full">
@@ -429,15 +446,9 @@ function Chat(){
 
         </div>
 
-        <form 
-          onSubmit={handleSendMessage}
+        <form
+          onSubmit={handleSendMessage} 
           className="shrink-0 flex flex-row gap-2 items-end py-2 px-5 bg-bg-canvas"
-          onTouchStart={(e) => {
-            if(e.target === e.currentTarget){
-              e.preventDefault();
-              messageInputRef.current?.focus();
-            }
-          }}
         >
           <TextareaAutosize 
             ref={messageInputRef}
@@ -450,67 +461,66 @@ function Chat(){
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold || isLoading}
+            disabled={isSold}
           />
           <button 
             type="submit"
-
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }} 
-            onTouchStart={(e) => {
-              e.preventDefault()}}
-            className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer`} 
+            onClick={(e) => handleSendMessage(e as any)}
+            className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer z-100`} 
             disabled={message.length === 0}
           >
             <img src={Send} alt="send" />
           </button>
         </form>
+
+
+            
+
+
             
           
-          {revertSold && (
-            <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-              <div className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
+        {revertSold && (
+          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
 
-                {/* Header with accent */}
-                <div className="relative">
-                  <div className="px-6 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                        <img src={CheckCircle} alt="check" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-primary-text">Revert Sale</h3>
-                      </div>
+              {/* Header with accent */}
+              <div className="relative">
+                <div className="px-6 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <img src={CheckCircle} alt="check" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-text">Revert Sale</h3>
                     </div>
                   </div>
                 </div>
-
-                <div className="px-6 py-4">
-                  <h1 className="text-primary-text">Are you sure you want to revert this sale?</h1>
-                </div>
-
-                <div className="flex flex-row justify-end p-4 border border-t border-border-color">
-                  <button 
-                    className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl"
-                    onClick={() => setRevertSold(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="bg-accent text-primary-text-inverse px-4 py-2 rounded-xl bg-bg-inverse border border-border-color"
-                    onClick={handleSetToSold}
-                  >
-                    Revert
-                  </button>
-                </div>
-                
               </div>
-            </div>
-          )}
 
-          {soldConfirmation && (
+              <div className="px-6 py-4">
+                <h1 className="text-primary-text">Are you sure you want to revert this sale?</h1>
+              </div>
+
+              <div className="flex flex-row justify-end p-4 border border-t border-border-color">
+                <button 
+                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl"
+                  onClick={() => setRevertSold(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="bg-accent text-primary-text-inverse px-4 py-2 rounded-xl bg-bg-inverse border border-border-color"
+                  onClick={handleSetToSold}
+                >
+                  Revert
+                </button>
+              </div>
+              
+            </div>
+          </div>
+        )}
+
+        {soldConfirmation && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div 
               className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden"

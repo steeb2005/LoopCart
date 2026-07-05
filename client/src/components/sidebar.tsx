@@ -117,7 +117,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                       <img src={Message} alt="message" className='h-6'/>
                       
                       {unreadMessages > 0 && 
-                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-[10px] h-5 w-5 text-primary-text-inverse'>
+                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-[10px] h-5 w-5.5 text-primary-text-inverse'>
                           {unreadMessages > 9 ? '9+' : unreadMessages}
                         </div>}
                     </div>

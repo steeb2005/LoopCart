@@ -241,9 +241,9 @@ export default function EditProfile() {
 
           <div className="flex flex-col">
             <h1 className="font-semibold mx-5">Birthdate</h1>
-            <div className="flex flex-row px-5 py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+            <div onClick={handleEditBirthdate} className="flex flex-row px-5 py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
               <p className="text-gray-300">{format(new Date(user?.birthdate), 'MMMM d, yyyy') || 'Set birthdate'}</p>
-              <img onClick={handleEditBirthdate} src={Edit} alt="edit-svg"/>
+              <img src={Edit} alt="edit-svg"/>
             </div>
           </div>
 

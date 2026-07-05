@@ -11,7 +11,7 @@ function LandingPage(){
   return(
     
     <div className="mx-5 p-0 m-0 overflow-hidden min-h-screen py-5">
-      <div className='main-section flex flex-col text-primary-text mt-20 mx-15'>
+      <div className='main-section flex flex-col text-primary-text mt-20 mx-10'>
         
         <div className='flex flex-row'>
           <h1 className='text-4xl font-semibold'>LoopCart</h1>

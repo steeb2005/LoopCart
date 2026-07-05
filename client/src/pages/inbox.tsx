@@ -103,6 +103,11 @@ function Inbox(){
   const {inbox, items, user, load_inbox} = useAppContext()
   const [clickedFilter, setClickedFilter] = useState('buying')
   const [pageLoading, setPageLoading] = useState(true)
+  const [sellUnread, setSellUnread] = useState(0)
+  const [buyUnread, setBuyUnread] = useState(0)
+  let buyingUnreadCount = 0
+  let sellingUnreadCount = 0
+
   
   useEffect(() => {
     const loadInbox = async () => {
@@ -113,6 +118,33 @@ function Inbox(){
 
     loadInbox()
   }, [])
+
+  const getUnreadCount = () => {
+    const sellerFilter = inbox.filter(entry => {
+      const item = items.find(i => i._id === entry.item_id)
+      const isSeller = item.seller_id === user._id
+      return isSeller
+    })
+
+    const buyerFilter = inbox.filter(entry => {
+      const item = items.find(i => i._id === entry.item_id)
+      const isSeller = item.seller_id === user._id
+      return !isSeller
+    })
+
+    sellerFilter.forEach(entry => {
+      sellingUnreadCount += entry.unread_count
+    })
+
+    buyerFilter.forEach(entry => {
+      buyingUnreadCount += entry.unread_count
+    })
+  }
+
+  getUnreadCount()
+    
+  console.log("Sell: " + sellingUnreadCount )
+  console.log("Buy: " + buyingUnreadCount )
 
 
   const getFilteredInbox = () => {
@@ -153,11 +185,24 @@ function Inbox(){
 
       <div className='overflow-y-auto pr-1 grow normal-scrollbar items-section gap-2 flex flex-col mt-3'>
         <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
-          <div onClick={() => handleFilter("buying")} className={` border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-bg-surface' }  w-full text-center py-2 cursor-pointer`}>
-            Buying
+          <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-bg-surface' } gap-2 flex flex-row justify-center w-full text-center py-2 cursor-pointer items-center`}>
+
+            Buying 
+            {buyingUnreadCount > 0 && 
+            <div className='bg-bg-surface text-primary-text w-7 h-6 rounded-full text-center justify-center flex items-center text-sm font-light '>
+              {buyingUnreadCount > 9 ? '9+' : buyingUnreadCount}
+            </div>}
+           
           </div>
-          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-bg-surface' } w-full text-center py-2 cursor-pointer`}> 
-            Selling
+          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-bg-surface' } gap-2 flex flex-row justify-center w-full text-center py-2 cursor-pointer items-center`}> 
+            
+            Selling 
+            {sellingUnreadCount > 0 && 
+            <div className='bg-bg-surface text-primary-text w-7 h-6 rounded-full text-center justify-center flex items-center text-sm font-light '>
+              {sellingUnreadCount > 9 ? '9+' : sellingUnreadCount}
+            </div>}
+
+            
           </div>
         </div>
 
