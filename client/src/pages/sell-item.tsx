@@ -26,10 +26,10 @@ function SellItem(){
     condition: '',
     description: '',
     created_at: '',
-    sold_at: '',
+    sold_at: null,
     status: 'available',
     seller_id: '',
-    buyer_id: '',
+    buyer_id: null,
     image: '',
     likes: 0
   })

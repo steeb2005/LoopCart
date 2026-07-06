@@ -1,4 +1,3 @@
-import { UserIcon } from "lucide-react";
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
 

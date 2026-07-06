@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
-import Search from '../assets/search.svg'
-import Add from "../assets/add.svg"
 import Category from "../assets/category.svg"
 import Filter from "../assets/filter.svg"
 import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
 import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
 import { Skeleton } from "../components/ui/skeleton.tsx"
 
@@ -23,15 +21,11 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 }
 ){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
-  const navigate = useNavigate()
-  const handleItemClick = () => {
-    navigate(`/item/${item_id}`)
-  }
-
+ 
   return(
-    <div  
-      className="curor-pointer bg-bg-surface rounded-md p-3"
-      onClick={handleItemClick}
+    <Link  
+      to={`/item/${item_id}`}
+      className="bg-bg-surface rounded-md p-3 cursor-pointer"
     >
       <div className="img-section bg-bg-inverse w-full min-h-37 rounded-md">
         {/* Image goes here */}
@@ -43,12 +37,19 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
           <div className="flex flex-row gap-2">
-            <img onClick={handleLikeClick}  src={isLiked ? HeartClicked : Heart} alt="heart" />
+            <img 
+              onClick={(e) => {
+                handleLikeClick(e)
+                e.preventDefault()
+                e.stopPropagation()
+              }}  
+              src={isLiked ? HeartClicked : Heart} 
+              alt="heart" />
             {likesCount}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -57,18 +58,13 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 
 function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: string, email: string}){
-  const navigate = useNavigate()
   const {getUsername} = useAppContext()
-
-  const handleNavigate = () => {
-    navigate(`/users/${userId}`)
-  }
 
   const username = getUsername(userId)
   return(
-    <div
-      onClick={handleNavigate} 
-      className="bg-bg-surface p-3 text-primary-text rounded-md flex flex-row justify-between">
+    <Link
+      to={`/users/${userId}`}
+      className="bg-bg-surface p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
           {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
@@ -83,7 +79,7 @@ function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: stri
       <div className="flex items-center text-sm">
         View profile
       </div>
-    </div>
+    </Link>
   )
 }
 

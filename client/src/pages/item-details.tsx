@@ -74,13 +74,11 @@ function ItemDetails(){
     naviagte(-1)
   }
 
-  const handleChatClick = () => {
-    naviagte(`/chat/${item?._id}/${item?.seller_id}`)
-  }
-
   const handleSellerClick = () => {
     naviagte(`/users/${item?.seller_id}`)
   }
+
+
   
   // Error handler if item is not found
   if(!item){
@@ -102,7 +100,7 @@ function ItemDetails(){
 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
           
-            <img onClick={handleBackClick} src={Back} alt="back" />
+            <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
             
             Item details
           </div>
@@ -127,14 +125,14 @@ function ItemDetails(){
               <img src={Goto} alt="goto" className='h-8'/>
             </div>
             <div className='flex flex-row gap-3 mr-4'>
-              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" />
+              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='cursor-pointer'/>
               <h1>{likesCount}</h1>
             </div>
           </div>
 
           <div  
             onClick={handleSellerClick}
-            className='flex flex-row gap-2 mt-2 text-primary-text items-center'>
+            className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
             <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
 
@@ -151,14 +149,19 @@ function ItemDetails(){
           </div>
           
           {isUserItem ? (
-            <button className='justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
               Edit Listing
             </button>
           ) : (
-            <button onClick={handleChatClick} className='justify-center flex mt-auto flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
-              <img src={Message} alt="message" />
-              Make an Offer/Buy now
-            </button>
+            <Link
+              to={`/chat/${item?._id}/${item?.seller_id}`}  
+            >
+              <button className='justify-center cursor-pointer flex mt-auto flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+                <img src={Message} alt="message" />
+                Make an Offer/Buy now
+              </button>
+            
+            </Link>
             )}
           
         </div>    

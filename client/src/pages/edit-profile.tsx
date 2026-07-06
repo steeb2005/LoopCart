@@ -93,7 +93,7 @@ export default function EditProfile() {
     return(
       <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
-          <img onClick={handleEditBirthdate} src={Close} alt="back" />
+          <img onClick={handleEditBirthdate} src={Close} alt="back" className="cursor-pointer"/>
           Edit Birthdate
         </div>
 
@@ -158,7 +158,7 @@ export default function EditProfile() {
     return(
       <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
-          <img onClick={handleEditBio} src={Close} alt="back" />
+          <img onClick={handleEditBio} src={Close} alt="back" className="cursor-pointer"/>
           Edit Bio
         </div>
 
@@ -207,7 +207,7 @@ export default function EditProfile() {
       <div className="p-0 m-0 min-h-screen flex flex-col">
         
         <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img onClick={handleBackClick} src={Back} alt="back" />
+          <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer" />
           Edit Profile
         </div>
 
@@ -242,7 +242,7 @@ export default function EditProfile() {
           <div className="flex flex-col">
             <h1 className="font-semibold mx-5">Birthdate</h1>
             <div onClick={handleEditBirthdate} className="flex flex-row px-5 py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-              <p className="text-gray-300">{format(new Date(user?.birthdate), 'MMMM d, yyyy') || 'Set birthdate'}</p>
+              <p className="text-gray-300">{user?.birthdate ?format(new Date(user.birthdate), 'MMMM d, yyyy') :'Set birthdate'}</p>
               <img src={Edit} alt="edit-svg"/>
             </div>
           </div>

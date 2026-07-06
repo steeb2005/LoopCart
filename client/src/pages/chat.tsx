@@ -49,8 +49,6 @@ type ChatMessage = {
 
 
 function useViewportHeight() {
-
-
   useEffect(() => {
     const setHeight = () => {
       const height = window.visualViewport?.height ?? window.innerHeight
@@ -374,7 +372,7 @@ function Chat(){
           <div className='head flex flex-col text-primary-text font-semibold'>
             
             <div className="mx-5 flex flex-row gap-5 mb-3">
-              <img onClick={handleBackClick} src={Back} alt="back" />
+              <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
               <div className="flex flex-row gap-2 items-center">
                 <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
                   {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
@@ -503,13 +501,13 @@ function Chat(){
 
               <div className="flex flex-row justify-end p-4 border border-t border-border-color">
                 <button 
-                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl"
+                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
                   onClick={() => setRevertSold(false)}
                 >
                   Cancel
                 </button>
                 <button 
-                  className="bg-accent text-primary-text-inverse px-4 py-2 rounded-xl bg-bg-inverse border border-border-color"
+                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-bg-inverse border border-border-color"
                   onClick={handleSetToSold}
                 >
                   Revert
@@ -549,7 +547,7 @@ function Chat(){
                 {/* Buyer info card */}
                 <div className="p-4 bg-bg-canvas rounded-xl border border-border-color/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center shrink-0 bg-bg-inverse">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-bg-inverse">
                       <span className="text-accent font-semibold text-sm">
                         {otherUsername?.charAt(0).toUpperCase() || '?'}
                       </span>

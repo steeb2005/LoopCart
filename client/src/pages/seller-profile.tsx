@@ -1,12 +1,14 @@
 import { useParams } from "react-router-dom"
 import Back from '../assets/back.svg'
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { useAppContext } from "../context/context"
 import { useEffect, useState } from "react"
 import Items from '../assets/items.svg' 
 import { useItemLike } from "../hooks/handle-like"
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
+import {format} from "date-fns"
+
 
 type User = {
   username: string
@@ -51,15 +53,11 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 }
 ){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
-  const navigate = useNavigate()
-  const handleItemClick = () => {
-    navigate(`/item/${item_id}`)
-  }
 
   return(
-    <div  
+    <Link  
+      to={`/item/${item_id}`}
       className="curor-pointer bg-bg-surface rounded-md p-3"
-      onClick={handleItemClick}
     >
       <div className="img-section bg-bg-inverse w-100% min-h-37 rounded-md">
         {/* Image goes here */}
@@ -71,12 +69,19 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
           <div className="flex flex-row gap-2">
-            <img onClick={handleLikeClick}  src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
+            <img 
+              onClick={(e) => {
+                handleLikeClick(e)
+                e.preventDefault()
+                e.stopPropagation()
+              }}  
+              src={isLiked ? HeartClicked : HeartDefault} 
+              alt="heart" />
             {likesCount}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -112,7 +117,7 @@ export default function SellerProfile(){
 
   return(
     <div className="p-0 m-0 min-h-screen pb-5 flex flex-col"> 
-      <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
+      <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
         <img onClick={handleBackClick} src={Back} alt="back" />
         Seller Profile
       </div>
@@ -154,7 +159,7 @@ export default function SellerProfile(){
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Birthdate</h1>
-              <p className="text-gray-300">{user?.birthdate || 'No birthdate yet'}</p>
+              <p className="text-gray-300">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy') : 'No birthdate yet'}</p>
             </div>
 
             <div className="flex flex-col">
@@ -175,7 +180,8 @@ export default function SellerProfile(){
           </div>
           <div className="flex flex-col gap-3">
 
-            {sellerItems?.map(i => (
+
+            {sellerItems.length === 0 ? <div className="mb-2 text-center text-primary-text font-light">No items yet</div> : sellerItems?.map(i => (
               <ItemCard
                 key={i._id}
                 item_id={i._id}

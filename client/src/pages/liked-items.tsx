@@ -3,7 +3,7 @@ import { useAppContext } from '../context/context'
 import { useItemLike } from '../hooks/handle-like'
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 function ItemCard({item_id, title, price, status, seller_name, likes}: {
@@ -15,16 +15,12 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
   likes: number
 }){
 
-  const navigate = useNavigate()
-
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
-  const handleItemClick = () => {
-    navigate(`/item/${item_id}`)
-  }
+ 
 
   return(
-    <div 
-      onClick={handleItemClick} 
+    <Link 
+      to={`/item/${item_id}`}
       className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row m-0'>
 
       <div className='image-entry h-20 min-w-20 bg-bg-inverse rounded-md shrink-0'>
@@ -44,12 +40,19 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
           <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
 
           <div className='flex flex-row gap-2'>
-            <img onClick={handleLikeClick} src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
+            <img 
+              onClick={(e) => {
+                handleLikeClick(e)
+                e.preventDefault()
+                e.stopPropagation()
+                }} 
+              src={isLiked ? HeartClicked : HeartDefault} 
+              alt="heart" />
             {likesCount}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
    
   )
 }
@@ -76,12 +79,10 @@ function LikedItems() {
   return(
     <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        
-        <img onClick={handleBackClick} src={Back} alt="back" />
-        
+        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
         Liked Items
       </div>
-
+        
       <div className='items-section mt-5 flex flex-col gap-3'>
         {copyItems?.length === 0 ? 
         (<div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any liked items</div>)

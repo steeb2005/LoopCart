@@ -23,12 +23,12 @@ export function DatePicker({ onSelect, error }: { onSelect: (date: string) => vo
       <PopoverTrigger asChild>
         <Button 
             
-          className={`bg-bg-surface w-full py-8 border ${error ? "border-red-500" : "border-border-color"}  text-gray-300 font-light justify-start`}
+          className={`bg-bg-surface w-full cursor-pointer py-8 border ${error ? "border-red-500" : "border-border-color"}  text-gray-300 font-light justify-start`}
         >
           <div className='flex flex-col text-left'>
             <p>Month day year</p>
             <p>
-              {date ? format(date, 'MMMM d, yyyy') : user?.birthdate ?   format(new Date(user.birthdate), 'MMMM d, yyyy') : "Select a date"}
+              {date ? format(date, 'MMMM d, yyyy') : user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : "Select a date"}
 
             </p>
           </div>

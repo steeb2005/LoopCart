@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import Back from '../assets/back.svg'
 import {useEffect, useState} from 'react'
 import { useAppContext } from "../context/context";
@@ -24,7 +24,6 @@ type Item = {
 
 function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read} : {key: string, itemId: string, otherId: string, unreadCount: number, lastMessage: string, lastSender: string, read: boolean}){
 
-  const navigate = useNavigate()
   const {items, getUsername, user} = useAppContext()
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
@@ -38,12 +37,11 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
 
   }, [items, itemId, otherId, getUsername, lastSender])
 
-  const handleItemClick = () => {
-    navigate(`/chat/${itemId}/${otherId}`)
-  }
 
   return(
-    <div onClick={handleItemClick} className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row shrink-0'>
+    <Link 
+      to={`/chat/${itemId}/${otherId}`}
+      className='cursor-pointer item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row shrink-0'>
       <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
         {/* Image */}
       </div>
@@ -62,7 +60,7 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
           </p>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -103,11 +101,10 @@ function Inbox(){
   const {inbox, items, user, load_inbox} = useAppContext()
   const [clickedFilter, setClickedFilter] = useState('buying')
   const [pageLoading, setPageLoading] = useState(true)
-  const [sellUnread, setSellUnread] = useState(0)
-  const [buyUnread, setBuyUnread] = useState(0)
+  
   let buyingUnreadCount = 0
   let sellingUnreadCount = 0
-
+  let allUnreadCount = 0
   
   useEffect(() => {
     const loadInbox = async () => {
@@ -120,6 +117,7 @@ function Inbox(){
   }, [])
 
   const getUnreadCount = () => {
+
     const sellerFilter = inbox.filter(entry => {
       const item = items.find(i => i._id === entry.item_id)
       const isSeller = item.seller_id === user._id
@@ -139,17 +137,21 @@ function Inbox(){
     buyerFilter.forEach(entry => {
       buyingUnreadCount += entry.unread_count
     })
+
+    inbox.forEach(entry => {
+      allUnreadCount += entry.unread_count
+    })
+
   }
 
   getUnreadCount()
     
-  console.log("Sell: " + sellingUnreadCount )
-  console.log("Buy: " + buyingUnreadCount )
-
-
   const getFilteredInbox = () => {
     if(!inbox){ // Empty inbox
       return []
+    }
+    if(clickedFilter === 'all'){
+      return inbox    
     }
 
     return inbox.filter(entry => {
@@ -161,6 +163,8 @@ function Inbox(){
       }else if(clickedFilter === 'buying'){
         return !isSeller
       }
+
+      
     })
   }
 
@@ -179,34 +183,44 @@ function Inbox(){
     <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" />
+        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
         Inbox
       </div>
 
       <div className='overflow-y-auto pr-1 grow normal-scrollbar items-section gap-2 flex flex-col mt-3'>
-        <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
-          <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-bg-surface' } gap-2 flex flex-row justify-center w-full text-center py-2 cursor-pointer items-center`}>
+        <div className="flex flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
 
+          <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 
+            All
+            {allUnreadCount > 0 && 
+            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
+              {allUnreadCount > 9 ? '9+' : allUnreadCount}
+            </div>}
+          </div>
+
+          <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center shrink-0 text-center py-2 px-4 cursor-pointer items-center text-sm`}>
             Buying 
             {buyingUnreadCount > 0 && 
-            <div className='bg-bg-surface text-primary-text w-7 h-6 rounded-full text-center justify-center flex items-center text-sm font-light '>
+            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
               {buyingUnreadCount > 9 ? '9+' : buyingUnreadCount}
             </div>}
-           
           </div>
-          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-bg-surface' } gap-2 flex flex-row justify-center w-full text-center py-2 cursor-pointer items-center`}> 
+           
             
+          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 px-4 shrink-0 cursor-pointer items-center text-sm`}> 
             Selling 
             {sellingUnreadCount > 0 && 
-            <div className='bg-bg-surface text-primary-text w-7 h-6 rounded-full text-center justify-center flex items-center text-sm font-light '>
+            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
               {sellingUnreadCount > 9 ? '9+' : sellingUnreadCount}
             </div>}
-
-            
           </div>
+            
+            
+          
+
         </div>
 
-         {/* Item Entry */}
+        {/* Item Entry */}
 
         {pageLoading ? (
             <>

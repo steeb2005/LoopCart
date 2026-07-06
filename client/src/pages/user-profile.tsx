@@ -3,10 +3,10 @@ import {useAppContext} from '../context/context'
 import ItemBox from '../assets/items.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
 import HeartDefault from '../assets/Heart.svg'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useItemLike } from '../hooks/handle-like'
 import Edit from '../assets/edit.svg'
-
+import {format} from "date-fns"
 
 
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
@@ -19,15 +19,12 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 }
 ){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
-  const navigate = useNavigate()
-  const handleItemClick = () => {
-    navigate(`/item/${item_id}`)
-  }
+  
 
   return(
-    <div  
+    <Link
+      to={`/item/${item_id}`}
       className="curor-pointer bg-bg-surface rounded-md p-3"
-      onClick={handleItemClick}
     >
       <div className="img-section bg-bg-inverse w-100% min-h-37 rounded-md">
         {/* Image goes here */}
@@ -39,12 +36,19 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
           <div className="flex flex-row gap-2">
-            <img onClick={handleLikeClick}  src={isLiked ? HeartClicked : HeartDefault} alt="heart" />
+            <img 
+              onClick={(e) => {
+                handleLikeClick(e)
+                e.preventDefault()
+                e.stopPropagation()
+              }}  
+              src={isLiked ? HeartClicked : HeartDefault} 
+              alt="heart" />
             {likesCount}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -72,26 +76,14 @@ export default function UserProfile() {
   });
 
 
-  const birthdate = new Date(user?.birthdate)
-  const formattedBirthdate = birthdate.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
-
 
 
   const username = getUsername(user?._id)
 
-  const handelEditClick = () => {
-    navigate(`/edit-profile/${user?._id}`)
-  }
-
-
   return (
     <div className="p-0 m-0 min-h-screen pb-5 flex flex-col"> 
       <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img onClick={handleBackClick} src={Back} alt="back" />
+        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer' />
         User Profile
       </div>
 
@@ -119,7 +111,11 @@ export default function UserProfile() {
           <div className="mx-5">
             <div className='flex flex-row justify-between items-center'>
               <h1 className="text-xl font-bold">Personal Details</h1>
-              <img onClick={handelEditClick} src={Edit} alt="edit" className='cursor-pointer'/>
+              <Link
+                to={`/edit-profile/${user?._id}`}>
+                <img src={Edit} alt="edit" className='cursor-pointer'/>
+              
+              </Link>
             </div>
             
             <div className="flex flex-col">
@@ -134,7 +130,7 @@ export default function UserProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Birthdate</h1>
-              <p className="text-gray-300">{formattedBirthdate || 'No birthdate yet'}</p>
+              <p className="text-gray-300">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy')  : 'No birthdate yet'}</p>
             </div>
 
             <div className="flex flex-col">
