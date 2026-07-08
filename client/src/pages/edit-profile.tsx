@@ -7,10 +7,11 @@ import Close from '../assets/close.svg'
 import TextareaAutosize from "react-textarea-autosize"
 import { DatePicker } from '../components/date-picker'
 import {format} from "date-fns"
+import { NativeSelect, NativeSelectOption } from "../components/ui/native-select"
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const {user, update_bio, update_birthdate} = useAppContext()
+  const {user, update_bio, update_birthdate, update_gender} = useAppContext()
 
 
   const [editBio, setEditBio] = useState(false)
@@ -19,7 +20,8 @@ export default function EditProfile() {
   const [bio, setBio] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [error, setError] = useState('')
-
+  const [editGender, setEditGender] = useState(false)
+  const [gender, setGender] = useState('')
 
   useEffect(() => {
     if(user.bio){
@@ -47,11 +49,66 @@ export default function EditProfile() {
     setEditBirthdate(!editBirthdate)
   }
 
-  
+  const handleEditGender = () => {
+    setEditGender(!editGender)
+  }
 
   
 
+  if(editGender){
+    
 
+    const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setGender(e.target.value)
+    }
+
+    const handleGenderChange = async () => {
+      setError('')
+      if(gender === user.gender){
+        setError('Gender is the same')
+        return
+      }
+      const prev = user.gender
+      try{
+        user.gender = gender
+        await update_gender(user._id, gender)
+      }catch{
+        user.gender = prev
+      }
+      setEditGender(false)
+    }
+    return(
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
+        <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
+          <img onClick={handleEditGender} src={Close} alt="back" className="cursor-pointer"/>
+          Edit Gender
+        </div>
+
+        
+        <div className="mx-5 flex flex-col">
+          <h1 className="font-bold mt-5 mb-3">Gender</h1>
+          <NativeSelect 
+            value={gender}
+            onChange={handleGenderSelect}
+            className="flex w-full border-none outline-none [&_select]:outline-none [&_select]:focus:ring-0 [&_select]:focus:outline-none [&_select]:focus-visible:ring-0">
+            <NativeSelectOption value={''} disabled className="bg-bg-surface text-primary-text">Select Gender</NativeSelectOption>
+            <NativeSelectOption value={'male'} className="bg-bg-surface text-primary-text">Male</NativeSelectOption>
+            <NativeSelectOption value={'female'} className="bg-bg-surface text-primary-text">Female</NativeSelectOption>
+            <NativeSelectOption value={'gay'} className="bg-bg-surface text-primary-text">Gay</NativeSelectOption>
+          </NativeSelect>
+          {error && <div className="text-red-400 mt-2 text-sm">{error}</div>}
+          
+
+        </div>
+        
+        <button 
+          onClick={handleGenderChange}
+          className='mx-5 mb-3 mt-auto cursor-pointer bg-bg-surface font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+          Save
+        </button> 
+      </div>
+    )
+  }
 
 
 
@@ -59,7 +116,6 @@ export default function EditProfile() {
 
 
   if(editBirthdate){
-
     const handleDateSelect = (date: string) => {
       setError('')
       setBirthdate(date)
@@ -249,8 +305,8 @@ export default function EditProfile() {
 
           <div className="flex flex-col">
             <h1 className="font-semibold mx-5">Gender</h1>
-            <div className="flex flex-row justify-between items-center px-5 py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
-              <p className="text-gray-300 ">{user?.gender || 'Set gender'}</p>
+            <div onClick={handleEditGender} className="flex flex-row justify-between items-center px-5 py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
+              <p className="text-gray-300 ">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1) || 'Set gender'}</p>
               <img src={Edit} alt="edit-svg"/>
             </div>
           </div>

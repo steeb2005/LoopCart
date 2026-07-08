@@ -141,6 +141,11 @@ class BioUpdate(BaseModel):
 
 class BirthdateUpdate(BaseModel):
     birthdate: str
+
+class GenderUpdate(BaseModel):
+    gender: str
+
+
 # Routes ----------------------------------------------------------------------------------------------
 
 
@@ -699,6 +704,16 @@ async def update_birthdate(user_id: str, birthdateData: BirthdateUpdate):
         raise HTTPException(status_code=400, detail="Invalid request")
 
 
+@app.patch('/users/{user_id}/gender')
+async def update_gender(user_id: str, genderDate: GenderUpdate):
+    try:
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"gender": genderDate.gender}}  
+        )   
+        return {"success": True}
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
 
 # Websocket Connection ----------------------------------------------------------------
 @app.websocket("/ws/chat/{conversation_id}")

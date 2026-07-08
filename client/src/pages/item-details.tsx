@@ -74,9 +74,7 @@ function ItemDetails(){
     naviagte(-1)
   }
 
-  const handleSellerClick = () => {
-    naviagte(`/users/${item?.seller_id}`)
-  }
+  
 
 
   
@@ -130,15 +128,15 @@ function ItemDetails(){
             </div>
           </div>
 
-          <div  
-            onClick={handleSellerClick}
+          <Link  
+            to={`/users/${item.seller_id}`}
             className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
             <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
 
             </div>
             <h1>@{sellerUsername}</h1>
-          </div>
+          </Link>
 
           <div className='text-primary-text mt-5 mb-5'>
             <h1 className='text-xl font-semibold'>Location</h1>

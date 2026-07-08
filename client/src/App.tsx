@@ -16,12 +16,12 @@ import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
-  const { user, loading } = useAppContext();
-  if(loading){
+  const { user, loading, authLoading } = useAppContext();
+  if(authLoading){
     
     return (
       <div className="flex items-center justify-center min-h-screen">
-        
+        AUTHLOADING
       </div>
     )
   }

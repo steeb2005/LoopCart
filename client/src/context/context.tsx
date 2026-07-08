@@ -103,7 +103,10 @@ type ContextType = {
   loading: boolean;
   likedItems: Item[];
   inbox: Conversation[];
+  dataLoading: boolean;
+  authLoading: boolean;
 
+  update_gender: (userId: string, gender: string) => Promise<void>;
   update_birthdate: (userId: string, birthdate: string) => Promise<void>;
   update_bio: (userId: string, bio: string) => Promise<void>;
   get_item: (itemId: string) => Promise<Item | null>;
@@ -191,14 +194,15 @@ export function AppContext({children}) {
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map())
   const [inbox, setInbox] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
-
+  const [authLoading, setAuthLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(false)
   // On Load -------------------------------------------------------------------------------------
   
   useEffect(() => {
     const loadInitialData = async () => {
       const stored = getToken()
       if(!stored){
-        setLoading(false)
+        setAuthLoading(false)
         return
       }
       try{
@@ -210,11 +214,14 @@ export function AppContext({children}) {
         if(!res.ok){
           clearToken()
           setToken(null)
-          setLoading(false)
-        
+          setAuthLoading(false)
+          return
         }
-        const data = await res.json()
-
+        
+        const data = await res.json() // Loaded info 
+        setAuthLoading(false) // Setting auth to false and setting the loadingdata to true
+        setDataLoading(true)
+        
         setUser(data)
         if(data._id){
           await load_liked_items(data._id)
@@ -230,7 +237,7 @@ export function AppContext({children}) {
         clearToken()
         setToken(null)
       }finally{
-        setLoading(false)
+        setDataLoading(false)
       }  
     }   
     loadInitialData()
@@ -668,8 +675,24 @@ export function AppContext({children}) {
     }catch{
       console.error('network error in updating birthdate');
     }
+  }
 
+  const update_gender = async(userId: string, gender: string) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/gender`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({gender: gender})
+      })
 
+      if(res.ok){
+        console.log('successfully updated gender');
+      }else{
+        console.error('error in updating gender');
+      }
+    }catch{
+      console.error('network error in updating gender');
+    }
   }
 
 
@@ -709,7 +732,10 @@ export function AppContext({children}) {
     loading,
     likedItems,
     inbox,
+    dataLoading,
+    authLoading,
     
+    update_gender,
     update_birthdate,
     update_bio,
     get_item,

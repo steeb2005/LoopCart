@@ -5,6 +5,7 @@ import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { Skeleton } from '../components/ui/skeleton'
 
 function ItemCard({item_id, title, price, status, seller_name, likes}: {
   item_id: string,
@@ -59,10 +60,24 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
 
 
 
+function EntrySkeleton(){
+  return(
+    <Skeleton className="rounded-lg flex flex-row bg-bg-surface gap-1 items-center overflow-hidden p-2">
+      <Skeleton className="h-20 w-20 bg-bg-gray-surface"/>
+      <div className="p-2 space-y-3 flex-1 flex flex-col">
+        <Skeleton className="h-4 w-3/4 bg-bg-gray-surface" />
+        <Skeleton className="h-4 w-1/2 bg-bg-gray-surface" />
+        <Skeleton className="h-4 w-2/3 bg-bg-gray-surface" />
+      </div>
+    </Skeleton>
+  )
+}
+
+
 
 
 function LikedItems() {
-  const {likedItems, getUsername} = useAppContext()
+  const {likedItems, getUsername, dataLoading} = useAppContext()
   const navigate = useNavigate()
   const [copyItems, setCopyItems] = useState([])
 
@@ -82,29 +97,41 @@ function LikedItems() {
         <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
         Liked Items
       </div>
-        
+
       <div className='items-section mt-5 flex flex-col gap-3'>
-        {copyItems?.length === 0 ? 
-        (<div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any liked items</div>)
-        : (copyItems?.map((item: any) => (
-          <ItemCard 
-            key={item._id}
-            item_id={item._id}
-            title={item.title}
-            price={item.price}
-            status={item.status}
-            seller_name={getUsername(item.seller_id)}
-            likes={item.likes}
+        {dataLoading ? (
+          <>
+            <EntrySkeleton/>
+            <EntrySkeleton/>
+            <EntrySkeleton/>
+            <EntrySkeleton/>
+            <EntrySkeleton/>
+            <EntrySkeleton/>
+          </>
+        ) : (
+          copyItems?.length === 0 ? 
+          (<div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any liked items</div>)
+          : (copyItems?.map((item: any) => (
+            <ItemCard 
+              key={item._id}
+              item_id={item._id}
+              title={item.title}
+              price={item.price}
+              status={item.status}
+              seller_name={getUsername(item.seller_id)}
+              likes={item.likes}
             />
-            
-        )))}
+              
+          )))
+        )}
+      
+        
         {copyItems?.length !== 0 && <p className="mt-10 text-center text-primary-text font-light">No more items to show</p>}
-
       </div>
-
     </div>
   )
 } 
+
 
 
 export default LikedItems

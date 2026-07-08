@@ -135,7 +135,7 @@ export default function UserProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Gender</h1>
-              <p className="text-gray-300">{user?.gender || 'No gender yet'}</p>
+              <p className="text-gray-300">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1) || 'No gender yet'}</p>
             </div>
 
             <div className="flex flex-col">

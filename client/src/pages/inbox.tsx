@@ -72,11 +72,11 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
 function InboxSkeleton(){
   return(
     <Skeleton className="rounded-lg flex flex-row bg-bg-surface gap-1 items-center overflow-hidden p-2">
-      <Skeleton className="h-20 w-20 bg-border-color"/>
+      <Skeleton className="h-20 w-20 bg-bg-gray-surface"/>
       <div className="p-2 space-y-3 flex-1 flex flex-col">
-        <Skeleton className="h-4 w-3/4 bg-border-color" />
-        <Skeleton className="h-4 w-1/2 bg-border-color" />
-        <Skeleton className="h-4 w-2/3 bg-border-color" />
+        <Skeleton className="h-4 w-3/4 bg-bg-gray-surface" />
+        <Skeleton className="h-4 w-1/2 bg-bg-gray-surface" />
+        <Skeleton className="h-4 w-2/3 bg-bg-gray-surface" />
       </div>
     </Skeleton>
   )
@@ -98,26 +98,16 @@ function InboxSkeleton(){
 function Inbox(){
   const navigate = useNavigate()
   
-  const {inbox, items, user, load_inbox} = useAppContext()
-  const [clickedFilter, setClickedFilter] = useState('buying')
-  const [pageLoading, setPageLoading] = useState(true)
+  const {inbox, items, user, dataLoading} = useAppContext()
+  const [clickedFilter, setClickedFilter] = useState('all')
   
   let buyingUnreadCount = 0
   let sellingUnreadCount = 0
   let allUnreadCount = 0
   
-  useEffect(() => {
-    const loadInbox = async () => {
-      setPageLoading(true)
-      await load_inbox(user._id)
-      setPageLoading(false)
-    }
 
-    loadInbox()
-  }, [])
-
+  
   const getUnreadCount = () => {
-
     const sellerFilter = inbox.filter(entry => {
       const item = items.find(i => i._id === entry.item_id)
       const isSeller = item.seller_id === user._id
@@ -179,6 +169,7 @@ function Inbox(){
 
   const filteredInbox = getFilteredInbox()
 
+ 
   return(
     <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
 
@@ -222,8 +213,10 @@ function Inbox(){
 
         {/* Item Entry */}
 
-        {pageLoading ? (
+        {dataLoading ? (
             <>
+              <InboxSkeleton/>
+              <InboxSkeleton/>
               <InboxSkeleton/>
               <InboxSkeleton/>
               <InboxSkeleton/>

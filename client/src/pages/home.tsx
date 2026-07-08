@@ -120,13 +120,13 @@ function SkeletonUsers(){
 
 function Home(){
   
-  const {items, getUsername, users, user, load_items, load_users} = useAppContext()
+  const {items, getUsername, users, user, load_items, load_users, dataLoading} = useAppContext()
   const [searchParams, setSearchParams] = useSearchParams()
   
   const [isClicked, setIsClicked] = useState(searchParams.get('tab') || 'Items')
   const [pageLoading, setPageLoading] = useState(true)
   
-
+  
   
   useEffect(() => {
     const tab = searchParams.get('tab')
@@ -157,6 +157,7 @@ function Home(){
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
 
+  
 
   return(
     <>

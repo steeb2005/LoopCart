@@ -41,7 +41,7 @@ type Item = {
 }
 
 
-
+// IF OWN PROFILE THEN GO TO USER PROFILE (FIX)
 
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
   item_id: string,
@@ -94,7 +94,7 @@ export default function SellerProfile(){
   const {users, items, getUsername} = useAppContext()
 
   const [user, setUser] = useState<User | null>(null)
-  const [sellerItems, setSellerItems] = useState<Item[] | null>(null)
+  const [sellerItems, setSellerItems] = useState<Item[]>([])
 
   useEffect(() => {
     const user = users.find(user => user._id === userId)

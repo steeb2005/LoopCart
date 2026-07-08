@@ -18,6 +18,7 @@ html, body{
     --color-bg-canvas: #222222;
     --color-bg-surface: #353434;
     --color-bg-inverse: #F5F5F5;
+    --color-bg-gray-surface: color-mix(var(--color-gray-300) 20%, transparent);
 
     --color-border-color: #595959;
     --color-border-color-inverse: #F5F5F5;
@@ -28,6 +29,8 @@ html, body{
     --color-tertiary-text: #9E9E9E;
 
 }
+
+
 
 @theme inline {
 
