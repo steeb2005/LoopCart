@@ -91,13 +91,26 @@ type Conversation = {
 
 
 
-
+type ItemUpdate = {
+  _id?: string;
+  title: string;
+  price: number;
+  category: string;
+  condition: string;
+  description: string;
+  created_at: string;
+  status: string;
+  sold_at: string;
+  seller_id: string;
+  buyer_id: string;
+  image: string;
+  likes: number;
+}
 
 
 type ContextType = {
   user: User | null;
   users: RequestUsers[];
-  item: Item | null;
   items: Item[];
   token: string | null;
   loading: boolean;
@@ -106,6 +119,7 @@ type ContextType = {
   dataLoading: boolean;
   authLoading: boolean;
 
+  update_item: (itemId: string, updateData: Item) => Promise<void>;
   update_gender: (userId: string, gender: string) => Promise<void>;
   update_birthdate: (userId: string, birthdate: string) => Promise<void>;
   update_bio: (userId: string, bio: string) => Promise<void>;
@@ -187,7 +201,6 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
 export function AppContext({children}) {
   const [user, setUser] = useState<User | null>(null);  // Current user
   const [users, setUsers] = useState<RequestUsers[]>([]);       // All users
-  const [item, setItem] = useState<Item | null>(null);   
   const [items, setItems] = useState<Item[]>([]);       // All items
   const [token, setToken] = useState<string | null>(getToken())
   const [likedItems, setLikedItems] = useState<Item[]>([])
@@ -623,6 +636,30 @@ export function AppContext({children}) {
 
   // Updates ------------------------------------------------------------------------------------
 
+  const update_item = async (itemId: string, updateData: ItemUpdate) => {
+    try{
+    
+    
+      const res = await fetch(`${API_URL}/items/${itemId}`, {
+        method: 'PUT',        
+        headers: authHeaders(),
+        body: JSON.stringify(updateData)
+      })
+      
+      if(res.ok){
+        await load_items()
+        console.log('successfully updated item');
+      }else{
+        console.error('error in updating item');
+      }
+    }catch{
+      console.error('network error in updating item');
+    }
+  }
+
+
+
+
   const update_item_sold = async (itemId: string, userId: string, status: string, conversationId?: string) => {
     try{
       const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
@@ -726,7 +763,6 @@ export function AppContext({children}) {
   const value = {
     user,
     users,
-    item,
     items,
     token,
     loading,
@@ -735,6 +771,7 @@ export function AppContext({children}) {
     dataLoading,
     authLoading,
     
+    update_item,
     update_gender,
     update_birthdate,
     update_bio,

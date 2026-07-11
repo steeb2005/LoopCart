@@ -115,7 +115,7 @@ class Item(BaseModel):
     sold_at: str | None = None
     seller_id: str
     buyer_id: str | None = None
-    image: str
+    image: str | None = None
     likes: int = 0
 
 
@@ -144,6 +144,22 @@ class BirthdateUpdate(BaseModel):
 
 class GenderUpdate(BaseModel):
     gender: str
+
+class ItemUpdate(BaseModel):
+    _id: str 
+    title: str
+    price: float
+    category: str
+    condition: str # "New", "Like New", "Good", "Fair", "Poor"
+    description: str
+    created_at: str
+    status: str  # available, sold
+    sold_at: str | None = None
+    seller_id: str
+    buyer_id: str | None = None
+    image: str | None = None
+    likes: int 
+
 
 
 # Routes ----------------------------------------------------------------------------------------------
@@ -294,7 +310,28 @@ async def create_item(item: Item, current_user: dict = Depends(get_current_user)
 
 
 
+# Edit item
+@app.put('/items/{item_id}')
+async def edit_item(item_id: str, itemData: ItemUpdate, current_user: dict = Depends(get_current_user)):
+    try:
+        existing_item = await items.find_one({"_id": ObjectId(item_id)})
+    except:
+        raise HTTPException(status_code=400, detail="Invalid Item ID")
 
+    if not existing_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    if existing_item.get("seller_id") != current_user["sub"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    await items.update_one(
+        {"_id": ObjectId(item_id)},
+        {"$set": itemData.model_dump()}
+    )
+    
+    return {"success": True}    
+
+# Gets the liked items 
 @app.get('/likes/{user_id}')
 async def get_user_liked_items(user_id: str ,current_user: dict = Depends(get_current_user)):
     if current_user["sub"] != user_id:

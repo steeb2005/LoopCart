@@ -75,7 +75,7 @@ function Register(){
     <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
       <div>
         <Link to={'/'}>
-          <img src={BackArrow} alt="backarrow" />
+          <img src={BackArrow} alt="backarrow" className="w-10 h-10"/>
         </Link>
       </div>      
       <div className="text-primary-text mt-10">

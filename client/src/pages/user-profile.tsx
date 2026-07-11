@@ -7,7 +7,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useItemLike } from '../hooks/handle-like'
 import Edit from '../assets/edit.svg'
 import {format} from "date-fns"
-
+import { Skeleton } from '../components/ui/skeleton'
 
 function ItemCard({item_id, title, price, description, seller_name, likes}: {
   item_id: string,
@@ -61,7 +61,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 export default function UserProfile() {
   const navigate = useNavigate()
-  const {user, items, getUsername} = useAppContext()
+  const {user, items, getUsername, dataLoading} = useAppContext()
 
 
   const handleBackClick = () => {
@@ -75,13 +75,66 @@ export default function UserProfile() {
     year: 'numeric'
   });
 
-
-
-
   const username = getUsername(user?._id)
 
+
+   if(dataLoading){
+    return(
+      <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
+        <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
+          <img src={Back} alt="back" />
+          User Profile
+        </div>
+
+        <div className="mx-5">
+          <div className="flex flex-row flex-1 mt-8 gap-2">
+            <Skeleton className="w-20 h-20 bg-bg-surface rounded-full items-center flex justify-center"/>
+            <div className="flex flex-col flex-1 justify-center space-y-2">
+              <Skeleton className="h-4 w-1/2 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-4 w-2/3 bg-bg-surface items-center flex justify-center"/>
+            </div>
+          </div>  
+        </div>
+        <div className="border-b border-border-color py-5">
+          <div className="flex flex-1 flex-col mx-5">
+            <Skeleton className="h-4 w-7/10 mt-5 bg-bg-surface items-center flex justify-center"/>
+            
+            <div className="flex flex-col space-y-2 mt-5">
+              <Skeleton className="h-4 w-3/10 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-4 w-6/10 bg-bg-surface items-center flex justify-center"/>
+            </div>
+            <div className="flex flex-col space-y-2 mt-5">
+              <Skeleton className="h-4 w-4/10 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-4 w-5/10 bg-bg-surface items-center flex justify-center"/>
+            </div>
+            <div className="flex flex-col space-y-2 mt-5">
+              <Skeleton className="h-4 w-5/10 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-4 w-7/10 bg-bg-surface items-center flex justify-center"/>
+            </div>
+            <div className="flex flex-col space-y-2 mt-5">
+              <Skeleton className="h-4 w-3/10 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-4 w-4/10 bg-bg-surface items-center flex justify-center"/>
+          
+            </div>
+          </div>
+        </div>
+        <div className="mx-5 mt-5">
+          <Skeleton className="h-4 w-8/10 bg-bg-surface items-center flex justify-center"/>
+          <div className="flex flex-col gap-3 mt-5">
+            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+          </div>
+
+        </div>
+      </div>
+    )
+  }
+
+
+
   return (
-    <div className="p-0 m-0 min-h-screen pb-5 flex flex-col"> 
+    <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
       <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer' />
         User Profile
@@ -135,7 +188,7 @@ export default function UserProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Gender</h1>
-              <p className="text-gray-300">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1) || 'No gender yet'}</p>
+              <p className="text-gray-300">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'No gender yet'}</p>
             </div>
 
             <div className="flex flex-col">
@@ -155,7 +208,7 @@ export default function UserProfile() {
               {(() => {
                 const filteredItems = items.filter(item => item.seller_id === user._id)
                 if(filteredItems.length === 0){
-                  return(<div className="text-primary-text text-center mt-5 justify-center font-light">You don't have any items</div>)
+                  return(<div className="text-empty-state text-center mt-5 justify-center font-light">You don't have any items</div>)
                 }
                 return(
                   filteredItems.map((item: any) => (

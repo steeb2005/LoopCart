@@ -162,7 +162,7 @@ function Home(){
   return(
     <>
       {/* Sidebar */}
-      <div className=" mx-5 p-0 m-0 min-h-screen pb-5  ">
+      <div className=" mx-5 p-0 m-0 min-h-screen pb-5 pt-12 ">
         
         {/* SEARCH BAR
         <div className={`search-bar sticky ${isHidden ? 'top-2' : 'top-14'} z-50 transition-all duration-300 ease-in-out`}>
@@ -260,7 +260,6 @@ function Home(){
           </div>
         </div>
 
-        <p className="mt-5 text-center text-primary-text font-light">No more to show</p>
       </div>
     </>
   )

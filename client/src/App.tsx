@@ -16,7 +16,7 @@ import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
-  const { user, loading, authLoading } = useAppContext();
+  const { user, authLoading } = useAppContext();
   if(authLoading){
     
     return (

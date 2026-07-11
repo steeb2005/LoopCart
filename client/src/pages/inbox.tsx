@@ -45,10 +45,12 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
       <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
         {/* Image */}
       </div>
-      <div className='data-entry w-full min-w-0 flex flex-col flex-1 justify-center text-primary-text'>
+      <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
         <div className='flex flex-row justify-between'>
           <h1 className="font-semibold">@{otherUsername}</h1>
-          <p className='font-light'>{item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
+          <div className="px-2 rounded-full bg-bg-gray-surface flex items-center">
+            <p className='font-light text-sm'>{item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
+          </div>
         </div>
         <div className='flex flex-row justify-between items-center'>
           <h1>{item?.title}</h1>
@@ -171,7 +173,7 @@ function Inbox(){
 
  
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
+    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
@@ -224,7 +226,7 @@ function Inbox(){
             </>
           ) : (
             filteredInbox.length === 0 ? (
-              <div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any messages</div>
+              <div className='text-empty-state text-center mt-10 px-10 justify-center font-light'>You don't have any messages</div>
             )
             : (
                 filteredInbox?.map((entry: any) => (

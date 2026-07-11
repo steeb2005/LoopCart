@@ -30,6 +30,9 @@ export default function EditProfile() {
     if(user.birthdate){
       setBirthdate(user.birthdate)
     }
+    if(user.gender){
+      setGender(user.gender)
+    }
   }, [])
 
   const handleBackClick = () => {
@@ -56,8 +59,6 @@ export default function EditProfile() {
   
 
   if(editGender){
-    
-
     const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
       setGender(e.target.value)
     }
@@ -78,7 +79,7 @@ export default function EditProfile() {
       setEditGender(false)
     }
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditGender} src={Close} alt="back" className="cursor-pointer"/>
           Edit Gender
@@ -97,10 +98,9 @@ export default function EditProfile() {
             <NativeSelectOption value={'gay'} className="bg-bg-surface text-primary-text">Gay</NativeSelectOption>
           </NativeSelect>
           {error && <div className="text-red-400 mt-2 text-sm">{error}</div>}
+        </div>
           
 
-        </div>
-        
         <button 
           onClick={handleGenderChange}
           className='mx-5 mb-3 mt-auto cursor-pointer bg-bg-surface font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
@@ -147,7 +147,7 @@ export default function EditProfile() {
     }
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditBirthdate} src={Close} alt="back" className="cursor-pointer"/>
           Edit Birthdate
@@ -170,18 +170,8 @@ export default function EditProfile() {
     )
   }
 
-
-
-
-
-
-
-
-
-
+  
   if(editBio){
-
-    
     const handleChangeBio = async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault()
       const prev = user.bio
@@ -212,7 +202,7 @@ export default function EditProfile() {
 
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditBio} src={Close} alt="back" className="cursor-pointer"/>
           Edit Bio
@@ -260,8 +250,7 @@ export default function EditProfile() {
 
   return(
     <>
-      <div className="p-0 m-0 min-h-screen flex flex-col">
-        
+      <div className="p-0 m-0 h-dvh flex flex-col overflow-hidden pt-15">
         <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
           <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer" />
           Edit Profile
@@ -298,7 +287,7 @@ export default function EditProfile() {
           <div className="flex flex-col">
             <h1 className="font-semibold mx-5">Birthdate</h1>
             <div onClick={handleEditBirthdate} className="flex flex-row px-5 py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-              <p className="text-gray-300">{user?.birthdate ?format(new Date(user.birthdate), 'MMMM d, yyyy') :'Set birthdate'}</p>
+              <p className="text-gray-300">{user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : 'Set birthdate'}</p>
               <img src={Edit} alt="edit-svg"/>
             </div>
           </div>
@@ -306,7 +295,7 @@ export default function EditProfile() {
           <div className="flex flex-col">
             <h1 className="font-semibold mx-5">Gender</h1>
             <div onClick={handleEditGender} className="flex flex-row justify-between items-center px-5 py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
-              <p className="text-gray-300 ">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1) || 'Set gender'}</p>
+              <p className="text-gray-300 ">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'Set gender'}</p>
               <img src={Edit} alt="edit-svg"/>
             </div>
           </div>

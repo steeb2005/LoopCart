@@ -16,6 +16,7 @@ function Login(){
     password: ''
   })
   const [error, setError] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword)
@@ -37,12 +38,17 @@ function Login(){
     }
   }
 
+  const handleRememberMe = () => {
+    setRememberMe(!rememberMe)
+    const res = rememberMe
+    console.log(res)
+  }
 
   return(
     <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
       <div>
         <Link to={'/'}>
-          <img src={BackArrow} alt="arrow"/>
+          <img src={BackArrow} alt="arrow" className='h-10 w-10'/>
         </Link>
       </div>
       <div className="text-primary-text flex flex-col mt-20">
@@ -86,12 +92,15 @@ function Login(){
             <p className='text-sm text-red-400'>{error}</p>
           </div>
           <div className='mt-3 flex flex-row text-primary-text' >
-            <input type="checkbox" className='
-              outline-none
-              appreance-none
-              hover:cursor-pointer 
-              accent-bg-surface 
-              bg-transparent'/>
+            <input 
+              onChange={handleRememberMe}
+              type="checkbox" 
+              className='
+                outline-none
+                appreance-none
+                hover:cursor-pointer 
+                accent-bg-surface 
+                bg-transparent'/>
             <p className='ml-2'>Remember Me</p>
           </div>
           

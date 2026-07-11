@@ -21,7 +21,7 @@ export function Header({openSidebar}: {
   const isHidden = scrollDirection === 'down';
 
   return(
-    <div className={`sticky top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out
+    <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out
       ${isHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
       <div className="justify-between bg-bg-canvas border-b font-bold text-xl text-primary-text border-border-color items-center flex flex-row py-2 px-3 mb-2">

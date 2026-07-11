@@ -27,11 +27,13 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
       <div className='image-entry h-20 min-w-20 bg-bg-inverse rounded-md shrink-0'>
         {/* Image */}
       </div>
-      <div className='data-entry flex flex-col w-full text-primary-text'>
 
+      <div className='data-entry flex flex-col w-full text-primary-text space-y-1'>
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-semibold'>@{seller_name}</h1>
-          <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
+          <div className='px-2 rounded-full bg-bg-gray-surface flex items-center'>
+            <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
+          </div>
         </div>
         <div className='flex flex-row justify-between items-center'>
           <h1 className='font-light line-clamp-1'>{title}</h1>
@@ -92,7 +94,7 @@ function LikedItems() {
   }
   
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
+    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
         Liked Items
@@ -110,7 +112,7 @@ function LikedItems() {
           </>
         ) : (
           copyItems?.length === 0 ? 
-          (<div className='text-primary-text text-center mt-10 justify-center font-light'>You don't have any liked items</div>)
+          (<div className='text-empty-state text-center mt-10 justify-center font-light'>You don't have any liked items</div>)
           : (copyItems?.map((item: any) => (
             <ItemCard 
               key={item._id}
@@ -126,7 +128,6 @@ function LikedItems() {
         )}
       
         
-        {copyItems?.length !== 0 && <p className="mt-10 text-center text-primary-text font-light">No more items to show</p>}
       </div>
     </div>
   )

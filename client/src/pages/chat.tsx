@@ -424,7 +424,6 @@ function Chat(){
               message={message.text} 
             />
           )))}
-          <div ref={messageEndRef}/>
 
 
           {isSold && 
@@ -432,6 +431,7 @@ function Chat(){
               <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
             </div>
           }
+          <div ref={messageEndRef}/>
 
           {isLoading && (
             <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 

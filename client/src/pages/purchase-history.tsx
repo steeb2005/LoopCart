@@ -119,7 +119,7 @@ export default function PurchaseHistory(){
 
 
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col">
+    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15">
        <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
         History
@@ -158,7 +158,7 @@ export default function PurchaseHistory(){
             </>
           ): (
             itemHistory?.length === 0 ? 
-            (<div className='text-primary-text text-center mt-10 justify-center font-light'>Empty</div>) : 
+            (<div className='text-empty-state text-center mt-20 px-20 justify-center font-light '>{filter === 'purchases' ? 'You have not made any purchases yet' : 'You have not sold any items yet'}</div>) : 
               itemHistory.map(
                 (item: any) => (
                   <ItemEntry 
@@ -178,7 +178,6 @@ export default function PurchaseHistory(){
           }
           
           
-          <div className='flex justify-center mt-10 text-gray-300'>No more items to show</div>
 
         </div>
         

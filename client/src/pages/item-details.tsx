@@ -10,7 +10,7 @@ import Message from '../assets/message.svg'
 import { useItemLike } from '../hooks/handle-like'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useNavigate } from 'react-router-dom'
-
+import { Skeleton } from '../components/ui/skeleton'
 
 
 
@@ -50,7 +50,7 @@ type User = {
 function ItemDetails(){
   const naviagte = useNavigate()
   const {id} = useParams() 
-  const {items, user, getUsername, users} = useAppContext()
+  const {items, user, getUsername, users, dataLoading} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null)
@@ -75,10 +75,54 @@ function ItemDetails(){
   }
 
   
+  const handleEditListing = () => {
+    naviagte(`/sell-item`, {
+      state: {
+        id: item?._id,
+        item: item,
+        mode: 'edit'
+      }
+    })
+  }
+
+  if(dataLoading){
+    return(
+      <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col pt-15"> 
+          <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
+            <img src={Back} alt="back" className='cursor-pointer'/>
+            Item details
+          </div>
+          <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
+            <Skeleton className='bg-bg-surface w-full h-50'/>
+            <div className='flex flex-col space-y-1'>
+              <Skeleton className='bg-bg-surface w-3/4 h-4 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-4 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
+            </div>            
+          </div>
+          <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
+            <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
+          </div>
+          <div  
+            className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
+            <Skeleton className='h-8 w-8 rounded-full bg-bg-surface'/>
+            <Skeleton className='h-4 w-2/8 rounded-full bg-bg-surface'/>
+          </div>
+          <div className='text-primary-text mt-5 mb-5'>
+            <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
+            <Skeleton className='bg-bg-surface w-2/4 h-4 mt-2'/>
+          </div>  
+          <Skeleton className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-sm p-2 text-primary-text font-semibold h-10 w-full'/>       
+        </div> 
+    )
+  }
 
 
   
-  // Error handler if item is not found
+  
   if(!item){
     return(
       <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex justify-center items-center">
@@ -91,15 +135,13 @@ function ItemDetails(){
       </div>
     )
   }
+
+
   return(
     <>
-        <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col"> 
-          
-
+        <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col pt-15"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          
             <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
-            
             Item details
           </div>
           <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
@@ -147,8 +189,12 @@ function ItemDetails(){
           </div>
           
           {isUserItem ? (
-            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+            <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
               Edit Listing
+            </button>
+          ) : (item?.sold_at ? (
+            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+              Item Sold
             </button>
           ) : (
             <Link
@@ -158,9 +204,10 @@ function ItemDetails(){
                 <img src={Message} alt="message" />
                 Make an Offer/Buy now
               </button>
-            
             </Link>
-            )}
+            
+            )
+          )}
           
         </div>    
 

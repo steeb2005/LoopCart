@@ -1,6 +1,6 @@
 import Back from '../assets/back.svg'
-import {Link} from 'react-router-dom'
-import { useState } from 'react'
+import {Link, useLocation} from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import Location from '../assets/location.svg'
 import Logo from '../assets/Logo.svg'
 import { useAppContext } from '../context/context'
@@ -16,26 +16,71 @@ import {NumericFormat} from 'react-number-format'
  */
 
 function SellItem(){
+  const location = useLocation()
   const navigate = useNavigate()
-  const {user, post_item} = useAppContext() 
+  const {user, post_item, update_item} = useAppContext() 
 
   const [item, setItem] = useState({
     title: '',
-    price: null as number | null, 
+    price: '', 
     category: '',
     condition: '',
     description: '',
     created_at: '',
-    sold_at: null,
+    sold_at: null as string,
     status: 'available',
     seller_id: '',
-    buyer_id: null,
-    image: '',
+    buyer_id: null as string,
+    image: null as string,
     likes: 0
   })
 
+  const defaultData = {
+    title: '',
+    price: '', 
+    category: '',
+    condition: '',
+    description: '',
+    created_at: '',
+    sold_at: null as string,
+    status: 'available',
+    seller_id: '',
+    buyer_id: null as string,
+    image: null as string,
+    likes: 0
+  }
+
+
+  const mode = location.state?.mode || 'create'
+  const item_id = location.state?.id
+
+  useEffect(() => {
+    if(mode === 'edit'){
+      const initialData = location.state?.item || item
+      const itemToEdit = {
+        title: initialData.title,
+        price: initialData.price, 
+        category: initialData.category,
+        condition: initialData.condition,
+        description: initialData.description,
+        created_at: initialData.created_at,
+        sold_at: initialData.sold_at,
+        status: initialData.status,
+        seller_id: initialData.seller_id,
+        buyer_id: initialData.buyer_id,
+        image: initialData.image,
+        likes: initialData.likes
+      }
+      setItem(itemToEdit)
+    }else{
+      setItem(defaultData)
+    }
+  }, [mode])
+  
+  
+  
   const handlePost = async (e: React.SubmitEvent<HTMLFormElement>) => {
-     e.preventDefault()
+    e.preventDefault()
     const created_at = new Date().toISOString();
     const seller_id = user._id || ''
     if(!seller_id){
@@ -51,30 +96,41 @@ function SellItem(){
       status: 'available'
     }
     
-   
+    const itemToEdit = {
+      ...item,
+      _id: item_id,
+      price: Number(item.price)
+    }
+
+
     try{
-      const post = await post_item(itemToPost)
-      if(post){
-        navigate('/home')
+      if(mode === 'edit'){
+        await update_item(item_id, itemToEdit)
+      }else{
+        await post_item(itemToPost)
       }
+      
     }catch(error){
       console.error('error in posting item', error);
+    }finally{
+      navigate('/home')
     }
   }
 
   const handlePrice = (values: {floatValue?: number}) => {
-    setItem({...item, price: values.floatValue ?? null})
+    setItem({...item, price: values.floatValue !== undefined ? String(values.floatValue) : ''})
   }
 
+  const handleBackClick = () => {
+    navigate(-1)
+  }
 
   return(
     <>
-      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col"> 
+      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
         <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <Link to={'/home'}>
-            <img src={Back} alt="back" />
-          </Link>
-          Sell Item
+          <img src={Back} alt="back" onClick={handleBackClick}/>
+          {mode === 'create' ? 'Create Listing' : 'Edit Listing'}
         </div>
         <div className='flex flex-col mx-5 flex-1'>
           
@@ -112,7 +168,6 @@ function SellItem(){
             />
 
             <TextareaAutosize 
-              
               value={item.condition}
               onChange={(e) => setItem({...item, condition: e.target.value})}
               className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
@@ -133,12 +188,10 @@ function SellItem(){
           <div className='flex flex-row gap-2 mb-5'>
             <img src={Location} alt="Location" />
             <h1 className='font-light text-primary-text'>Butuan City</h1>
-          </div>
-          
+          </div>          
           
           <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-bg-surface font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
             <p>Post to the Loop</p>
-            <img src={Logo} alt="logo" className='h-7'/>
           </button>
           
           
