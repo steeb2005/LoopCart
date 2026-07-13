@@ -129,7 +129,7 @@ function SellItem(){
     <>
       <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
         <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img src={Back} alt="back" onClick={handleBackClick}/>
+          <img src={Back} alt="back" onClick={handleBackClick} className='filter-(--icon-filter)'/>
           {mode === 'create' ? 'Create Listing' : 'Edit Listing'}
         </div>
         <div className='flex flex-col mx-5 flex-1'>
@@ -142,7 +142,7 @@ function SellItem(){
             <TextareaAutosize
               value={item.title}
               onChange={(e) => setItem({...item, title: e.target.value})}
-              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 '
+              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface border border-border-color px-4 py-5 w-full rounded-md decoration-none outline-0 '
               placeholder='Title'
               required
             />
@@ -154,7 +154,7 @@ function SellItem(){
               inputMode='decimal'
               value={item.price}
               onValueChange={handlePrice}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
               placeholder='Price'
               required
             />
@@ -162,7 +162,7 @@ function SellItem(){
             <TextareaAutosize  
               value={item.category}
               onChange={(e) => setItem({...item, category: e.target.value})}
-              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              className='mt-5 resize-none text-sm border border-border-color items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
               placeholder='Category'
               required
             />
@@ -170,7 +170,7 @@ function SellItem(){
             <TextareaAutosize 
               value={item.condition}
               onChange={(e) => setItem({...item, condition: e.target.value})}
-              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              className='mt-5 resize-none text-sm border border-border-color items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
               placeholder='Condition'
               required
             />
@@ -178,7 +178,7 @@ function SellItem(){
             <TextareaAutosize 
               value={item.description}
               onChange={(e) => setItem({...item, description: e.target.value})}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+              className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
               placeholder='Description'
               required
             />
@@ -186,11 +186,11 @@ function SellItem(){
 
           <h1 className='text-md text-primary-text font-semibold mt-5 mb-1'>Location</h1>
           <div className='flex flex-row gap-2 mb-5'>
-            <img src={Location} alt="Location" />
+            <img src={Location} alt="Location" className='filter-(--icon-filter)'/>
             <h1 className='font-light text-primary-text'>Butuan City</h1>
           </div>          
           
-          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-bg-surface font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
+          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
             <p>Post to the Loop</p>
           </button>
           

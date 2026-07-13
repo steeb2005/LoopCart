@@ -5,16 +5,27 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html, body{
-    background-color: #222222;
-    width: 100%;
-}
+:root {
+     /* LIGHT*/ 
+    --color-bg-canvas: #F0F2F5;
+    --color-bg-surface: #e5e5e5;
+    --color-bg-inverse: #808080;
+    --color-bg-gray-surface: color-mix(var(--color-gray-600) 20%, transparent);
 
-#root {
-    background-color: #222222;
-}
+    --color-border-color: #aaaaaa;
+    --color-border-color-inverse: #F5F5F5;
+    --color-bg-theme-color: #FFFFFF;
+    --color-button-color: #1A1A1A;
 
-@theme {
+    --color-primary-text: #1A1A1A;
+    --color-secondary-text: #444444;
+    --color-primary-text-inverse: #f5f5f5;
+    --color-tertiary-text: #595959;
+    --color-empty-state: #808080;
+    --icon-filter: invert(100%);
+    
+
+    /* DARK 
     --color-bg-canvas: #222222;
     --color-bg-surface: #353434;
     --color-bg-inverse: #F5F5F5;
@@ -22,101 +33,16 @@ html, body{
 
     --color-border-color: #595959;
     --color-border-color-inverse: #F5F5F5;
-    --color-message-color: #1A1A1A;
+    --color-bg-theme-color: #1A1A1A;
+    --color-button-color: #f5f5f5;
 
     --color-primary-text: #F5F5F5;
+    --color-secondary-text: #d1d5db;
     --color-primary-text-inverse: #1A1A1A;
     --color-tertiary-text: #9E9E9E;
     --color-empty-state: #808080;
-
-}
-
-
-
-@theme inline {
-
-    --font-heading: var(--font-sans);
-
-    --font-sans: 'Inter Variable', sans-serif;
-
-    --color-sidebar-ring: var(--sidebar-ring);
-
-    --color-sidebar-border: var(--sidebar-border);
-
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-
-    --color-sidebar-accent: var(--sidebar-accent);
-
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-
-    --color-sidebar-primary: var(--sidebar-primary);
-
-    --color-sidebar-foreground: var(--sidebar-foreground);
-
-    --color-sidebar: var(--sidebar);
-
-    --color-chart-5: var(--chart-5);
-
-    --color-chart-4: var(--chart-4);
-
-    --color-chart-3: var(--chart-3);
-
-    --color-chart-2: var(--chart-2);
-
-    --color-chart-1: var(--chart-1);
-
-    --color-ring: var(--ring);
-
-    --color-input: var(--input);
-
-    --color-border: var(--border);
-
-    --color-destructive: var(--destructive);
-
-    --color-accent-foreground: var(--accent-foreground);
-
-    --color-accent: var(--accent);
-
-    --color-muted-foreground: var(--muted-foreground);
-
-    --color-muted: var(--muted);
-
-    --color-secondary-foreground: var(--secondary-foreground);
-
-    --color-secondary: var(--secondary);
-
-    --color-primary-foreground: var(--primary-foreground);
-
-    --color-primary: var(--primary);
-
-    --color-popover-foreground: var(--popover-foreground);
-
-    --color-popover: var(--popover);
-
-    --color-card-foreground: var(--card-foreground);
-
-    --color-card: var(--card);
-
-    --color-foreground: var(--foreground);
-
-    --color-background: var(--background);
-
-    --radius-sm: calc(var(--radius) * 0.6);
-
-    --radius-md: calc(var(--radius) * 0.8);
-
-    --radius-lg: var(--radius);
-
-    --radius-xl: calc(var(--radius) * 1.4);
-
-    --radius-2xl: calc(var(--radius) * 1.8);
-
-    --radius-3xl: calc(var(--radius) * 2.2);
-
-    --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-:root {
+    --icon-filter: invert(0)
+    */
 
     --background: oklch(1 0 0);
 
@@ -183,7 +109,23 @@ html, body{
     --sidebar-ring: oklch(0.708 0 0);
 }
 
+
 .dark {
+    --color-bg-canvas: #222222;
+    --color-bg-surface: #353434;
+    --color-bg-inverse: #F5F5F5;
+    --color-bg-gray-surface: color-mix(var(--color-gray-300) 20%, transparent);
+
+    --color-border-color: #595959;
+    --color-border-color-inverse: #F5F5F5;
+    --color-bg-theme-color: #1A1A1A;
+    --color-button-color: #f5f5f5;
+    --color-primary-text: #F5F5F5;
+    --color-secondary-text: #d1d5db;
+    --color-primary-text-inverse: #1A1A1A;
+    --color-tertiary-text: #9E9E9E;
+    --color-empty-state: #808080;
+    --icon-filter: invert(0);
 
     --background: oklch(0.145 0 0);
 
@@ -247,6 +189,76 @@ html, body{
 
     --sidebar-ring: oklch(0.556 0 0);
 }
+
+
+@theme {
+    --color-bg-canvas: var(--bg-canvas);
+    --color-bg-surface: var(--bg-surface);
+    --color-bg-inverse: var(--bg-inverse);
+    --color-border-color: var(--border-color);
+    --color-border-color-inverse: var(--border-color-inverse);
+    --color-primary-text: var(--primary-text);
+    --color-primary-text-inverse: var(--primary-text-inverse);
+    --color-secondary-text: var(--secondary-text);
+    --color-tertiary-text: var(--tertiary-text);
+    --color-empty-state: var(--empty-state);
+    --color-bg-gray-surface: var(--bg-gray-surface);
+    --color-bg-theme-color: var(--bg-theme-color);
+    --color-button-color: var(--button-color);
+    --icon-filter: var(--icon-filter);
+    
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+
+    --font-sans: 'Inter Variable', sans-serif;
+    --font-heading: var(--font-sans);
+}
+
+
+html, body{
+    background-color: var(--color-bg-canvas);
+    width: 100%;
+    transition: background-color 0.2s ease;
+}
+
+#root {
+    background-color: var(--color-bg-canvas);
+}
+
+
+
 
 @layer base {
   * {

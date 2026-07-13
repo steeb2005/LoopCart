@@ -46,18 +46,18 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
         {/* Image */}
       </div>
       <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
+        <div className='flex flex-row justify-between items-center'>
+          <h1 className="font-bold line-clamp-1">{item?.title}</h1>
+          <h1 className="font-semibold">₱{item?.price.toLocaleString('en-US')}</h1>
+        </div>
         <div className='flex flex-row justify-between'>
-          <h1 className="font-semibold">@{otherUsername}</h1>
+          <h1 className="font-light text-sm">@{otherUsername}</h1>
           <div className="px-2 rounded-full bg-bg-gray-surface flex items-center">
             <p className='font-light text-sm'>{item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
           </div>
         </div>
-        <div className='flex flex-row justify-between items-center'>
-          <h1>{item?.title}</h1>
-          <h1 className="font-semibold">₱{item?.price.toLocaleString('en-US')}</h1>
-        </div>
         <div className='last-message items-center'>
-          <p className={`text-sm line-clamp-1 ${lastSender ===  user._id ? 'font-extralight text-gray-300' : read ? 'font-extralight text-gray-300' : 'font-bold'}`}>
+          <p className={`text-secondary-text text-sm line-clamp-1 ${lastSender ===  user._id ? 'font-light' : read ? 'font-light ' : 'font-bold'}`}>
             {unreadCount > 2 ? `${unreadCount} new messages` : `${lastSenderUsername}: ${lastMessage}`} 
           </p>
         </div>
@@ -74,11 +74,11 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
 function InboxSkeleton(){
   return(
     <Skeleton className="rounded-lg flex flex-row bg-bg-surface gap-1 items-center overflow-hidden p-2">
-      <Skeleton className="h-20 w-20 bg-bg-gray-surface"/>
+      <Skeleton className="h-20 w-20 bg-border-color"/>
       <div className="p-2 space-y-3 flex-1 flex flex-col">
-        <Skeleton className="h-4 w-3/4 bg-bg-gray-surface" />
-        <Skeleton className="h-4 w-1/2 bg-bg-gray-surface" />
-        <Skeleton className="h-4 w-2/3 bg-bg-gray-surface" />
+        <Skeleton className="h-4 w-3/4 bg-border-color" />
+        <Skeleton className="h-4 w-1/2 bg-border-color" />
+        <Skeleton className="h-4 w-2/3 bg-border-color" />
       </div>
     </Skeleton>
   )
@@ -176,7 +176,7 @@ function Inbox(){
     <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
+        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
         Inbox
       </div>
 

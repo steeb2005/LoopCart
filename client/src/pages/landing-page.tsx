@@ -15,7 +15,7 @@ function LandingPage(){
         
         <div className='flex flex-row'>
           <h1 className='text-4xl font-semibold'>LoopCart</h1>
-          <img src={Logo} alt="logo_svg" className='ml-4'/>
+          <img src={Logo} alt="logo_svg" className='ml-4 filter-(--icon-filter)'/>
         </div>
         <div>
           <p className='font-light text-3xl'>Buy. Sell. <br />Repeat the <br />Loop</p>
@@ -27,10 +27,11 @@ function LandingPage(){
 
         <div className='mt-10'>
           <Link to={'/login'}>
-            <button className='hover:cursor-pointer bg-bg-inverse text-primary-text-inverse px-5 py-2 rounded-full flex items-center'>
+            <button className='hover:cursor-pointer bg-button-color text-primary-text-inverse px-5 py-2 rounded-full flex items-center'>
               Start Selling 
               <div className='w-8 h-8 rounded-full bg-bg-canvas ml-3 flex items-center justify-center'>
-                <img src={ArrowRight} alt="arrow" /></div> 
+                <img src={ArrowRight} alt="arrow" className='filter-(--icon-filter)'/>
+              </div> 
             </button>
           </Link>
           
@@ -42,27 +43,27 @@ function LandingPage(){
       <div className='benefits mt-30 flex flex-col mx-7'>
         <h1 className='text-2xl text-center text-primary-text mb-5'>Why Choose LoopCart?</h1>
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
-          <img src={MoneyBag} alt="money" className='h-7 w-7' />
+          <img src={MoneyBag} alt="money" className='h-7 w-7 filter-(--icon-filter)'/>
           <h1 className='text-lg mt-2'>Turn your clutter into cash</h1>
-          <p className='mt-2 text-sm font-thin'>Stop letting your old tech gather dust and your unused clothes crowd your closet. Turn them into extra money today.</p>
+          <p className='mt-2 text-md font-light'>Stop letting your old tech gather dust and your unused clothes crowd your closet. Turn them into extra money today.</p>
         </div>
 
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
-          <img src={DollarSign} alt="dollar" className='h-7 w-7' />
+          <img src={DollarSign} alt="dollar" className='h-7 w-7 filter-(--icon-filter)'/>
           <h1 className='text-lg mt-2'>Unbeatable Deals</h1>
-          <p className='mt-2 text-sm font-thin'>Find gently used iPhones, vintage jackets, and everyday essentials at prices you won’t find in retail stores.</p>
+          <p className='mt-2 text-md font-light'>Find gently used iPhones, vintage jackets, and everyday essentials at prices you won’t find in retail stores.</p>
         </div>
 
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
-          <img src={Plant} alt="plant" className='h-7 w-7' />
+          <img src={Plant} alt="plant" className='h-7 w-7 filter-(--icon-filter)' />
           <h1 className='text-lg mt-2'>Good for Your Wallet & Planet</h1>
-          <p className='mt-2 text-sm font-thin'>Every item you buy or sell extends its lifecycle, reducing electronic waste and fast-fashion pollution.</p>
+          <p className='mt-2 text-md font-light'>Every item you buy or sell extends its lifecycle, reducing electronic waste and fast-fashion pollution.</p>
         </div>
 
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
-          <img src={Handshake} alt="hand" className='h-7 w-7' />
+          <img src={Handshake} alt="hand" className='h-7 w-7 filter-(--icon-filter)' />
           <h1 className='text-lg mt-2'>Trustworthy Local Trading</h1>
-          <p className='mt-2 text-sm font-thin'>Deal directly with a verified community of fashion lovers and tech enthusiasts right in your neighborhood.</p>
+          <p className='mt-2 text-md font-light'>Deal directly with a verified community of fashion lovers and tech enthusiasts right in your neighborhood.</p>
         </div>
       </div>
 
@@ -71,7 +72,7 @@ function LandingPage(){
         <p className='font-light text-center mt-5'>Join thousands of users giving <br />a second life to great clothes and tech.</p>
         <div className='flex flex-row justify-center mt-10'>
           <Link to={'/register'}>
-            <button className='hover:cursor-pointer font-semibold text bg-bg-inverse text-primary-text-inverse px-5 py-2 rounded-full flex items-center justify-center '>
+            <button className='hover:cursor-pointer font-semibold text bg-button-color text-primary-text-inverse px-5 py-2 rounded-full flex items-center justify-center '>
               Create Free Account
             </button>
           </Link>

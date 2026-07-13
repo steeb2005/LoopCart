@@ -141,7 +141,7 @@ function ItemDetails(){
     <>
         <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col pt-15"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-            <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
+            <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
             Item details
           </div>
           <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
@@ -160,12 +160,12 @@ function ItemDetails(){
           
           
           <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
-            <div className='flex'>
+            <div className='flex items-center'>
               <h1>Seller</h1>
-              <img src={Goto} alt="goto" className='h-8'/>
+              <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
             </div>
             <div className='flex flex-row gap-3 mr-4'>
-              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='cursor-pointer'/>
+              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer'/>
               <h1>{likesCount}</h1>
             </div>
           </div>
@@ -175,7 +175,6 @@ function ItemDetails(){
             className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
             <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
-
             </div>
             <h1>@{sellerUsername}</h1>
           </Link>
@@ -183,26 +182,26 @@ function ItemDetails(){
           <div className='text-primary-text mt-5 mb-5'>
             <h1 className='text-xl font-semibold'>Location</h1>
             <div className='flex flex-row items-center gap-2 mt-2'>
-              <img src={Location} alt="location" />
+              <img src={Location} alt="location" className='filter-(--icon-filter)'/>
               <p>Butuan City</p>
             </div>
           </div>
           
           {isUserItem ? (
-            <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+            <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
               Edit Listing
             </button>
           ) : (item?.sold_at ? (
-            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
               Item Sold
             </button>
           ) : (
             <Link
               to={`/chat/${item?._id}/${item?.seller_id}`}  
             >
-              <button className='justify-center cursor-pointer flex mt-auto flex-row items-center gap-2 bg-bg-surface rounded-md p-2 text-primary-text font-semibold w-full'>
+              <button className='justify-center cursor-pointer flex mt-auto flex-row items-center gap-2 bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
                 <img src={Message} alt="message" />
-                Make an Offer/Buy now
+                Make an Offer
               </button>
             </Link>
             

@@ -36,8 +36,8 @@ function ItemEntry({itemId, title, price, avatar_url, sold_at, isUserTheBuyer, u
       to={`/item/${itemId}`}
       className='text-primary-text cursor-pointer item-entry bg-bg-surface p-2 gap-3 rounded-md flex flex-col shrink-0'
       >
-      <div className='date '>
-        <h1>{format(new Date(sold_at), 'MMMM d, yyyy')}</h1>
+      <div className='date text-sm flex items-center'>
+        <h1>{format(new Date(sold_at), 'MMMM d, yyyy h:mm a')}</h1>
       </div>
 
       <div className='flex flex-row shrink-0 gap-2'>
@@ -45,13 +45,15 @@ function ItemEntry({itemId, title, price, avatar_url, sold_at, isUserTheBuyer, u
           {/* Image */}
         </div>
         <div className='data-entry w-full min-w-0 flex flex-col justify-center gap-1'>
-          <h1 className='font-lg line-clamp-2'>{title}</h1>  
-          <h1 className='font-light'>Price: ₱{price.toLocaleString('en-US')}</h1>
+          <h1 className='font-semibold line-clamp-2'>{title}</h1>  
+          <h1 className='font-md'>₱{price.toLocaleString('en-US')}</h1>
         </div>
       </div>
       <div className='flex flex-row gap-4 items-center text-sm'>
         <div className='flex flex-row gap-2 items-center '>
-          <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center"></div>
+          <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
+            {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-sm font-bold'>{entryUsername.charAt(0).toUpperCase()}</span>) }
+          </div>
           <h1>{entryUsername}</h1>
         </div>
         <div className='font-light bg-bg-gray-surface py-1 px-2 rounded-full'>

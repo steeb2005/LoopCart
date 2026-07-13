@@ -31,8 +31,8 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         {/* Image goes here */}
       </div>
       <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 ">{title}</h1>
-        <h1 className="font-bold">₱{price.toLocaleString('en-US')}</h1>
+        <h1 className="line-clamp-1 font-bold">{title}</h1>
+        <h1 className="font-semibold">₱{price.toLocaleString('en-US')}</h1>
         <p className="text-sm line-clamp-1">{description}</p>
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
@@ -44,7 +44,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
                 e.stopPropagation()
               }}  
               src={isLiked ? HeartClicked : Heart} 
-              alt="heart" />
+              alt="heart" className="filter-(--icon-filter)"/>
             {likesCount}
           </div>
         </div>
@@ -57,7 +57,12 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 
 
-function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: string, email: string}){
+function UserCard({userId, avatar_url, firstname, lastname }: {
+  userId: string, 
+  avatar_url: string, 
+  firstname: string,
+  lastname: string
+}){
   const {getUsername} = useAppContext()
 
   const username = getUsername(userId)
@@ -68,15 +73,14 @@ function UserCard({userId, avatar_url, email}: {userId: string, avatar_url: stri
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
           {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
-
         </div>
         <div className="flex flex-col ">
-          <p>{username}</p>
-          <p className="text-gray-300 text-sm">{email}</p>
+          <p className="">{firstname} {lastname}</p>
+          <p className="text-sm text-secondary-text font-light">{username}</p>
         </div>
       </div>
 
-      <div className="flex items-center text-sm">
+      <div className="flex items-center text-xs font-light">
         View profile
       </div>
     </Link>
@@ -120,9 +124,9 @@ function SkeletonUsers(){
 
 function Home(){
   
-  const {items, getUsername, users, user, load_items, load_users, dataLoading} = useAppContext()
+  const {items, getUsername, users, user, load_items, load_users} = useAppContext()
   const [searchParams, setSearchParams] = useSearchParams()
-  
+    
   const [isClicked, setIsClicked] = useState(searchParams.get('tab') || 'Items')
   const [pageLoading, setPageLoading] = useState(true)
   
@@ -187,14 +191,14 @@ function Home(){
 
           <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between">
             <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-2">
-              <img src={Category} alt="category" />
+              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
               Category
-              <img src={ArrowDown} alt="arrow_down" />
+              <img src={ArrowDown} alt="arrow_down" className="filter-(--icon-filter)"/>
             </button>
 
             <div className="flex flex-row gap-3">
               <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
-                <img src={Filter} alt="filter" />
+                <img src={Filter} alt="filter" className="filter-(--icon-filter)"/>
                 Filter
               </button>
             </div>
@@ -253,7 +257,8 @@ function Home(){
                 key={user._id}
                 userId={user._id}
                 avatar_url={user.avatar_url}
-                email={user.email}
+                firstname={user.firstname}
+                lastname={user.lastname}
               />
             ))}
 

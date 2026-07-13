@@ -1,3 +1,4 @@
+import { rootProjectionNode } from "framer-motion";
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
 
@@ -29,6 +30,7 @@ type RegisterData = {
 type LoginRequest = {
   email: string;
   password: string;
+  rememberMe: boolean
 }
 
 
@@ -113,12 +115,13 @@ type ContextType = {
   users: RequestUsers[];
   items: Item[];
   token: string | null;
-  loading: boolean;
   likedItems: Item[];
   inbox: Conversation[];
   dataLoading: boolean;
   authLoading: boolean;
+  theme: 'light' | 'dark';
 
+  toggleTheme: () => void;
   update_item: (itemId: string, updateData: Item) => Promise<void>;
   update_gender: (userId: string, gender: string) => Promise<void>;
   update_birthdate: (userId: string, birthdate: string) => Promise<void>;
@@ -171,6 +174,7 @@ function getToken(): string | null{
   return localStorage.getItem(TOKEN_KEY)
 }
 
+/**
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
   const token = getToken()
   return{
@@ -180,8 +184,14 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
   }
 }
 
+*/
 
-
+function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return{
+    'Content-type': 'application/json',
+    ...extra
+  }
+}
 
 
 
@@ -202,31 +212,37 @@ export function AppContext({children}) {
   const [user, setUser] = useState<User | null>(null);  // Current user
   const [users, setUsers] = useState<RequestUsers[]>([]);       // All users
   const [items, setItems] = useState<Item[]>([]);       // All items
-  const [token, setToken] = useState<string | null>(getToken())
+  const [token, setToken] = useState<string | null>()
   const [likedItems, setLikedItems] = useState<Item[]>([])
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map())
   const [inbox, setInbox] = useState<Conversation[]>([])
-  const [loading, setLoading] = useState(true)
   const [authLoading, setAuthLoading] = useState(true)
   const [dataLoading, setDataLoading] = useState(false)
-  // On Load -------------------------------------------------------------------------------------
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+  })
+  
   
   useEffect(() => {
-    const loadInitialData = async () => {
-      const stored = getToken()
-      if(!stored){
-        setAuthLoading(false)
-        return
-      }
-      try{
+    const root = document.documentElement
+    if(theme === 'dark'){
+      root.classList.add('dark')
+    }else{
+      root.classList.remove('dark')
+    }
 
+    localStorage.setItem('theme', theme)
+  }, [theme])
+  
+  // On Load -------------------------------------------------------------------------------------
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try{
         const res = await fetch(`${API_URL}/users/me`, {
-          headers: authHeaders()
+          credentials: 'include' // Needs this to load the cookies to the request
         })
         
         if(!res.ok){
-          clearToken()
-          setToken(null)
           setAuthLoading(false)
           return
         }
@@ -247,8 +263,6 @@ export function AppContext({children}) {
 
       }catch{
         console.error('Error in loading initial data');
-        clearToken()
-        setToken(null)
       }finally{
         setDataLoading(false)
       }  
@@ -274,6 +288,9 @@ export function AppContext({children}) {
     return usersMap.get(user_id) || 'Unkown Seller'
   }
 
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light')
+  }
 
   // Auth -------------------------------------------------------------------------------------
 
@@ -284,14 +301,13 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
+        credentials: 'include'
       })
 
       const data = await res.json()
 
       if (res.ok){
-        saveToken(data.access_token)
-        setToken(data.access_token)
         console.log('registered successfully as:' + data.user.username);
         return {success: true}
       }else{
@@ -312,15 +328,15 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
+        credentials: 'include'
       })
 
       const data = await res.json()
 
       if(res.ok){
         setLikedItems([])
-        saveToken(data.access_token)
-        setToken(data.access_token)
+     
         const userData = {
           _id: data.user._id || '',  // Make sure _id is included
           username: data.user.username,
@@ -353,12 +369,15 @@ export function AppContext({children}) {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    await fetch(`${API_URL}/logout`, {
+      method: "POST",
+      credentials: "include"
+    })
+     
     wsRef.current?.close()
     wsRef.current = null
-    clearToken()
     setUser(null)
-    setToken(null)
     setUsers([])
     setItems([])
     setLikedItems([])
@@ -379,7 +398,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/items`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
+        credentials:'include'
       })
 
       const data = await res.json()
@@ -455,7 +475,8 @@ export function AppContext({children}) {
   const load_liked_items = async(user_id: string) => {
     try{
       const res = await fetch(`${API_URL}/likes/${user_id}`, {
-        headers: authHeaders()
+        headers: authHeaders(),
+        credentials: 'include'
       });
       const data = await res.json();
       setLikedItems(data) // Optimize (load only the liked items of the logged in user)
@@ -472,7 +493,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/likes`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({user_id: userId, item_id: itemId})
+        body: JSON.stringify({user_id: userId, item_id: itemId}),
+        credentials: 'include'
       })
 
       if(res.ok){
@@ -525,7 +547,8 @@ export function AppContext({children}) {
   const load_inbox = async(userId: string) => {
     try{
       const res = await fetch(`${API_URL}/users/${userId}/inbox`, {   
-        headers: authHeaders()      // 
+        headers: authHeaders(),    
+        credentials: 'include'
       }) 
       
       if(res.ok){
@@ -550,6 +573,7 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/messages/send`, {
         method: "POST",
         headers: authHeaders(),
+        credentials: 'include',
         body: JSON.stringify({
           sender_id: message.sender_id, 
           receiver_id: message.receiver_id, 
@@ -581,7 +605,9 @@ export function AppContext({children}) {
   const load_messages = async(conversation_id: string) => {
     try{
       const res = await fetch(`${API_URL}/conversation/${conversation_id}/messages`, {
-        headers: authHeaders()
+        headers: authHeaders(),
+        credentials: 'include'
+
       })
       if(!res.ok) {
         console.error('Error in loading messages')
@@ -600,7 +626,8 @@ export function AppContext({children}) {
   const fetch_conversation_id = async (sender_id: string, item_id: string) => {
     try{
       const res = await fetch(`${API_URL}/conversations/${sender_id}/${item_id}`, {
-        headers: authHeaders()
+        headers: authHeaders(),
+        credentials: 'include'
       })
       if(res.ok){
         const data = await res.json()
@@ -643,7 +670,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/items/${itemId}`, {
         method: 'PUT',        
         headers: authHeaders(),
-        body: JSON.stringify(updateData)
+        body: JSON.stringify(updateData),
+        credentials: 'include'
       })
       
       if(res.ok){
@@ -664,7 +692,8 @@ export function AppContext({children}) {
     try{
       const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
         method: 'PATCH',
-        headers: authHeaders()
+        headers: authHeaders(),
+        credentials: 'include'
       })
 
       if(res.ok){
@@ -684,7 +713,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/users/${userId}/bio`, {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({bio: bio})
+        body: JSON.stringify({bio: bio}),
+        credentials: 'include'
       })
 
       if(res.ok){
@@ -701,7 +731,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/users/${userId}/birthdate`, {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({birthdate: birthdate})
+        body: JSON.stringify({birthdate: birthdate}),
+        credentials: 'include'
       })
 
       if(res.ok){
@@ -719,7 +750,8 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/users/${userId}/gender`, {
         method: 'PATCH',
         headers: authHeaders(),
-        body: JSON.stringify({gender: gender})
+        body: JSON.stringify({gender: gender}),
+        credentials: 'include'
       })
 
       if(res.ok){
@@ -765,12 +797,13 @@ export function AppContext({children}) {
     users,
     items,
     token,
-    loading,
     likedItems,
     inbox,
     dataLoading,
     authLoading,
-    
+    theme,
+
+    toggleTheme,
     update_item,
     update_gender,
     update_birthdate,

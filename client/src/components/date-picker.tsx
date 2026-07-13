@@ -25,9 +25,9 @@ export function DatePicker({ onSelect, error }: { onSelect: (date: string) => vo
             
           className={`bg-bg-surface w-full cursor-pointer py-8 border ${error ? "border-red-500" : "border-border-color"}  text-gray-300 font-light justify-start`}
         >
-          <div className='flex flex-col text-left'>
-            <p>Month day year</p>
-            <p>
+          <div className='flex flex-col text-primary-text text-left'>
+            <p className='text-secondary-text'>Month day year</p>
+            <p className='font-semibold'>
               {date ? format(date, 'MMMM d, yyyy') : user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : "Select a date"}
 
             </p>

@@ -30,8 +30,8 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         {/* Image goes here */}
       </div>
       <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 ">{title}</h1>
-        <h1 className='font-bold'>₱{price.toLocaleString('en-US')}</h1>
+        <h1 className="line-clamp-1 font-semibold">{title}</h1>
+        <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
         <p className="text-sm line-clamp-1">{description}</p>
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
@@ -43,7 +43,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
                 e.stopPropagation()
               }}  
               src={isLiked ? HeartClicked : HeartDefault} 
-              alt="heart" />
+              alt="heart" className='filter-(--icon-filter)'/>
             {likesCount}
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function UserProfile() {
     return(
       <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
         <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
-          <img src={Back} alt="back" />
+          <img src={Back} alt="back" className='filter-(--icon-filter)'/>
           User Profile
         </div>
 
@@ -136,7 +136,7 @@ export default function UserProfile() {
   return (
     <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
       <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer' />
+        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)' />
         User Profile
       </div>
 
@@ -149,7 +149,7 @@ export default function UserProfile() {
               <h1 className="font-bold text-2xl">
                 {user?.firstname} {user?.lastname}
               </h1>
-              <h1 className="text-gray-300">@{user?.username}</h1>
+              <h1 className="text-secondary-text">@{user?.username}</h1>
               
             </div>
         </div>
@@ -157,7 +157,7 @@ export default function UserProfile() {
 
         <div className="flex flex-col text-primary-text px-5 mt-5">
           <h1 className="text-xl font-bold mb-2">About</h1>
-          <p className="text-gray-300 text-sm">{user?.bio || 'No bio yet'}</p>
+          <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
         </div>
 
         <div className="flex flex-col text-primary-text mt-5 border-b border-border-color pb-3">
@@ -166,41 +166,41 @@ export default function UserProfile() {
               <h1 className="text-xl font-bold">Personal Details</h1>
               <Link
                 to={`/edit-profile/${user?._id}`}>
-                <img src={Edit} alt="edit" className='cursor-pointer'/>
+                <img src={Edit} alt="edit" className='cursor-pointer filter-(--icon-filter)'/>
               
               </Link>
             </div>
             
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Email Address</h1>
-              <p className="text-gray-300">{user?.email}</p>
+              <p className="text-secondary-text">{user?.email}</p>
             </div>
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Join Date</h1>
-              <p className="text-gray-300">{formattedJoinDate}</p>
+              <p className="text-secondary-text">{formattedJoinDate}</p>
             </div>
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Birthdate</h1>
-              <p className="text-gray-300">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy')  : 'No birthdate yet'}</p>
+              <p className="text-secondary-text">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy')  : 'No birthdate yet'}</p>
             </div>
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Gender</h1>
-              <p className="text-gray-300">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'No gender yet'}</p>
+              <p className="text-secondary-text">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'No gender yet'}</p>
             </div>
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Address</h1>
-              <p className="text-gray-300">{user?.address || 'No address yet'}</p>
+              <p className="text-secondary-text">{user?.address || 'No address yet'}</p>
             </div>
           </div>
         </div>
 
         <div className='flex flex-col mx-5 text-primary-text'>
             <div className="flex flex-row gap-3 mb-5 mt-5">
-              <img src={ItemBox} alt="items-svg" />
+              <img src={ItemBox} alt="items-svg" className='filter-(--icon-filter)'/>
               <h1 className="font-bold text-xl">My Items</h1>
             </div>
             <div className="flex flex-col gap-3">

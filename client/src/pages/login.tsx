@@ -3,25 +3,37 @@ import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import { Link } from 'react-router-dom'
 import BackArrow from '../assets/arrow_back.svg'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
 
 function Login(){
   const navigate = useNavigate()
-  const { login } = useAppContext()
+  const { login, user } = useAppContext()
   const [ showPassword, setShowPassword ] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
   const [ formData, setFormData ] = useState({
     email: '',
-    password: ''
+    password: '',
+    rememberMe: false
   })
-  const [error, setError] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
+  
+  useEffect(() => {
+    const autoLogin = () => {
+      if(user){
+        setLoading(true)
+        navigate('/home')
+      }else{
+        setLoading(false)
+      }
+    }
+    autoLogin()
+  }, [user])
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword)
   }
-
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     setError('')
@@ -38,17 +50,19 @@ function Login(){
     }
   }
 
-  const handleRememberMe = () => {
-    setRememberMe(!rememberMe)
-    const res = rememberMe
-    console.log(res)
+  if(loading){
+    return(
+      <div className="flex items-center justify-center min-h-screen">
+        AUTOLOGIN
+      </div>
+    )
   }
 
   return(
     <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
       <div>
         <Link to={'/'}>
-          <img src={BackArrow} alt="arrow" className='h-10 w-10'/>
+          <img src={BackArrow} alt="arrow" className='h-10 w-10 filter-(--icon-filter)'/>
         </Link>
       </div>
       <div className="text-primary-text flex flex-col mt-20">
@@ -56,7 +70,7 @@ function Login(){
         <h1 className="font-semibold text-3xl">Login to</h1>
         <div className='flex flex-row'>
           <h1 className="font-semibold text-3xl ">LoopCart</h1>
-          <img src={Logo} alt="logpo" className='ml-4 h-11 w-11'/>
+          <img src={Logo} alt="logo" className='ml-4 h-11 w-11 filter-(--icon-filter)'/>
         </div>
         <p className='font-light text-3xl mt-3'>Buy. Sell. repeat the loop.</p>
       </div>
@@ -93,7 +107,8 @@ function Login(){
           </div>
           <div className='mt-3 flex flex-row text-primary-text' >
             <input 
-              onChange={handleRememberMe}
+              checked={formData.rememberMe}
+              onChange={(e) => setFormData({...formData, rememberMe: e.target.checked})}
               type="checkbox" 
               className='
                 outline-none
@@ -104,7 +119,7 @@ function Login(){
             <p className='ml-2'>Remember Me</p>
           </div>
           
-          <button className='mt-5 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+          <button className='mt-5 text-primary-text-inverse w-full bg-button-color  font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
             Login
           </button>
           

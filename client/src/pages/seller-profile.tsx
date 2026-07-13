@@ -63,8 +63,8 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
         {/* Image goes here */}
       </div>
       <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 ">{title}</h1>
-        <h1 className='font-bold'>₱{price.toLocaleString('en-US')}</h1>
+        <h1 className="line-clamp-1 font-bold">{title}</h1>
+        <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
         <p className="text-sm line-clamp-1">{description}</p>
         <div className="flex flex-row items-center justify-between mt-2">
           <h1 className="text-sm font-light">@{seller_name}</h1>
@@ -76,7 +76,7 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
                 e.stopPropagation()
               }}  
               src={isLiked ? HeartClicked : HeartDefault} 
-              alt="heart" />
+              alt="heart" className="filter-(--icon-filter)"/>
             {likesCount}
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function SellerProfile(){
   return(
     <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
       <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
-        <img onClick={handleBackClick} src={Back} alt="back" />
+        <img onClick={handleBackClick} src={Back} alt="back" className="filter-(--icon-filter)"/>
         Seller Profile
       </div>
       <div className="flex flex-col">
@@ -190,7 +190,7 @@ export default function SellerProfile(){
             <h1 className="font-bold text-2xl">
               {user?.firstname} {user?.lastname}
             </h1>
-            <h1 className="text-gray-300">@{user?.username}</h1>
+            <h1 className="text-secondary-text">@{user?.username}</h1>
             
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function SellerProfile(){
 
         <div className="flex flex-col text-primary-text px-5 mt-5">
           <h1 className="text-xl font-bold mb-2">About</h1>
-          <p className="text-gray-300 text-sm">{user?.bio || 'No bio yet'}</p>
+          <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
         </div>
 
         <div className="flex flex-col text-primary-text mt-5 border-b border-border-color pb-3">
@@ -209,26 +209,26 @@ export default function SellerProfile(){
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Join Date</h1>
-              <p className="text-gray-300">{formattedDate}</p>
+              <p className="text-secondary-text">{formattedDate}</p>
             </div>
 
             {user?.birthdate && (  
               <div className="flex flex-col">
                 <h1 className="font-semibold mt-5">Birthdate</h1>
-                <p className="text-gray-300">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
+                <p className="text-secondary-text">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
               </div>
             )}
 
             {user?.gender && (
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Gender</h1>
-              <p className="text-gray-300">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
+              <p className="text-secondary-text">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
             </div>
             )}
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Address</h1>
-              <p className="text-gray-300">{user?.address || 'No address yet'}</p>
+              <p className="text-secondary-text">{user?.address || 'No address yet'}</p>
             </div>
           </div>
         </div>

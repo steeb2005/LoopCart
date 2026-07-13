@@ -27,23 +27,23 @@ export function Header({openSidebar}: {
       <div className="justify-between bg-bg-canvas border-b font-bold text-xl text-primary-text border-border-color items-center flex flex-row py-2 px-3 mb-2">
         <div className='flex flex-row items-center gap-2'>
           <h1>LoopCart</h1>   
-          <img src={Logo} alt="logo" className='h-7 '/>
+          <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
         </div>
         <div className='flex flex-row items-center gap-3'>
 
           <Link to={'/sell-item'}>
             <div className='cursor-pointer'>
-              <img src={AddBox} alt="addbox"/>
+              <img src={AddBox} alt="addbox" className='filter-(--icon-filter)'/>
             </div>
           
           </Link>
 
           <div className='cursor-pointer'>
-            <img src={Search} alt="search" className='h-7 w-7'/>
+            <img src={Search} alt="search" className='h-7 w-7 filter-(--icon-filter)'/>
           </div>
 
           <div onClick={openSidebar} className='relative cursor-pointer'>
-            <img src={Menu} alt="menu" className='cursor-pointer'/>
+            <img src={Menu} alt="menu" className='cursor-pointer filter-(--icon-filter)'/>
             {unreadMessages > 0 && 
             <div className='absolute top-0 -right-1 flex border-2 border-bg-canvas justify-center bg-primary-text rounded-full items-center text-center align-middle text-xs h-5 w-6 text-primary-text-inverse'>
               {unreadMessages > 9 ? '9+' : unreadMessages}

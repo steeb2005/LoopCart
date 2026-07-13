@@ -372,7 +372,7 @@ function Chat(){
           <div className='head flex flex-col text-primary-text font-semibold'>
             
             <div className="mx-5 flex flex-row gap-5 mb-3">
-              <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
+              <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
               <div className="flex flex-row gap-2 items-center">
                 <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
                   {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
@@ -382,7 +382,7 @@ function Chat(){
               </div>
             </div>
             
-            <div className='item-entry border-b border-border-color-inverse border-t pt-2 pb-2 m-0'>
+            <div className='item-entry border-b border-border-color border-t pt-2 pb-2 m-0'>
               <div className="flex flex-row px-5 gap-2 items-center">
 
                 <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
@@ -446,7 +446,7 @@ function Chat(){
 
         <form
           onSubmit={handleSendMessage} 
-          className="shrink-0 flex flex-row gap-2 items-end py-2 px-5 bg-bg-canvas"
+          className="shrink-0 flex flex-row gap-2 items-center py-2 px-5 bg-bg-canvas"
         >
           <TextareaAutosize 
             ref={messageInputRef}
@@ -454,7 +454,7 @@ function Chat(){
             maxRows={5}
             value={message}
             placeholder="message"
-            className={`scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-3 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
+            className={`scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-2 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
             enterKeyHint="send"
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
@@ -464,10 +464,18 @@ function Chat(){
           <button 
             type="submit"
             onClick={(e) => handleSendMessage(e as any)}
-            className={`${message.length > 0 ? 'bg-bg-inverse' : 'bg-gray-400'}  p-2  rounded-full cursor-pointer z-100`} 
+            className={`
+              p-1 transition-all duration-200 ease-in-out
+              ${message.length > 0 
+                ? 'w-10' 
+                : 'w-0 -ml-3'
+              }
+              overflow-hidden shrink-0
+              cursor-pointer z-100
+            `}  
             disabled={message.length === 0}
           >
-            <img src={Send} alt="send" />
+            <img src={Send} alt="send" className="filter-(--icon-filter)"/> 
           </button>
         </form>
 
@@ -479,14 +487,14 @@ function Chat(){
           
         {revertSold && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
 
               {/* Header with accent */}
               <div className="relative">
-                <div className="px-6 py-3">
+                <div className="px-6 pt-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <img src={CheckCircle} alt="check" />
+                      <img src={CheckCircle} alt="check" className="filter-(--icon-filter)"/>
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-primary-text">Revert Sale</h3>
@@ -507,7 +515,7 @@ function Chat(){
                   Cancel
                 </button>
                 <button 
-                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-bg-inverse border border-border-color"
+                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
                   onClick={handleSetToSold}
                 >
                   Revert
@@ -521,7 +529,7 @@ function Chat(){
         {soldConfirmation && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div 
-              className="w-[90%] max-w-md bg-bg-surface rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden"
+              className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header with accent */}
@@ -529,7 +537,7 @@ function Chat(){
                   <div className="p-6 pb-4">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                        <img src={CheckCircle} alt="check" />
+                        <img src={CheckCircle} alt="check" className="filter-(--icon-filter)"/>
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-primary-text">Confirm Sale</h3>
@@ -545,7 +553,7 @@ function Chat(){
                 </p>
                 
                 {/* Buyer info card */}
-                <div className="p-4 bg-bg-canvas rounded-xl border border-border-color/50">
+                <div className="p-4 bg-bg-canvas/50 rounded-xl border border-border-color/50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-bg-inverse">
                       <span className="text-accent font-semibold text-sm">
@@ -561,7 +569,7 @@ function Chat(){
 
                 {/* Item preview */}
                 {item && (
-                  <div className="mt-3 flex items-center gap-3 p-3 bg-bg-canvas/50 rounded-xl border border-border-color/30">
+                  <div className="mt-3 flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-color/30">
                     <div className="w-12 h-12 bg-bg-inverse rounded-lg shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-light text-primary-text">{item.title}</p>
@@ -581,7 +589,7 @@ function Chat(){
                 </button>
                 <button
                   onClick={handleSetToSold}
-                  className="cursor-pointer flex-1 py-2.5 px-4 rounded-xl border border-border-color text-primary-text font-medium flex items-center justify-center gap-2"
+                  className="cursor-pointer flex-1 py-2.5 px-4 rounded-xl border border-border-color bg-button-color text-primary-text-inverse font-medium flex items-center justify-center gap-2"
                 >
                   Confirm
                 </button>

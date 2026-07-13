@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response, Request, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -7,9 +7,9 @@ import jwt
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 
-SECRET_KEY = "your-super-secret-key-change-this-in-production-12345"
+SECRET_KEY = "450ed82ef026750abdb1ba72cd0e9d7fa7b9f30d52f386ee6e9d57a08dacc58b"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30 
 
 
 app = FastAPI()
@@ -57,7 +57,10 @@ manager = ConnectionManager()
 
 
 # JWT helpers ---------------------------------------------------------------
-
+'''
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    return decode_token(credentials.credentials)
+'''
 def create_access_token(user_id: str, email: str) -> str:
     payload = {
         "sub": user_id,
@@ -65,6 +68,7 @@ def create_access_token(user_id: str, email: str) -> str:
         "exp": datetime.now(tz=timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
 
 
 def decode_token(token: str) -> dict:
@@ -76,9 +80,16 @@ def decode_token(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    return decode_token(credentials.credentials)
 
+async def get_current_user(request: Request):
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not Authenticated")
+    return decode_token(token)
+
+
+
+    
 
 
 
@@ -102,6 +113,7 @@ class UserProfile(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+    rememberMe: bool
 
 
 class Item(BaseModel):
@@ -167,6 +179,7 @@ class ItemUpdate(BaseModel):
 
 # Auth ------------------------------------------------------------------------------------------------
 
+"""
 #add user to database
 @app.post("/users")
 async def create_user(user: User):
@@ -206,13 +219,63 @@ async def create_user(user: User):
             "join_date": user.join_date,
             "avatar_url": user.avatar_url
         }
-    }
-        
+    }     
+"""
+
+#add user to database
+@app.post("/users")
+async def create_user(user: User):
+
+    #check if user already exists
+    existing_email = await users.find_one({"email": user.email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="User already exists")
+
+    existing_username = await users.find_one({"username": user.username})
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
+
+    result = await users.insert_one({
+        "username": user.username,
+        "firstname": user.firstname, 
+        "lastname": user.lastname, 
+        "email": user.email, 
+        "password": user.password,
+        "join_date": user.join_date,
+        "avatar_url": user.avatar_url
+    })
+
+    user_id = str(result.inserted_id) # Gets the id of the user created by mongodb
+
+    """
+    token = create_access_token(user_id, user.email)
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="lax",
+        max_age=60*60
+    )
+    """
+
+    return {
+        "user": {
+            "_id": user_id,
+            "username": user.username,
+            "firstname": user.firstname, 
+            "lastname": user.lastname, 
+            "email": user.email, 
+            "password": user.password,
+            "join_date": user.join_date,
+            "avatar_url": user.avatar_url
+        }
+    }    
 
 
 
-
-    #simple login that checks email and password
+'''
+# login 
 @app.post("/login")
 async def login(login_data: LoginRequest):
     
@@ -245,8 +308,58 @@ async def login(login_data: LoginRequest):
             "birthdate": user.get("birthdate")
         }
     }
+'''
+# login 
+@app.post("/login")
+async def login(login_data: LoginRequest, response: Response):
+    
+    user = await users.find_one({"email": login_data.email}) # Find user by email
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    if user["password"] != login_data.password:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
 
+    user_id = str(user["_id"])
+    token = create_access_token(user_id, login_data.email)
+
+    if login_data.rememberMe:
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            httponly=True,
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
+            max_age=60*60*24*30
+        )
+    else:
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            httponly=True,
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
+            max_age=60*60*24
+        )
+
+
+    return {
+        "user": {
+            "_id": user_id,
+            "username": user["username"],
+            "firstname": user["firstname"],
+            "lastname": user["lastname"],
+            "email": user["email"],
+            "join_date": user["join_date"],
+            "avatar_url": user.get("avatar_url"),
+            "address": user.get("address"),
+            "gender": user.get("gender"),
+            "bio": user.get("bio"),
+            "birthdate": user.get("birthdate")
+        }
+    }
 
 
 # Protected routes ---------------------------------------------------------------------------
@@ -308,6 +421,12 @@ async def create_item(item: Item, current_user: dict = Depends(get_current_user)
         "likes": item.likes
     }
 
+
+# Logout
+@app.post('/logout')
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    return{"success": True}
 
 
 # Edit item

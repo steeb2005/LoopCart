@@ -30,18 +30,18 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
 
       <div className='data-entry flex flex-col w-full text-primary-text space-y-1'>
         <div className='flex flex-row justify-between items-center'>
-          <h1 className='font-semibold'>@{seller_name}</h1>
-          <div className='px-2 rounded-full bg-bg-gray-surface flex items-center'>
-            <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
-          </div>
+          <h1 className='font-bold line-clamp-1'>{title}</h1>
+          <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
         </div>
         <div className='flex flex-row justify-between items-center'>
-          <h1 className='font-light line-clamp-1'>{title}</h1>
+          <h1 className='font-light text-secondary-text text-sm'>@{seller_name}</h1>
+          
         </div>
           
         <div className='last-message items-center flex flex-row justify-between'>
-          <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
-
+          <div className='px-2 rounded-full bg-bg-gray-surface flex items-center'>
+            <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
+          </div>
           <div className='flex flex-row gap-2'>
             <img 
               onClick={(e) => {
@@ -50,7 +50,7 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
                 e.stopPropagation()
                 }} 
               src={isLiked ? HeartClicked : HeartDefault} 
-              alt="heart" />
+              alt="heart" className='filter-(--icon-filter)'/>
             {likesCount}
           </div>
         </div>
@@ -96,7 +96,7 @@ function LikedItems() {
   return(
     <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer'/>
+        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
         Liked Items
       </div>
 

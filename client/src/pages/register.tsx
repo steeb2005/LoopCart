@@ -75,7 +75,7 @@ function Register(){
     <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
       <div>
         <Link to={'/'}>
-          <img src={BackArrow} alt="backarrow" className="w-10 h-10"/>
+          <img src={BackArrow} alt="backarrow" className="w-10 h-10 filter-(--icon-filter)"/>
         </Link>
       </div>      
       <div className="text-primary-text mt-10">
@@ -145,7 +145,7 @@ function Register(){
             </div>
             <p className="text-tertiary-text mt-5 text-center font-light text-sm">By registering an account you agree to the terms and conditions</p>
   
-            <button className='mt-10 w-full bg-bg-inverse font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+            <button className='mt-10 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
               Create account
             </button>
           </form>
