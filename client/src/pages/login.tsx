@@ -59,79 +59,82 @@ function Login(){
   }
 
   return(
-    <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
-      <div>
-        <Link to={'/'}>
-          <img src={BackArrow} alt="arrow" className='h-10 w-10 filter-(--icon-filter)'/>
-        </Link>
-      </div>
-      <div className="text-primary-text flex flex-col mt-20">
-        <h1 className="font-semibold text-3xl">Welcome Back!</h1>
-        <h1 className="font-semibold text-3xl">Login to</h1>
-        <div className='flex flex-row'>
-          <h1 className="font-semibold text-3xl ">LoopCart</h1>
-          <img src={Logo} alt="logo" className='ml-4 h-11 w-11 filter-(--icon-filter)'/>
+
+    <div className="flex items-center justify-center h-dvh">
+
+      <div className="lg:w-[40%] flex justify-center flex-col px-10 py-6 lg:border lg:border-border-color rounded-2xl bg-bg-canvas">
+        <div>
+          <Link to={'/'}>
+            <img src={BackArrow} alt="arrow" className='h-10 w-10 filter-(--icon-filter)'/>
+          </Link>
         </div>
-        <p className='font-light text-3xl mt-3'>Buy. Sell. repeat the loop.</p>
-      </div>
+        <div className="text-primary-text flex flex-col mt-10">
+          <h1 className="font-semibold text-3xl lg:text-2xl">Login to</h1>
+          <div className='flex flex-row gap-2'>
+            <h1 className="font-semibold text-3xl lg:text-2xl">LoopCart</h1>
+            <img src={Logo} alt="logo" className='h-11 w-11 lg:h-8 filter-(--icon-filter)'/>
+          </div>
+          <p className='font-light text-2xl mt-3'>Buy. Sell. repeat the loop.</p>
+        </div>
 
-      <div className='mt-10'>
-        <form onSubmit={handleSubmit} >
-          <input 
-            type="email" 
-            value={formData.email}
-            className='text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            placeholder='Email'
-            required
-          />
-
-          <div className='relative'>
+        <div className='mt-10'>
+          <form onSubmit={handleSubmit} >
             <input 
-              type={showPassword ? "text" : "password"} 
-              value={formData.password}
-              onChange={(e) => setFormData({...formData, password: e.target.value})}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
-              placeholder='Password'
+              type="email" 
+              value={formData.email}
+              className='text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              placeholder='Email'
               required
             />
-            <img 
-              src={showPassword ? Eye : EyeOff} 
-              alt="eye" 
-              className='absolute right-3 top-10 cursor-pointer'  
-              onClick={handleShowPassword}
-            />
-          </div>
-          <div className='mt-3'>
-            <p className='text-sm text-red-400'>{error}</p>
-          </div>
-          <div className='mt-3 flex flex-row text-primary-text' >
-            <input 
-              checked={formData.rememberMe}
-              onChange={(e) => setFormData({...formData, rememberMe: e.target.checked})}
-              type="checkbox" 
-              className='
-                outline-none
-                appreance-none
-                hover:cursor-pointer 
-                accent-bg-surface 
-                bg-transparent'/>
-            <p className='ml-2'>Remember Me</p>
-          </div>
-          
-          <button className='mt-5 text-primary-text-inverse w-full bg-button-color  font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
-            Login
-          </button>
-          
 
-        </form>
+            <div className='relative'>
+              <input 
+                type={showPassword ? "text" : "password"} 
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
+                placeholder='Password'
+                required
+              />
+              <img 
+                src={showPassword ? Eye : EyeOff} 
+                alt="eye" 
+                className='absolute right-3 top-9 cursor-pointer'  
+                onClick={handleShowPassword}
+              />
+            </div>
+            <div className='mt-3'>
+              <p className='text-sm text-red-400'>{error}</p>
+            </div>
+            <div className='mt-3 flex flex-row text-primary-text' >
+              <input 
+                checked={formData.rememberMe}
+                onChange={(e) => setFormData({...formData, rememberMe: e.target.checked})}
+                type="checkbox" 
+                className='
+                  outline-none
+                  appreance-none
+                  hover:cursor-pointer 
+                  accent-bg-surface 
+                  bg-transparent'/>
+              <p className='ml-2'>Remember Me</p>
+            </div>
+            
+            <button className='mt-5 text-primary-text-inverse w-full bg-button-color  font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+              Login
+            </button>
+            
+
+          </form>
 
 
-        <div className='text-center mt-10 text-primary-text'>
-          <p>New to LoopCart? <Link to={'/register'} className='underline'>Create an account</Link></p>
+          <div className='text-center mt-10 text-primary-text'>
+            <p>New to LoopCart? <Link to={'/register'} className='underline'>Create an account</Link></p>
+          </div>
         </div>
+        
       </div>
-      
     </div>
   )  
 }

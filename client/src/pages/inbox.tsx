@@ -173,7 +173,7 @@ function Inbox(){
 
  
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
+    <div className="mx-5 py-2 lg:mx-30"> 
 
       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
         <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
@@ -186,7 +186,7 @@ function Inbox(){
           <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 
             All
             {allUnreadCount > 0 && 
-            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
+            <div className='bg-bg-surface text-primary-text font-bold w-6 h-5 rounded-full text-center justify-center flex items-center text-xs '>
               {allUnreadCount > 9 ? '9+' : allUnreadCount}
             </div>}
           </div>
@@ -194,7 +194,7 @@ function Inbox(){
           <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center shrink-0 text-center py-2 px-4 cursor-pointer items-center text-sm`}>
             Buying 
             {buyingUnreadCount > 0 && 
-            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
+            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-bold '>
               {buyingUnreadCount > 9 ? '9+' : buyingUnreadCount}
             </div>}
           </div>
@@ -203,7 +203,7 @@ function Inbox(){
           <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 px-4 shrink-0 cursor-pointer items-center text-sm`}> 
             Selling 
             {sellingUnreadCount > 0 && 
-            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-light '>
+            <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-bold '>
               {sellingUnreadCount > 9 ? '9+' : sellingUnreadCount}
             </div>}
           </div>

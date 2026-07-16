@@ -10,8 +10,8 @@ function LandingPage(){
  
   return(
     
-    <div className="mx-5 p-0 m-0 overflow-hidden min-h-screen py-5">
-      <div className='main-section flex flex-col text-primary-text mt-20 mx-10'>
+    <div className="py-5 lg:mx-20 ">
+      <div className='main-section flex flex-col text-primary-text mt-20 mx-10 '>
         
         <div className='flex flex-row'>
           <h1 className='text-4xl font-semibold'>LoopCart</h1>
@@ -40,7 +40,7 @@ function LandingPage(){
       </div>
 
 
-      <div className='benefits mt-30 flex flex-col mx-7'>
+      <div className='benefits flex flex-col mt-20 mx-7'>
         <h1 className='text-2xl text-center text-primary-text mb-5'>Why Choose LoopCart?</h1>
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
           <img src={MoneyBag} alt="money" className='h-7 w-7 filter-(--icon-filter)'/>
@@ -67,7 +67,7 @@ function LandingPage(){
         </div>
       </div>
 
-      <div className='callToAction mt-30 flex flex-col mx-7 text-primary-text'>
+      <div className='mt-20 pb-10 flex flex-col mx-7 text-primary-text'>
         <h1 className='font-bold text-3xl text-center'>Ready to clear <br />your clutter?</h1>
         <p className='font-light text-center mt-5'>Join thousands of users giving <br />a second life to great clothes and tech.</p>
         <div className='flex flex-row justify-center mt-10'>

@@ -9,6 +9,9 @@ import { DatePicker } from '../components/date-picker'
 import {format} from "date-fns"
 import { NativeSelect, NativeSelectOption } from "../components/ui/native-select"
 
+
+
+
 export default function EditProfile() {
   const navigate = useNavigate()
   const {user, update_bio, update_birthdate, update_gender} = useAppContext()
@@ -79,7 +82,7 @@ export default function EditProfile() {
       setEditGender(false)
     }
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30 ">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditGender} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
           Edit Gender
@@ -147,7 +150,7 @@ export default function EditProfile() {
     }
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15 ">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30">
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditBirthdate} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
           Edit Birthdate
@@ -169,6 +172,8 @@ export default function EditProfile() {
       </div>
     )
   }
+
+  
 
   
   if(editBio){
@@ -202,13 +207,15 @@ export default function EditProfile() {
 
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text pt-15">
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30 ">
+
         <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
           <img onClick={handleEditBio} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
           Edit Bio
         </div>
 
-        <div className="mx-5">
+            
+        <div className="mx-5 ">
           <h1 className="font-bold mt-5">Add a bio</h1>
           <form onSubmit={handleChangeBio} id="form">
             <TextareaAutosize 
@@ -219,9 +226,8 @@ export default function EditProfile() {
             />
           </form>
           <h1 className="text-secondary-text text-sm">{biolength}/{MAX} words</h1>
-          
-          
         </div>
+        
         <button 
           type="submit"
           form="form"
@@ -250,14 +256,17 @@ export default function EditProfile() {
 
   return(
     <>
-      <div className="p-0 m-0 h-dvh flex flex-col overflow-hidden pt-15">
-        <div className='head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
-          Edit Profile
-        </div>
+   
 
-        
-        <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
+    <div className='mx-5 lg:mx-30 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
+      <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
+      Edit Profile
+    </div>
+    <div className="lg:mx-30">
+      
+      <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
+
+        <div className=" flex flex-row gap-5 text-primary-text ">
           <div className="w-20 h-20 bg-bg-inverse rounded-full items-center justify-center flex">
             {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
           </div>
@@ -272,45 +281,47 @@ export default function EditProfile() {
 
 
         <div className="flex flex-col text-primary-text mt-5">
-          <h1 className="text-xl font-bold mb-2 px-5">About</h1>
-          <p onClick={handleEditBio} className="text-secondary-text px-5 py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+          <h1 className="text-xl font-bold mb-2 ">About</h1>
+          <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
             {user?.bio || 'No bio yet'}
           </p>
         </div>
 
         
         <div className="flex flex-col gap-5 text-primary-text mt-5">
-          <div className='flex flex-row justify-between items-center mx-5'>
+          <div className='flex flex-row justify-between items-center '>
             <h1 className="text-xl font-bold">Personal Details</h1>
           </div>
 
           <div className="flex flex-col">
-            <h1 className="font-semibold mx-5">Birthdate</h1>
-            <div onClick={handleEditBirthdate} className="flex flex-row px-5 py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+            <h1 className="font-semibold ">Birthdate</h1>
+            <div onClick={handleEditBirthdate} className="flex flex-row py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
               <p className="text-secondary-text">{user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : 'Set birthdate'}</p>
               <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
             </div>
           </div>
 
           <div className="flex flex-col">
-            <h1 className="font-semibold mx-5">Gender</h1>
-            <div onClick={handleEditGender} className="flex flex-row justify-between items-center px-5 py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
+            <h1 className="font-semibold ">Gender</h1>
+            <div onClick={handleEditGender} className="flex flex-row justify-between items-center  py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
               <p className="text-secondary-text ">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'Set gender'}</p>
               <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
             </div>
           </div>
 
           <div className="flex flex-col">
-            <h1 className="font-semibold mx-5">Address</h1>
-            <div className="flex flex-row justify-between items-center px-5 py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+            <h1 className="font-semibold ">Address</h1>
+            <div className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
               <p className="text-secondary-text">{user?.address || 'Current city or town'}</p>
               <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
             </div>
           </div>
         </div>
+      </div>
+    </div>
 
         
-      </div>
+      
     </>
   )
 

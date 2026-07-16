@@ -255,9 +255,8 @@ html, body{
 
 #root {
     background-color: var(--color-bg-canvas);
+    transition: background-color 0.2s ease;
 }
-
-
 
 
 @layer base {

@@ -11,11 +11,10 @@ import { useItemLike } from "../hooks/handle-like.tsx"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 
 
-function ItemCard({item_id, title, price, description, seller_name, likes}: {
+function ItemCard({item_id, title, price, seller_name, likes}: {
   item_id: string,
   title: string,
   price: number,
-  description: string,
   seller_name: string,
   likes: number
 }
@@ -25,29 +24,29 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
   return(
     <Link  
       to={`/item/${item_id}`}
-      className="bg-bg-surface rounded-md p-3 cursor-pointer"
+      className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
     >
-      <div className="img-section bg-bg-inverse w-full min-h-37 rounded-md">
+      <div className="img-section bg-bg-inverse w-full min-h-50 rounded-md">
         {/* Image goes here */}
       </div>
-      <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 font-bold">{title}</h1>
-        <h1 className="font-semibold">₱{price.toLocaleString('en-US')}</h1>
-        <p className="text-sm line-clamp-1">{description}</p>
-        <div className="flex flex-row items-center justify-between mt-2">
-          <h1 className="text-sm font-light">@{seller_name}</h1>
-          <div className="flex flex-row gap-2">
-            <img 
-              onClick={(e) => {
-                handleLikeClick(e)
-                e.preventDefault()
-                e.stopPropagation()
-              }}  
-              src={isLiked ? HeartClicked : Heart} 
-              alt="heart" className="filter-(--icon-filter)"/>
-            {likesCount}
-          </div>
+      <div className="title-section text-primary-text mt-2 ">
+        <h1 className="line-clamp-2 ">{title}</h1>
+        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
+      </div>
+      <div className="flex flex-row items-center justify-between mt-auto">
+        <h1 className="text-sm font-light">@{seller_name}</h1>
+        <div className="flex flex-row gap-2">
+          <img 
+            onClick={(e) => {
+              handleLikeClick(e)
+              e.preventDefault()
+              e.stopPropagation()
+            }}  
+            src={isLiked ? HeartClicked : Heart} 
+            alt="heart" className="filter-(--icon-filter) h-6"/>
+          {likesCount}
         </div>
+        
       </div>
     </Link>
   )
@@ -57,19 +56,18 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 
 
 
-function UserCard({userId, avatar_url, firstname, lastname }: {
+function UserCard({userId, avatar_url, firstname, lastname, username }: {
   userId: string, 
   avatar_url: string, 
   firstname: string,
-  lastname: string
+  lastname: string,
+  username: string
 }){
-  const {getUsername} = useAppContext()
-
-  const username = getUsername(userId)
+  
   return(
     <Link
       to={`/users/${userId}`}
-      className="bg-bg-surface p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
+      className="border border-border-color p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
           {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
@@ -166,7 +164,7 @@ function Home(){
   return(
     <>
       {/* Sidebar */}
-      <div className=" mx-5 p-0 m-0 min-h-screen pb-5 pt-12 ">
+   
         
         {/* SEARCH BAR
         <div className={`search-bar sticky ${isHidden ? 'top-2' : 'top-14'} z-50 transition-all duration-300 ease-in-out`}>
@@ -178,93 +176,88 @@ function Home(){
           />
         </div> */}
 
-        <div className="top-section flex flex-col">
-          
-          <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
-            <div onClick={() => handleClick("Items")} className={` border-b ${isClicked === 'Items' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}>
-              Items
-            </div>
-            <div onClick={() => handleClick("Sellers")} className={` border-b ${isClicked === 'Sellers' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}> 
-              Sellers
-            </div>
+      <div className="top-section flex flex-col mx-5">
+        
+        <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
+          <div onClick={() => handleClick("Items")} className={` border-b ${isClicked === 'Items' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}>
+            Items
           </div>
-
-          <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between">
-            <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-2">
-              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-              Category
-              <img src={ArrowDown} alt="arrow_down" className="filter-(--icon-filter)"/>
-            </button>
-
-            <div className="flex flex-row gap-3">
-              <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
-                <img src={Filter} alt="filter" className="filter-(--icon-filter)"/>
-                Filter
-              </button>
-            </div>
-          </div>
-
-
-          <div className="border px-2 py-2 border-border-color rounded-md mt-2 flex flex-col gap-2">
-            
-            {/* Item Entry */}
-            
-            {pageLoading && isClicked === 'Items' &&
-            <>
-              <SkeletonCard/>
-              <SkeletonCard/>
-              <SkeletonCard/>
-              <SkeletonCard/>
-              <SkeletonCard/>
-            </>
-            }
-
-            {pageLoading && isClicked === 'Sellers' &&
-            <>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-              <SkeletonUsers/>
-            </>
-            }
-
-
-            {isClicked === 'Items' &&
-              items.map((item: any) => (
-                item.status === 'available' && (
-                  <ItemCard 
-                    key={item._id}
-                    item_id={item._id}
-                    title={item.title}
-                    price={item.price}
-                    description={item.description}
-                    seller_name={getUsername(item.seller_id)}
-                    likes={item.likes}
-                    
-                  />
-                )
-              ))
-            }
-
-            {isClicked === 'Sellers' && 
-            users
-            .filter((u: any) => u._id !== user._id) // Removes the current loggedin user
-            .map((user: any) => (
-              <UserCard 
-                key={user._id}
-                userId={user._id}
-                avatar_url={user.avatar_url}
-                firstname={user.firstname}
-                lastname={user.lastname}
-              />
-            ))}
-
+          <div onClick={() => handleClick("Sellers")} className={` border-b ${isClicked === 'Sellers' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}> 
+            Sellers
           </div>
         </div>
 
+        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between">
+          <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-2">
+            <img src={Category} alt="category" className="filter-(--icon-filter)"/>
+            Category
+            <img src={ArrowDown} alt="arrow_down" className="filter-(--icon-filter)"/>
+          </button>
+
+          <div className="flex flex-row gap-3">
+            <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
+              <img src={Filter} alt="filter" className="filter-(--icon-filter)"/>
+              Filter
+            </button>
+          </div>
+        </div>
+
+
+        <div className=" rounded-md py-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          
+          {/* Item Entry */}
+          
+          {pageLoading && isClicked === 'Items' &&
+            Array.from({ length: 8 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))
+
+          }
+
+          {pageLoading && isClicked === 'Sellers' &&
+          <>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+            <SkeletonUsers/>
+          </>
+          }
+
+
+          {isClicked === 'Items' &&
+            items.map((item: any) => (
+              item.status === 'available' && (
+                <ItemCard 
+                  key={item._id}
+                  item_id={item._id}
+                  title={item.title}
+                  price={item.price}
+                  seller_name={getUsername(item.seller_id)}
+                  likes={item.likes}
+                  
+                />
+              )
+            ))
+          }
+
+          {isClicked === 'Sellers' && 
+          users
+          .filter((u: any) => u._id !== user._id) // Removes the current loggedin user
+          .map((user: any) => (
+            <UserCard 
+              key={user._id}
+              userId={user._id}
+              username={user.username}
+              avatar_url={user.avatar_url}
+              firstname={user.firstname}
+              lastname={user.lastname}
+            />
+          ))}
+
+        </div>
       </div>
     </>
   )

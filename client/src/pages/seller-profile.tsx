@@ -41,13 +41,11 @@ type Item = {
 }
 
 
-// IF OWN PROFILE THEN GO TO USER PROFILE (FIX)
 
-function ItemCard({item_id, title, price, description, seller_name, likes}: {
+function ItemCard({item_id, title, price, seller_name, likes}: {
   item_id: string,
   title: string,
   price: number,
-  description: string,
   seller_name: string,
   likes: number
 }
@@ -57,29 +55,29 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
   return(
     <Link  
       to={`/item/${item_id}`}
-      className="curor-pointer bg-bg-surface rounded-md p-3"
+      className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
     >
-      <div className="img-section bg-bg-inverse w-100% min-h-37 rounded-md">
+      <div className="img-section bg-bg-inverse w-full min-h-50 rounded-md">
         {/* Image goes here */}
       </div>
-      <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 font-bold">{title}</h1>
-        <h1 className='font-semibold'>₱{price.toLocaleString('en-US')}</h1>
-        <p className="text-sm line-clamp-1">{description}</p>
-        <div className="flex flex-row items-center justify-between mt-2">
-          <h1 className="text-sm font-light">@{seller_name}</h1>
-          <div className="flex flex-row gap-2">
-            <img 
-              onClick={(e) => {
-                handleLikeClick(e)
-                e.preventDefault()
-                e.stopPropagation()
-              }}  
-              src={isLiked ? HeartClicked : HeartDefault} 
-              alt="heart" className="filter-(--icon-filter)"/>
-            {likesCount}
-          </div>
+      <div className="title-section text-primary-text mt-2 ">
+        <h1 className="line-clamp-2 ">{title}</h1>
+        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
+      </div>
+      <div className="flex flex-row items-center justify-between mt-auto">
+        <h1 className="text-sm font-light">@{seller_name}</h1>
+        <div className="flex flex-row gap-2">
+          <img 
+            onClick={(e) => {
+              handleLikeClick(e)
+              e.preventDefault()
+              e.stopPropagation()
+            }}  
+            src={isLiked ? HeartClicked : HeartDefault} 
+            alt="heart" className="filter-(--icon-filter) h-6"/>
+          {likesCount}
         </div>
+        
       </div>
     </Link>
   )
@@ -122,8 +120,8 @@ export default function SellerProfile(){
 
   if(dataLoading){
     return(
-      <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
-        <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
+      <div> 
+        <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
           <img src={Back} alt="back" />
           Seller Profile
         </div>
@@ -175,7 +173,7 @@ export default function SellerProfile(){
 
 
   return(
-    <div className="p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
+    <div className="pb-2"> 
       <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
         <img onClick={handleBackClick} src={Back} alt="back" className="filter-(--icon-filter)"/>
         Seller Profile
@@ -188,7 +186,7 @@ export default function SellerProfile(){
           </div>
           <div className="flex flex-col justify-center">
             <h1 className="font-bold text-2xl">
-              {user?.firstname} {user?.lastname}
+              {user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase() + user?.lastname.slice(1)}
             </h1>
             <h1 className="text-secondary-text">@{user?.username}</h1>
             
@@ -237,16 +235,15 @@ export default function SellerProfile(){
             <img src={Items} alt="items-svg" />
             <h1 className="font-bold text-xl">{user?.username}'s Items</h1>
           </div>
-          <div className="flex flex-col gap-3">
 
+          <div className={`${sellerItems.length === 0 ? 'flex justify-center ' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
 
-            {sellerItems.length === 0 ? <div className="mb-2 text-center text-empty-state font-light">No items yet</div> : sellerItems?.map(i => (
+            {sellerItems.length === 0 ? <div className="mb-2 text-center text-empty-state font-light mt-auto">No items yet</div> : sellerItems?.map(i => (
               <ItemCard
                 key={i._id}
                 item_id={i._id}
                 title={i.title}
                 price={i.price}
-                description={i.description}
                 seller_name={getUsername(i.seller_id)}
                 likes={i.likes}/>
             ))}

@@ -72,87 +72,91 @@ function Register(){
 
 
   return(
-    <div className="mx-10 p-0 m-0 overflow-hidden min-h-screen py-5">
-      <div>
-        <Link to={'/'}>
-          <img src={BackArrow} alt="backarrow" className="w-10 h-10 filter-(--icon-filter)"/>
-        </Link>
-      </div>      
-      <div className="text-primary-text mt-10">
-        <h1 className="text-3xl font-semibold">Create an account</h1>
-        <p>Already have an account? <Link to={'/login'} className="underline">Login</Link> </p>
-      </div>
+    <div className="lg:flex lg:items-center lg:justify-center">
 
-       <div className='mt-5'>
-          <form onSubmit={handleSubmit}>
-            <input 
-              type="text" 
-              value={formData.username}
-              onChange={(e) => {
-                setFormData({...formData, username: e.target.value});
-                setError('');
-              }}
-              className={`${error === 'Username already taken' ? 'border-2 border-red-500' : ''} duration-100 mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0`}
-              placeholder='Username'
-              required
-            />
 
-            <input 
-              type="text" 
-              value={formData.firstname}
-              onChange={(e) => setFormData({...formData, firstname: e.target.value})}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='First Name'
-              required
-            />
+      <div className="mx-10 py-5 lg:border lg:border-border-color rounded-2xl lg:px-10 lg:w-[50%]">
+        <div>
+          <Link to={'/'}>
+            <img src={BackArrow} alt="backarrow" className="w-10 h-10 filter-(--icon-filter)"/>
+          </Link>
+        </div>      
+        <div className="text-primary-text mt-10">
+          <h1 className="text-3xl font-semibold">Create an account</h1>
+          <p>Already have an account? <Link to={'/login'} className="underline">Login</Link> </p>
+        </div>
 
-            <input 
-              type="text" 
-              value={formData.lastname}
-              onChange={(e) => setFormData({...formData, lastname: e.target.value})}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Last Name'
-              required
-            />
-
-            <input 
-              type="email" 
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
-              className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Email'
-              required
-            />
-  
-            <div className='relative'>
+        <div className='mt-5'>
+            <form onSubmit={handleSubmit}>
               <input 
-                type={showPassword ? 'text' : 'password'} 
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
-                placeholder='Password'
+                type="text" 
+                value={formData.username}
+                onChange={(e) => {
+                  setFormData({...formData, username: e.target.value});
+                  setError('');
+                }}
+                className={`${error === 'Username already taken' ? 'border-2 border-red-500' : ''} duration-100 mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0`}
+                placeholder='Username'
                 required
               />
-              <img 
-                onClick={handleShowPassword}
-                src={showPassword ? Eye : EyeOff} 
-                alt="eye" 
-                className='absolute right-3 top-10 cursor-pointer'  
+
+              <input 
+                type="text" 
+                value={formData.firstname}
+                onChange={(e) => setFormData({...formData, firstname: e.target.value})}
+                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
+                placeholder='Firstname'
+                required
               />
-            </div>
-            <div className="mt-2 duration-100">
-              <p className="text-sm text-red-400 ">{error}</p>
-            </div>
-            <p className="text-tertiary-text mt-5 text-center font-light text-sm">By registering an account you agree to the terms and conditions</p>
-  
-            <button className='mt-10 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
-              Create account
-            </button>
-          </form>
-  
-  
-           
-        </div>
+
+              <input 
+                type="text" 
+                value={formData.lastname}
+                onChange={(e) => setFormData({...formData, lastname: e.target.value})}
+                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
+                placeholder='Lastname'
+                required
+              />
+
+              <input 
+                type="email" 
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
+                placeholder='Email'
+                required
+              />
+    
+              <div className='relative'>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
+                  placeholder='Password'
+                  required
+                />
+                <img 
+                  onClick={handleShowPassword}
+                  src={showPassword ? Eye : EyeOff} 
+                  alt="eye" 
+                  className='absolute right-3 top-9 cursor-pointer'  
+                />
+              </div>
+              <div className="mt-2 duration-100">
+                <p className="text-sm text-red-400 ">{error}</p>
+              </div>
+              <p className="text-tertiary-text mt-5 text-center font-light text-sm">By registering an account you agree to the terms and conditions</p>
+    
+              <button className='mt-10 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+                Create account
+              </button>
+            </form>
+    
+    
+            
+          </div>
+      </div>
     </div>
   )
 }

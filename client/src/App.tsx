@@ -14,6 +14,8 @@ import SellerProfile from './pages/seller-profile'
 import UserProfile from './pages/user-profile'
 import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
+import SearchPage from './pages/search-page'
+
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, authLoading } = useAppContext();
@@ -109,6 +111,12 @@ function AppRoute(){
       
       </Route>
 
+      <Route path='/search' element={
+        <ProtectedRoute>
+          <SearchPage/>
+        </ProtectedRoute> 
+      }/>  
+      
       <Route path='/chat/:itemId/:userId' element={
         <ProtectedRoute>
           <Chat/>

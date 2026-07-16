@@ -87,7 +87,7 @@ function ItemDetails(){
 
   if(dataLoading){
     return(
-      <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col pt-15"> 
+      <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
             <img src={Back} alt="back" className='cursor-pointer'/>
             Item details
@@ -139,8 +139,8 @@ function ItemDetails(){
 
   return(
     <>
-        <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col pt-15"> 
-          <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
+        <div className='mx-5 py-2 lg:mx-30'> 
+          <div className='head flex flex-row gap-8 text-primary-text font-semibold'>
             <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
             Item details
           </div>
@@ -171,7 +171,7 @@ function ItemDetails(){
           </div>
 
           <Link  
-            to={`/users/${item.seller_id}`}
+            to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
             className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
             <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
@@ -200,7 +200,7 @@ function ItemDetails(){
               to={`/chat/${item?._id}/${item?.seller_id}`}  
             >
               <button className='justify-center cursor-pointer flex mt-auto flex-row items-center gap-2 bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-                <img src={Message} alt="message" />
+                <img src={Message} alt="message" className='invert'/>
                 Make an Offer
               </button>
             </Link>

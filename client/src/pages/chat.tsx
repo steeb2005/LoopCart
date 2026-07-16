@@ -359,15 +359,12 @@ function Chat(){
   }
 
 
-
-
-
-
+ 
 
   return (
     <>
-      <div className="flex flex-col h-dvh">
-
+      <div className="flex flex-col h-dvh ">
+        
         <div className={`top-0 pt-5 sticky bg-bg-canvas m-0 `}>
           <div className='head flex flex-col text-primary-text font-semibold'>
             
@@ -411,11 +408,11 @@ function Chat(){
           </div>
         </div>
 
-        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3">
+        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">
 
           {messageList.length === 0 ? (
             <div className="flex flex-row justify-center items-center h-full">
-              <h1 className="text-primary-text">No messages yet</h1>
+              <h1 className="text-secondary-text">Start a conversation</h1>
             </div>
           ) : (
             messageList.map((message) => (

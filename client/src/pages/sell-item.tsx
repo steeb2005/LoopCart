@@ -8,12 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import {NumericFormat} from 'react-number-format'
-/*
-  TODO:
-  - Make the backend logic for selling an item
-  - Make the onSubmit function for the form here
-  - try to integrate the image upload feature
- */
+
 
 function SellItem(){
   const location = useLocation()
@@ -127,9 +122,9 @@ function SellItem(){
 
   return(
     <>
-      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15"> 
+      <div className='mx-5 pb-2 lg:mx-30'> 
         <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img src={Back} alt="back" onClick={handleBackClick} className='filter-(--icon-filter)'/>
+          <img src={Back} alt="back" onClick={handleBackClick} className='filter-(--icon-filter) cursor-pointer'/>
           {mode === 'create' ? 'Create Listing' : 'Edit Listing'}
         </div>
         <div className='flex flex-col mx-5 flex-1'>
@@ -190,8 +185,8 @@ function SellItem(){
             <h1 className='font-light text-primary-text'>Butuan City</h1>
           </div>          
           
-          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 text-primary-text'>
-            <p>Post to the Loop</p>
+          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 '>
+            <p>{mode === 'edit' ? 'Save' : 'Post to the Loop'}</p>
           </button>
           
           

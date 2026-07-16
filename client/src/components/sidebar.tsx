@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import Message from '../assets/message.svg'
 import Light from '../assets/light_mode.svg'
 import Dark from '../assets/dark_mode.svg'
+import Inbox from '../assets/inbox.svg'
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -21,6 +22,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
+
   const handleLogout = () => {
     setIsLoading(true);    
     logout()
@@ -46,7 +48,6 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     unreadMessages += conversation.unread_count
   })
 
-  
 
   if(isLoading){
     return (
@@ -60,18 +61,17 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
 
   
 
-
   return(
     <>
       <AnimatePresence>
         {isOpenSidebar && (
-          <div onClick={closeSidebar} className='fixed inset-0 z-100'>
+          <div onClick={closeSidebar} className={` fixed inset-0 z-100`}>
             <motion.div 
               initial={{x: "100%"}}
               animate={{x: 0}}
               exit={{x: "100%"}}
               transition={{type: "spring", damping: 25, stiffness: 200}}
-              className="pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] h-full z-50 flex flex-col"
+              className={`pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] h-full z-50 flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
                 
@@ -89,7 +89,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 </div>
               </div>
 
-              <div className={`font-semibold text-primary-text navlinks flex flex-col `}>
+              <div className={`text-primary-text navlinks flex flex-col `}>
                 <Link to={'/user-profile'}>
                   <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={Profile} alt="profile" className='h-6 filter-(--icon-filter)'/>
@@ -111,20 +111,22 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 <Link to={'/liked-items'}>
                   <div className={`${currentLocation === 'liked-items' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={LikedItems} alt="liked-items" className='h-6 filter-(--icon-filter)'/>
-                    Liked Items
+                    Favorites
                   </div>
                 </Link>
                 <Link to={'/inbox'}>
                   <div className={`${currentLocation === 'inbox' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
-                    <div className='relative'>
-                      <img src={Message} alt="message" className='h-6 filter-(--icon-filter)'/>
+                    
+                    <img src={Inbox} alt="inbox" className='h-6 filter-(--icon-filter)'/>
                       
-                      {unreadMessages > 0 && 
-                        <div className='absolute top-2 -right-2 font-bold border-2 border-bg-surface flex justify-center bg-primary-text rounded-full items-center text-[10px] h-5 w-5.5 text-primary-text-inverse'>
-                          {unreadMessages > 9 ? '9+' : unreadMessages}
-                        </div>}
-                    </div>
-                    Messages
+                      
+                        
+                   
+                    Inbox
+                    {unreadMessages > 0 && 
+                      <div className=' font-bold flex justify-center bg-bg-gray-surface rounded-full items-center text-xs h-5 w-5.5 text-primary-text'>
+                        {unreadMessages > 9 ? '9+' : unreadMessages}
+                      </div>}
                   </div>
                 </Link>
               </div>

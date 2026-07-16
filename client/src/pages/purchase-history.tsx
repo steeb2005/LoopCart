@@ -121,9 +121,9 @@ export default function PurchaseHistory(){
 
 
   return(
-    <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex flex-col pt-15">
+    <div className='mx-5 lg:mx-30'>
        <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer"/>
+        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
         History
       </div>
 
