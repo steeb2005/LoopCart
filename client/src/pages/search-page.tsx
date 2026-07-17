@@ -1,29 +1,14 @@
 import Back from '../assets/back.svg'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import Search from '../assets/search.svg'
 import { useAppContext } from '../context/context'
 import Erase from '../assets/close.svg'
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Skeleton } from '../components/ui/skeleton'
 import Heart from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useItemLike } from '../hooks/handle-like'
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
-type Item = {
-  _id?: string;
-  title: string;
-  price: number;
-  category: string;
-  condition: string;
-  description: string;
-  created_at: string;
-  status: string;
-  sold_at: string;
-  seller_id: string;
-  buyer_id: string;
-  image: string;
-  likes: number;
-}
 
 
 function SkeletonCard(){
@@ -83,24 +68,62 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
 }
 
 
+function UserCard({userId, avatar_url, firstname, lastname, username }: {
+  userId: string, 
+  avatar_url: string, 
+  firstname: string,
+  lastname: string,
+  username: string
+}){
+  return(
+    <Link
+      to={`/users/${userId}`}
+      className="border border-border-color p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
+      <div className="flex flex-row items-center gap-3">
+        <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
+          {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
+        </div>
+        <div className="flex flex-col ">
+          <p className="">{firstname} {lastname}</p>
+          <p className="text-sm text-secondary-text font-light">{username}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center text-xs font-light">
+        View profile
+      </div>
+    </Link>
+  )
+}
+
+
+
 
 export default function SearchPage(){
   
   const navigate = useNavigate()
-  const {items, getUsername} = useAppContext()
+  const {items, getUsername, users} = useAppContext()
 
   const [searchResults, setSearchResults] = useState([])
   const [searchInput, setSearchInput] = useState('')
-  const [loading, setLoading] = useState(false)
+  
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
   const [prefill, setPrefill] = useState(true)
-  const [category, setCategory] = useState('Items')
+  const [category, setCategory] = useState(searchParams.get('tab') || 'Items')
+
   // TODO
   // - add items or sellers in the top and category section (if possible)
   // - implement the loading skeleton
   // - make the seller category function
 
-  
-  const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if(tab){
+      setCategory(tab)
+    }  
+  }, [searchParams])
 
   const handleBackClick = () => {
     navigate(-1)
@@ -114,11 +137,17 @@ export default function SearchPage(){
     setSearchResults([])
   }
 
-  const getSearchResults = () => {
+  const getSearchResults = (category: string) => {
     if(searchInput.length > 0){
-      const searchRes = items?.filter(item => item.title.toLowerCase().includes(searchInput.toLowerCase()))
-      setSearchResults(searchRes)
-      setPrefill(false)
+      if(category === 'Items'){
+        const searchRes = items?.filter(item => item.title.toLowerCase().includes(searchInput.toLowerCase()))
+        setSearchResults(searchRes)
+        setPrefill(false)
+      }else{
+        const searchRes = users?.filter(user => user.username.toLowerCase().includes(searchInput.toLowerCase()))
+        setSearchResults(searchRes)
+        setPrefill(false)
+      }
     }else{
       setPrefill(true)
       setSearchResults([])
@@ -128,17 +157,18 @@ export default function SearchPage(){
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      getSearchResults()
+      getSearchResults(category)
     }
   }
 
 
-  const handleClickCategory = (category: string) => {
-    setCategory(category)
-    setSearchInput('')
-    setPrefill(true)
-    setSearchResults([])
+  const handleClickCategory = (newCategory: string) => {
+    setCategory(newCategory)
+    getSearchResults(newCategory)
+    setSearchParams({tab: newCategory})
   }
+
+
 
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
@@ -176,9 +206,11 @@ export default function SearchPage(){
       </div>
       
       
-      <div className="mx-5 px-2 py-2 mt-30 rounded-md grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className={`mx-5 px-2 py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
+
+
         {
-        (prefill && searchResults.length === 0 ) && (
+        (prefill && searchResults.length === 0 && category === 'Items') && (
           items.map(item => (
             <ItemCard 
               key={item._id} 
@@ -190,22 +222,33 @@ export default function SearchPage(){
               likes={item.likes}
             />
           ))    
-        )}
+        )
+        }
 
         {
-          loading ? (
-            <>
-              <SkeletonCard/>
-              <SkeletonCard/>
-              <SkeletonCard/>
-              <SkeletonCard/>
-            </>
-          ) : (
+          prefill && searchResults.length === 0 && category === 'Sellers' && (
+            users.map(user => (
+              <UserCard 
+                key={user._id} 
+                userId={user._id} 
+                username={user.username}
+                firstname={user.firstname} 
+                lastname={user.lastname} 
+                avatar_url={user.avatar_url}
+              />
+            ))
+          )
+        }
+
+
+        {
+          
           (searchResults.length === 0 && !prefill) ? (
             <div className='flex items-center justify-center text-empty-state '>
               No results found
             </div>
           ) : (    
+          category === 'Items' ? (
             searchResults.map(item => (
               <ItemCard 
                 key={item._id} 
@@ -214,10 +257,23 @@ export default function SearchPage(){
                 price={item.price} 
                 description={item.description} 
                 seller_name={getUsername(item.seller_id)} 
-                likes={item.likes}/>
+                likes={item.likes}
+              />
+            ))
+          ) : (
+            searchResults.map(user => (
+              <UserCard 
+                key={user._id} 
+                userId={user._id} 
+                username={user.username}
+                firstname={user.firstname} 
+                lastname={user.lastname} 
+                avatar_url={user.avatar_url}
+              />
             ))
           )
         )
+        
       }
       </div>
      

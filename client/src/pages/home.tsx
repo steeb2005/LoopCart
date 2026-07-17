@@ -6,7 +6,7 @@ import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
 import HeartClicked from "../assets/clickedHeart.svg"
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
-import { Link, useSearchParams } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
 import { Skeleton } from "../components/ui/skeleton.tsx"
 
@@ -122,22 +122,10 @@ function SkeletonUsers(){
 
 function Home(){
   
-  const {items, getUsername, users, user, load_items, load_users} = useAppContext()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const {items, getUsername, load_items, load_users} = useAppContext()
     
-  const [isClicked, setIsClicked] = useState(searchParams.get('tab') || 'Items')
   const [pageLoading, setPageLoading] = useState(true)
   
-  
-  
-  useEffect(() => {
-    const tab = searchParams.get('tab')
-    if(tab && (tab === 'Items' || tab === 'Sellers')){
-      setIsClicked(tab)
-    }
-
-  },[searchParams])
-
   useEffect(() => {
     const loadItems = async() =>{
       setPageLoading(true)
@@ -150,11 +138,7 @@ function Home(){
   }, [])
 
 
-  const handleClick = (buttonId: string) =>{
-    setIsClicked(buttonId)
-    setSearchParams({tab: buttonId})
-  } 
-
+ 
 
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
@@ -178,15 +162,6 @@ function Home(){
 
       <div className="top-section flex flex-col mx-5">
         
-        <div className="flex flex-row justify-around font-semibold mt-2 text-primary-text ">
-          <div onClick={() => handleClick("Items")} className={` border-b ${isClicked === 'Items' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}>
-            Items
-          </div>
-          <div onClick={() => handleClick("Sellers")} className={` border-b ${isClicked === 'Sellers' ? 'border-bg-inverse' : 'border-bg-surface'}  w-full text-center py-2 cursor-pointer`}> 
-            Sellers
-          </div>
-        </div>
-
         <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between">
           <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-2">
             <img src={Category} alt="category" className="filter-(--icon-filter)"/>
@@ -207,27 +182,14 @@ function Home(){
           
           {/* Item Entry */}
           
-          {pageLoading && isClicked === 'Items' &&
+          {pageLoading &&
             Array.from({ length: 8 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))
 
           }
 
-          {pageLoading && isClicked === 'Sellers' &&
-          <>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-            <SkeletonUsers/>
-          </>
-          }
-
-
-          {isClicked === 'Items' &&
+          {
             items.map((item: any) => (
               item.status === 'available' && (
                 <ItemCard 
@@ -243,19 +205,6 @@ function Home(){
             ))
           }
 
-          {isClicked === 'Sellers' && 
-          users
-          .filter((u: any) => u._id !== user._id) // Removes the current loggedin user
-          .map((user: any) => (
-            <UserCard 
-              key={user._id}
-              userId={user._id}
-              username={user.username}
-              avatar_url={user.avatar_url}
-              firstname={user.firstname}
-              lastname={user.lastname}
-            />
-          ))}
 
         </div>
       </div>
