@@ -1,18 +1,17 @@
 import {useAppContext} from '../context/context'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import Back from '../assets/back.svg'
 import Goto from '../assets/goto.svg'
 import Heart from '../assets/Heart.svg'
 import Location from '../assets/location.svg'
-import Message from '../assets/message.svg'
 import { useItemLike } from '../hooks/handle-like'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useNavigate } from 'react-router-dom'
 import { Skeleton } from '../components/ui/skeleton'
-
-
+import More from '../assets/more_horiz.svg'
+import Trash from '../assets/trash.svg'
 
 type Item = {
   _id?: string;
@@ -28,6 +27,7 @@ type Item = {
   buyer_id: string;
   image: string;
   likes: number;
+  deleted: boolean;
 }
 
 
@@ -50,12 +50,16 @@ type User = {
 function ItemDetails(){
   const naviagte = useNavigate()
   const {id} = useParams() 
-  const {items, user, getUsername, users, dataLoading} = useAppContext()
+  const {items, user, getUsername, users, dataLoading, delete_item} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
-  
+
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const dropDownRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
@@ -65,7 +69,22 @@ function ItemDetails(){
     setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
   }, [items, id, getUsername, users])
 
-  
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if(dropDownRef.current && !dropDownRef.current.contains(e.target as Node)){
+        setOpenDropdown(false)
+      }
+    }
+
+    if(openDropdown){
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [openDropdown])
   const isUserItem = item?.seller_id === user?._id
 
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id, item?.likes || 0)
@@ -73,7 +92,6 @@ function ItemDetails(){
   const handleBackClick = () => {
     naviagte(-1)
   }
-
   
   const handleEditListing = () => {
     naviagte(`/sell-item`, {
@@ -83,6 +101,15 @@ function ItemDetails(){
         mode: 'edit'
       }
     })
+  }
+
+  const handleDropdown = () => {
+    setOpenDropdown(!openDropdown)
+  }
+
+  const handleDeleteItem = async () => {
+    await delete_item(item?._id || '')
+    naviagte(-1)
   }
 
   if(dataLoading){
@@ -125,11 +152,26 @@ function ItemDetails(){
   
   if(!item){
     return(
-      <div className="mx-5 p-0 m-0 min-h-screen pb-5 flex justify-center items-center">
+      <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-primary-text gap-2 flex flex-col'>
-          <h1>Item not Found</h1>
+          <h1>Error 404 Item not found</h1>
+          
+          <div className='flex flex-row justify-start'>
+            <Link to={'/home'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+
+  if(item.deleted === true){
+    return(
+      <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
+        <div className='text-secondary-text gap-2 flex flex-col'>
+          <h1>Item has been deleted</h1>
           <Link to={'/home'}>
-            <button className='rounded-md p-2 bg-bg-inverse text-primary-text-inverse font-semibold'>Back</button>
+            <button className='cursor-pointer rounded-md px-3 py-2 bg-bg-inverse text-primary-text-inverse font-semibold'>Back</button>
           </Link>
         </div>
       </div>
@@ -140,9 +182,22 @@ function ItemDetails(){
   return(
     <>
         <div className='mx-5 py-2 lg:mx-30'> 
-          <div className='head flex flex-row gap-8 text-primary-text font-semibold'>
-            <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
-            Item details
+          <div className='head items-center flex flex-row justify-between text-primary-text font-semibold'>
+            <div className='flex flex-row gap-8'>
+              <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
+              Item details
+            </div>
+
+            {isUserItem && (    // Only allows the user to delete their own item
+              <div className='relative' ref={dropDownRef}>
+                <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
+                {openDropdown && (
+                  <div className='absolute w-30 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                    <p className='cursor-pointer' onClick={() => setConfirmDelete(true)}>Delete item</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
             
@@ -199,14 +254,55 @@ function ItemDetails(){
             <Link
               to={`/chat/${item?._id}/${item?.seller_id}`}  
             >
-              <button className='justify-center cursor-pointer flex mt-auto flex-row items-center gap-2 bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-                <img src={Message} alt="message" className='invert'/>
+              <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+                
                 Make an Offer
               </button>
             </Link>
             
             )
           )}
+
+          {confirmDelete && (
+          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
+
+              {/* Header with accent */}
+              <div className="relative">
+                <div className="px-6 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <img src={Trash} alt="trash_svg" className="filter-(--icon-filter)"/>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-text">Delete Item</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4">
+                <h1 className="text-primary-text">Are you sure you want to delete this item?</h1>
+              </div>
+
+              <div className="flex flex-row justify-end p-4  border-t border-border-color">
+                <button 
+                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
+                  onClick={handleDeleteItem}
+                >
+                  Delete
+                </button>
+              </div>
+              
+            </div>
+          </div>
+        )}
           
         </div>    
 

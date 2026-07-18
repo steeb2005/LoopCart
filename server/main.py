@@ -494,7 +494,7 @@ async def get_single_item(item_id: str):
     item = await items.find_one({"_id": ObjectId(item_id)})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-
+    
     return {
         "_id": str(item["_id"]),
         "title": item["title"],
@@ -508,7 +508,8 @@ async def get_single_item(item_id: str):
         "seller_id": item["seller_id"],
         "buyer_id": item["buyer_id"],
         "image": item["image"],
-        "likes": item.get("likes", 0)
+        "likes": item.get("likes", 0),
+        "deleted": item.get("deleted", False)
     }
 
 
@@ -532,8 +533,10 @@ async def get_items():
             "seller_id": item["seller_id"],
             "buyer_id": item["buyer_id"],
             "image": item["image"],
-            "likes": item.get("likes", 0)
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
         })
+
     return items_list
 
 
@@ -669,6 +672,17 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
 
 @app.post('/messages/send')
 async def send_message(message: MessageSend):
+    item = await items.find_one({"_id": ObjectId(message.item_id)})
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    if item.get("deleted", False):
+        raise HTTPException(status_code=400, detail="Item has been deleted")
+    
+    if item["status"] == "sold":
+        raise HTTPException(status_code=400, detail="Item has been sold")
+    
     participants = sorted([message.sender_id, message.receiver_id])
 
     new_message = {
@@ -794,11 +808,13 @@ async def mark_message_as_read(conversation_id: str, user_id: str):
 # Update ------------------------------------------------------------------
 
 @app.patch('/items/{item_id}/{user_id}/{status}/sold')
-async def update_item_sold(item_id: str, user_id: str, status: str, conversation_id: str | None = None):
+async def update_item_sold(item_id: str, user_id: str, status: str, conversation_id: str | None = None, current_user: dict = Depends(get_current_user)):
     try:
         item = await items.find_one({"_id": ObjectId(item_id)})
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
+        if item["seller_id"] != current_user["sub"]: 
+            raise HTTPException(status_code=403, detail="Unauthorized")
 
         if status != "sold":
             await items.update_one(
@@ -829,47 +845,91 @@ async def update_item_sold(item_id: str, user_id: str, status: str, conversation
                 "item_id": item_id,
                 "status": new_status
             })
-        
         return {"success": True}
-
+    except HTTPException:
+        raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
             
+
+
 # update user bio
 @app.patch('/users/{user_id}/bio')
-async def update_bio(user_id: str, bioData: BioUpdate): # Needs to use pydantic
+async def update_bio(user_id: str, bioData: BioUpdate, current_user: dict = Depends(get_current_user)): # Needs to use pydantic
     try:
+        if current_user["sub"] != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
         await users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {"bio": bioData.bio}}  
         )   
         return {"success": True}
+    except HTTPException:
+        raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
 
 # Update user birthdate
 @app.patch('/users/{user_id}/birthdate')
-async def update_birthdate(user_id: str, birthdateData: BirthdateUpdate): 
+async def update_birthdate(user_id: str, birthdateData: BirthdateUpdate, current_user: dict = Depends(get_current_user)): 
     try:
+        if current_user["sub"] != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
         await users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {"birthdate": birthdateData.birthdate}}  
         )   
         return {"success": True}
+    except HTTPException:
+        raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
 
 
 @app.patch('/users/{user_id}/gender')
-async def update_gender(user_id: str, genderDate: GenderUpdate):
+async def update_gender(user_id: str, genderDate: GenderUpdate, current_user: dict = Depends(get_current_user)):
     try:
+        if current_user["sub"] != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
         await users.update_one(
             {"_id": ObjectId(user_id)},
             {"$set": {"gender": genderDate.gender}}  
         )   
         return {"success": True}
+    except HTTPException:
+        raise
+
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
+
+
+@app.patch('/items/{item_id}/delete')
+async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        item = await items.find_one({"_id": ObjectId(item_id)})
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        if item["seller_id"] != current_user["sub"]: 
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
+        await items.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$set": {
+                "deleted": True,    # Soft Deletes the data
+                "deleted_at": datetime.now(tz=timezone.utc).isoformat()}
+            }
+        )
+        return {"success": True}
+
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+
 
 # Websocket Connection ----------------------------------------------------------------
 @app.websocket("/ws/chat/{conversation_id}")

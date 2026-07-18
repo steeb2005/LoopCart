@@ -1,8 +1,14 @@
-import { useNavigate, Link } from "react-router-dom"
-import Back from '../assets/back.svg'
+import { Link } from "react-router-dom"
 import {useEffect, useState} from 'react'
 import { useAppContext } from "../context/context";
 import { Skeleton } from "../components/ui/skeleton";
+import InboxIcon from "../assets/inbox.svg"
+import { useSearchParams } from "react-router-dom";
+
+// TODO
+// - Implement a soft deletion in the backend
+// - Add a delete button in the inbox
+// - Add a delete button in the conversation
 
 
 type Item = {
@@ -19,6 +25,7 @@ type Item = {
   buyer_id: string;
   image: string;
   likes: number;
+  deleted: boolean;
 }
 
 
@@ -31,12 +38,26 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === itemId)
-    setItem(foundItem)
+    setItem(foundItem || null) // If the item is not found, set the item to null
     setOtherUsername(getUsername(otherId))
     setLastSenderUsername(getUsername(lastSender))
 
   }, [items, itemId, otherId, getUsername, lastSender])
 
+  if(!item){
+    return(
+      <div className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row shrink-0 opacity-50'>
+        <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md' />
+        <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
+          <h1 className="font-bold text-secondary-text">Item no longer available</h1>
+          <h1 className="font-light text-sm text-secondary-text">@{otherUsername}</h1>
+          <p className="text-secondary-text text-sm line-clamp-1 font-light">
+            This item has been removed
+          </p>
+        </div>
+    </div>
+    )
+  }
 
   return(
     <Link 
@@ -53,7 +74,7 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
         <div className='flex flex-row justify-between'>
           <h1 className="font-light text-sm">@{otherUsername}</h1>
           <div className="px-2 rounded-full bg-bg-gray-surface flex items-center">
-            <p className='font-light text-sm'>{item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
+            <p className='font-light text-sm'>{item?.deleted ? 'Deleted' : item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
           </div>
         </div>
         <div className='last-message items-center'>
@@ -98,26 +119,34 @@ function InboxSkeleton(){
 
 
 function Inbox(){
-  const navigate = useNavigate()
-  
+  const [searchParams, setSearchParams] = useSearchParams()
   const {inbox, items, user, dataLoading} = useAppContext()
-  const [clickedFilter, setClickedFilter] = useState('all')
+  const [clickedFilter, setClickedFilter] = useState(searchParams.get('tab') ||'all')
   
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if(tab){
+      setClickedFilter(tab)
+    }
+  }, [searchParams])
+
   let buyingUnreadCount = 0
   let sellingUnreadCount = 0
   let allUnreadCount = 0
   
 
-  
+
   const getUnreadCount = () => {
-    const sellerFilter = inbox.filter(entry => {
-      const item = items.find(i => i._id === entry.item_id)
+    const sellerFilter = inbox?.filter(entry => {
+      const item = items?.find(i => i._id === entry.item_id)
+      if(!item) return  // Guard for deleted items
       const isSeller = item.seller_id === user._id
       return isSeller
     })
 
-    const buyerFilter = inbox.filter(entry => {
-      const item = items.find(i => i._id === entry.item_id)
+    const buyerFilter = inbox?.filter(entry => {
+      const item = items?.find(i => i._id === entry.item_id)
+      if(!item) return // Guard for deleted items
       const isSeller = item.seller_id === user._id
       return !isSeller
     })
@@ -130,7 +159,7 @@ function Inbox(){
       buyingUnreadCount += entry.unread_count
     })
 
-    inbox.forEach(entry => {
+    inbox?.forEach(entry => {
       allUnreadCount += entry.unread_count
     })
 
@@ -146,8 +175,9 @@ function Inbox(){
       return inbox    
     }
 
-    return inbox.filter(entry => {
-      const item = items.find(i => i._id === entry.item_id)
+    return inbox?.filter(entry => {
+      const item = items?.find(i => i._id === entry.item_id)
+      if(!item) return  // Guard for deleted items
       const isSeller = item.seller_id === user._id
 
       if(clickedFilter === 'selling'){
@@ -161,12 +191,11 @@ function Inbox(){
   }
 
   
-  const handleBackClick = () => {
-    navigate(-1)
-  }
+  
   
   const handleFilter = (id: string) => {
     setClickedFilter(id)
+    setSearchParams({tab: id})
   }
 
   const filteredInbox = getFilteredInbox()
@@ -175,8 +204,8 @@ function Inbox(){
   return(
     <div className="mx-5 py-2 lg:mx-30"> 
 
-      <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
+      <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold'>
+        <img src={InboxIcon} alt="inbox_svg" className="filter-(--icon-filter)" />
         Inbox
       </div>
 
@@ -216,14 +245,9 @@ function Inbox(){
         {/* Item Entry */}
 
         {dataLoading ? (
-            <>
-              <InboxSkeleton/>
-              <InboxSkeleton/>
-              <InboxSkeleton/>
-              <InboxSkeleton/>
-              <InboxSkeleton/>
-              <InboxSkeleton/>
-            </>
+            Array.from({ length: 9 }).map((_, index) => (
+              <InboxSkeleton key={index}/>
+            ))
           ) : (
             filteredInbox.length === 0 ? (
               <div className='text-empty-state text-center mt-10 px-10 justify-center font-light'>You don't have any messages</div>

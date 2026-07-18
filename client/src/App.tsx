@@ -15,7 +15,7 @@ import UserProfile from './pages/user-profile'
 import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
-
+import NotFound from './pages/not-found'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, authLoading } = useAppContext();
@@ -121,6 +121,10 @@ function AppRoute(){
         <ProtectedRoute>
           <Chat/>
         </ProtectedRoute>
+      }/>
+
+      <Route path='*' element={
+        <NotFound/>   // 404 Error page
       }/>
 
      

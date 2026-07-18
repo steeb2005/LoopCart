@@ -1,9 +1,8 @@
-import Back from '../assets/back.svg'
 import { useAppContext } from '../context/context'
 import { useItemLike } from '../hooks/handle-like'
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Skeleton } from '../components/ui/skeleton'
 
@@ -80,7 +79,6 @@ function EntrySkeleton(){
 
 function LikedItems() {
   const {likedItems, getUsername, dataLoading} = useAppContext()
-  const navigate = useNavigate()
   const [copyItems, setCopyItems] = useState([])
 
   useEffect(() => { // NOTE: TEMP might remove until a better solution
@@ -89,16 +87,14 @@ function LikedItems() {
     }
     
   }, [likedItems])
-  const handleBackClick = () => {
-    navigate(-1)
-  }
+ 
   
   return(
 
 
     <div className='mx-5 lg:mx-30 py-2'> 
-      <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
+      <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold'>
+        <img src={HeartDefault} alt="heart_svg" className='filter-(--icon-filter)'/>
         Favorites
       </div>
 

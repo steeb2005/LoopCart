@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Back from '../assets/back.svg'
 import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState, useRef } from "react";
@@ -6,7 +6,7 @@ import { useAppContext } from "../context/context";
 import Send from '../assets/send.svg'
 import TextareaAutosize from "react-textarea-autosize";
 import CheckCircle from '../assets/check_circle.svg'
-
+import ArrowRight from '../assets/ArrowRight.svg'
 
 type Item = {
   _id?: string;
@@ -22,6 +22,7 @@ type Item = {
   buyer_id: string;
   image: string;
   likes: number;
+  deleted: boolean;
 }
 
 
@@ -46,41 +47,6 @@ type ChatMessage = {
 }
 
 
-
-
-function useViewportHeight() {
-  useEffect(() => {
-    const setHeight = () => {
-      const height = window.visualViewport?.height ?? window.innerHeight
-      document.documentElement.style.setProperty('--vh', `${height}px`)
-      
-      window.scrollTo(0, height)
-    }
-    setHeight()
-    window.visualViewport?.addEventListener('resize', setHeight)
-    window.visualViewport?.addEventListener('scroll', setHeight)
-
-    return () => {
-      window.visualViewport?.removeEventListener('resize', setHeight)
-      window.visualViewport?.removeEventListener('scroll', setHeight)
-    }
-  }, [])
-}
-
-
-/*
-
-  useEffect(() => {
-    const setHeight = () => {
-      document.documentElement.style.setProperty(
-        '--vh', 
-        `${window.visualViewport?.height ?? window.innerHeight}px`
-      )
-    }
-    setHeight()
-    window.visualViewport?.addEventListener('resize', setHeight)
-    return () => window.visualViewport?.removeEventListener('resize', setHeight)
-  }, []) */
 
 
 function Message({isOwn, message}: {
@@ -159,9 +125,9 @@ function Chat(){
   useEffect(() => {
     const foundItem = items?.find(item => item._id === itemId)
     const otheruser = users?.find(user => user._id === userId)
-    setOtherUser(otheruser)
+    setOtherUser(otheruser) 
 
-    setItem(foundItem)
+    setItem(foundItem) // Optimistic rendering before the actual render
     setOtherUsername(getUsername(userId || 'Unkown User'))   // Gets the username of the other person
     
 
@@ -358,9 +324,7 @@ function Chat(){
     e.preventDefault()
   }
 
-
- 
-
+  
   return (
     <>
       <div className="flex flex-col h-dvh ">
@@ -391,14 +355,26 @@ function Chat(){
                   <h1 className="font-light line-clamp-1">{item?.title}</h1>
                   <div className="flex flex-row ">
                     <div className="font-light ml-2 bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
-                    {role === 'seller' && 
-                    <div 
-                      className={` ml-2 ${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
-                      onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
-                      
-                    >
-                      {isSold ? 'Item Sold' : 'Mark as Sold'}
-                    </div>}
+                    {item?.deleted ? (
+                      <div className="font-light ml-2 bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+                    ) : (
+                      role === 'seller' ? (
+                        <div 
+                          className={` ml-2 ${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
+                          onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
+                        >
+                          {isSold ? 'Item Sold' : 'Mark as Sold'}
+                        </div>
+                      ): (
+                        <Link to={`/item/${itemId}`}>
+                          <div className={`flex flex-row gap-1 items-center ml-2 bg-bg-inverse text-primary-text-inverse cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                            <p>View item</p>
+                            <img src={ArrowRight} alt="arrow_right_svg" className="h-3 invert"/>
+                          </div>
+                        </Link>
+                      )
+                    )
+                    }
                                       
                     
                   </div>
@@ -422,13 +398,19 @@ function Chat(){
             />
           )))}
 
-
-          {isSold && 
-            <div className="mt-auto">
-              <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
-            </div>
+          {
+            item?.deleted ? (
+              <div className="mt-auto">
+                <div className="text-primary-text mt-5 text-center text-sm ">This item has been deleted. <br />conversation is closed.</div>
+              </div>
+            ) : (
+              isSold && 
+                <div className="mt-auto">
+                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
+                </div>
+            )
           }
-          <div ref={messageEndRef}/>
+
 
           {isLoading && (
             <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
@@ -439,6 +421,7 @@ function Chat(){
             </div>
           )}
 
+          <div ref={messageEndRef}/>
         </div>
 
         <form
@@ -456,7 +439,7 @@ function Chat(){
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold}
+            disabled={isSold || item?.deleted}
           />
           <button 
             type="submit"
@@ -484,7 +467,7 @@ function Chat(){
           
         {revertSold && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
 
               {/* Header with accent */}
               <div className="relative">
@@ -504,7 +487,7 @@ function Chat(){
                 <h1 className="text-primary-text">Are you sure you want to revert this sale?</h1>
               </div>
 
-              <div className="flex flex-row justify-end p-4 border border-t border-border-color">
+              <div className="flex flex-row justify-end p-4 border-t border-border-color">
                 <button 
                   className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
                   onClick={() => setRevertSold(false)}

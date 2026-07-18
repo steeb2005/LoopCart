@@ -48,6 +48,7 @@ type Item = {
   buyer_id: string;
   image: string;
   likes: number;
+  deleted: boolean;
 }
 
 
@@ -121,6 +122,7 @@ type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  delete_item: (itemId: string) => Promise<void>;
   toggleTheme: () => void;
   update_item: (itemId: string, updateData: Item) => Promise<void>;
   update_gender: (userId: string, gender: string) => Promise<void>;
@@ -444,7 +446,10 @@ export function AppContext({children}) {
 
   const get_item = async (itemId: string) => {
     try{
-      const res = await fetch(`${API_URL}/items/${itemId}`);
+      const res = await fetch(`${API_URL}/items/${itemId}`, {
+        headers: authHeaders(),
+        credentials: 'include'
+      });
       const data = await res.json();
       return data
     }catch{
@@ -554,6 +559,7 @@ export function AppContext({children}) {
       if(res.ok){
         const data = await res.json()
         setInbox(data)
+        console.log('loaded inbox');
       }else{
         console.error('error in loading inbox: client');
       }
@@ -765,6 +771,24 @@ export function AppContext({children}) {
   }
 
 
+  const delete_item = async (itemId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/items/${itemId}/delete`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        credentials: 'include'
+      })
+
+      if(res.ok){
+        await load_items()
+        console.log('successfully deleted item');
+      }else{
+        console.error('error in deleting item');
+      }
+    }catch{
+      console.error('network error in deleting item');
+    }
+  }
   
   // Websocket ------------------------------------------------------------------------------------
   const wsRef = useRef<WebSocket | null>(null)
@@ -803,6 +827,7 @@ export function AppContext({children}) {
     authLoading,
     theme,
 
+    delete_item,
     toggleTheme,
     update_item,
     update_gender,

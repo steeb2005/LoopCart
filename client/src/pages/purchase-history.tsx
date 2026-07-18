@@ -1,10 +1,9 @@
-import { useNavigate, Link } from 'react-router-dom'
-import Back from '../assets/back.svg'
+import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAppContext } from '../context/context'
 import {format} from "date-fns"
 import { Skeleton } from '../components/ui/skeleton'
-
+import History from '../assets/history.svg'
 
 
 
@@ -91,15 +90,12 @@ function EntrySkeleton(){
 
 
 export default function PurchaseHistory(){
-  const navigate = useNavigate()
   const {user, items, getUsername, dataLoading} = useAppContext()
   
   const [filter, setFilter] = useState('purchases')
   const [isUserTheBuyer, setIsUserTheBuyer] = useState(true)
 
-  const handleBackClick = () => {
-    navigate(-1)
-  }
+  
 
   const handleFilter = (id: string) => {
     setFilter(id)
@@ -122,8 +118,8 @@ export default function PurchaseHistory(){
 
   return(
     <div className='mx-5 lg:mx-30'>
-       <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
+       <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold items-center'>
+        <img src={History} alt="history_svg" className="filter-(--icon-filter) h-6"/>
         History
       </div>
 

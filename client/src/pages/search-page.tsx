@@ -112,12 +112,6 @@ export default function SearchPage(){
   const [prefill, setPrefill] = useState(true)
   const [category, setCategory] = useState(searchParams.get('tab') || 'Items')
 
-  // TODO
-  // - add items or sellers in the top and category section (if possible)
-  // - implement the loading skeleton
-  // - make the seller category function
-
-
   useEffect(() => {
     const tab = searchParams.get('tab')
     if(tab){

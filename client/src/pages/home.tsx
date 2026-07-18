@@ -56,37 +56,6 @@ function ItemCard({item_id, title, price, seller_name, likes}: {
 
 
 
-function UserCard({userId, avatar_url, firstname, lastname, username }: {
-  userId: string, 
-  avatar_url: string, 
-  firstname: string,
-  lastname: string,
-  username: string
-}){
-  
-  return(
-    <Link
-      to={`/users/${userId}`}
-      className="border border-border-color p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
-      <div className="flex flex-row items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
-          {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
-        </div>
-        <div className="flex flex-col ">
-          <p className="">{firstname} {lastname}</p>
-          <p className="text-sm text-secondary-text font-light">{username}</p>
-        </div>
-      </div>
-
-      <div className="flex items-center text-xs font-light">
-        View profile
-      </div>
-    </Link>
-  )
-}
-
-
-
 
 
 function SkeletonCard(){
@@ -101,21 +70,6 @@ function SkeletonCard(){
     </Skeleton>
   )
 }
-
-
-function SkeletonUsers(){
-  return(
-    <Skeleton className="items-center rounded-lg bg-bg-surface flex flex-row gap-3 p-3">
-      <Skeleton className="h-10 w-10 rounded-full bg-border-color" />
-      <div className="flex flex-col space-y-2 flex-1">
-        <Skeleton className="h-4 w-3/4 bg-border-color" />
-        <Skeleton className="h-4 w-1/2 bg-border-color" />
-      </div>
-    </Skeleton>
-  )
-}
-
-
 
 
 
@@ -191,7 +145,7 @@ function Home(){
 
           {
             items.map((item: any) => (
-              item.status === 'available' && (
+              (item.status === 'available' && item.deleted === false) && (
                 <ItemCard 
                   key={item._id}
                   item_id={item._id}
