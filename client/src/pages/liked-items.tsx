@@ -6,13 +6,14 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Skeleton } from '../components/ui/skeleton'
 
-function ItemCard({item_id, title, price, status, seller_name, likes}: {
+function ItemCard({item_id, title, price, status, seller_name, likes, deleted}: {
   item_id: string,
   title: string,
   price: number,
   status: string,
   seller_name: string,
-  likes: number
+  likes: number,
+  deleted: boolean
 }){
 
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
@@ -39,7 +40,7 @@ function ItemCard({item_id, title, price, status, seller_name, likes}: {
           
         <div className='last-message items-center flex flex-row justify-between'>
           <div className='px-2 rounded-full bg-bg-gray-surface flex items-center'>
-            <p className='font-light text-sm'>{status.charAt(0).toUpperCase() + status.slice(1)}</p>
+            <p className='font-light text-sm'>{deleted ? 'Deleted' : status.charAt(0).toUpperCase() + status.slice(1)}</p>
           </div>
           <div className='flex flex-row gap-2'>
             <img 
@@ -120,6 +121,7 @@ function LikedItems() {
               status={item.status}
               seller_name={getUsername(item.seller_id)}
               likes={item.likes}
+              deleted={item.deleted}
             />
               
           )))

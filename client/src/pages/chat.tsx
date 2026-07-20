@@ -7,6 +7,16 @@ import Send from '../assets/send.svg'
 import TextareaAutosize from "react-textarea-autosize";
 import CheckCircle from '../assets/check_circle.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
+import More from '../assets/more_horiz.svg'
+import Trash from '../assets/trash.svg'
+/*
+  TODO
+  - handle delete conversation
+  - Make the conversation no longer accessible in the backend if deleted
+  - Finish the category 
+  - Make a sort filter
+  - create a dropdown for category (and maybe for condition) in sell-item page
+*/
 
 type Item = {
   _id?: string;
@@ -78,7 +88,7 @@ function Chat(){
   const navigate = useNavigate()
 
   const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item} = useAppContext()
+  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, } = useAppContext()
    
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
@@ -90,8 +100,30 @@ function Chat(){
   const [revertSold, setRevertSold] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [otherUser, setOtherUser] = useState<User | null>(null)
+  const [openDropdown, setOpenDropdown] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const messageEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const dropDownRef = useRef<HTMLDivElement>(null)
+  
+  
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if(dropDownRef.current && !dropDownRef.current.contains(e.target as Node)){
+        setOpenDropdown(false)
+      }
+    }
+
+    if(openDropdown){
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [openDropdown])
+
 
   const isMobile = () => navigator.maxTouchPoints > 0 // checks if its mobile
 
@@ -123,23 +155,16 @@ function Chat(){
 
 
   useEffect(() => {
-    const foundItem = items?.find(item => item._id === itemId)
     const otheruser = users?.find(user => user._id === userId)
     setOtherUser(otheruser) 
-
-    setItem(foundItem) // Optimistic rendering before the actual render
     setOtherUsername(getUsername(userId || 'Unkown User'))   // Gets the username of the other person
-    
 
     const findItem = async () => {
-      setIsLoading(true)  
       const res = await get_item(itemId)
       if(res){
         setItem(res)
-        setIsLoading(false)  
       }
     }
-
     
     const loadMessages = async () => {
       if(!user?._id || !itemId) return
@@ -158,19 +183,21 @@ function Chat(){
           return
         }
       }
-  
+      
       const msg = await load_messages(conv_id)
       setMessageList(msg?.messages || [])
       
-      const hasUnreadMessages = inbox.some(entry => entry.conversation_id === conv_id && entry.unread_count > 0)
+      const hasUnreadMessages = inbox.some(entry => entry._id === conv_id && entry.unread_count > 0)
       if(hasUnreadMessages){
         await read_messages(conv_id, user._id)
         await load_inbox(user._id)        
       }
     }
     
+    setIsLoading(true)  
     loadMessages() // loads messages
     findItem()
+    setIsLoading(false)  
   }, [items, itemId, getUsername, get_item, users])
 
 
@@ -324,7 +351,13 @@ function Chat(){
     e.preventDefault()
   }
 
-  
+  const handleDropdown = () => {
+    setOpenDropdown(!openDropdown)
+  }
+
+  const handleConfirmDelete = () => {
+    setConfirmDelete(!confirmDelete)
+  }
   return (
     <>
       <div className="flex flex-col h-dvh ">
@@ -332,15 +365,25 @@ function Chat(){
         <div className={`top-0 pt-5 sticky bg-bg-canvas m-0 `}>
           <div className='head flex flex-col text-primary-text font-semibold'>
             
-            <div className="mx-5 flex flex-row gap-5 mb-3">
-              <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
-              <div className="flex flex-row gap-2 items-center">
-                <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
-                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
-
+            <div className="mx-5 flex flex-row justify-between mb-3">
+              <div className="flex flex-row items-center gap-5">
+                <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
+                <div className="flex flex-row gap-2 items-center">
+                  <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
+                    {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                  </div>
+                  <h1>{otherUsername}</h1>
                 </div>
-                <h1>{otherUsername}</h1>
               </div>
+              <div className='relative' ref={dropDownRef}>
+                <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
+                {openDropdown && (
+                  <div className='absolute w-40 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                    <p className='cursor-pointer' onClick={handleConfirmDelete}>Delete Conversation</p>
+                  </div>
+                )}
+              </div>
+              
             </div>
             
             <div className='item-entry border-b border-border-color border-t pt-2 pb-2 m-0'>
@@ -385,18 +428,30 @@ function Chat(){
         </div>
 
         <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">
+          
 
-          {messageList.length === 0 ? (
-            <div className="flex flex-row justify-center items-center h-full">
-              <h1 className="text-secondary-text">Start a conversation</h1>
-            </div>
-          ) : (
+          {!isLoading && messageList.length > 0 ? (
+            
             messageList.map((message) => (
             <Message  
               isOwn={isOwn(message.sender_id)} // Flips the message if its not the users
               message={message.text} 
             />
-          )))}
+            ))
+          ) : (
+            <div className="flex flex-row justify-center items-center h-full">
+              <h1 className="text-secondary-text">Start a conversation</h1>
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
+              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse "></div>
+              <div className="text-secondary-text">
+                Loading messages...
+              </div>
+            </div>
+          )}
 
           {
             item?.deleted ? (
@@ -405,21 +460,14 @@ function Chat(){
               </div>
             ) : (
               isSold && 
-                <div className="mt-auto">
-                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
-                </div>
+              <div className="mt-auto">
+                <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
+              </div>
             )
           }
 
 
-          {isLoading && (
-            <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
-              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse "></div>
-              <div className="mt-5">
-                Loading messages...
-              </div>
-            </div>
-          )}
+          
 
           <div ref={messageEndRef}/>
         </div>
@@ -574,6 +622,45 @@ function Chat(){
                   Confirm
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {confirmDelete && (
+          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
+
+              {/* Header with accent */}
+              <div className="relative">
+                <div className="px-6 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <img src={Trash} alt="trash_svg" className="filter-(--icon-filter)"/>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-text">Delete Conversation</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4">
+                <h1 className="text-primary-text">Are you sure you want to delete this conversation?</h1>
+              </div>
+
+              <div className="flex flex-row justify-end p-4  border-t border-border-color">
+                <button 
+                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
+                >
+                  Delete
+                </button>
+              </div>
+              
             </div>
           </div>
         )}

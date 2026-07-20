@@ -25,11 +25,10 @@ function SkeletonCard(){
 }
 
 
-function ItemCard({item_id, title, price, description, seller_name, likes}: {
+function ItemCard({item_id, title, price, seller_name, likes}: {
   item_id: string,
   title: string,
   price: number,
-  description: string,
   seller_name: string,
   likes: number
 }
@@ -39,33 +38,35 @@ function ItemCard({item_id, title, price, description, seller_name, likes}: {
   return(
     <Link  
       to={`/item/${item_id}`}
-      className="bg-bg-surface rounded-md p-3 cursor-pointer"
+      className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
     >
-      <div className="img-section bg-bg-inverse w-full min-h-37 rounded-md">
+      <div className="img-section bg-bg-inverse w-full min-h-50 rounded-md">
         {/* Image goes here */}
       </div>
-      <div className="title-section text-primary-text mt-2">
-        <h1 className="line-clamp-1 font-bold">{title}</h1>
-        <h1 className="font-semibold">₱{price.toLocaleString('en-US')}</h1>
-        <p className="text-sm line-clamp-1">{description}</p>
-        <div className="flex flex-row items-center justify-between mt-2">
-          <h1 className="text-sm font-light">@{seller_name}</h1>
-          <div className="flex flex-row gap-2">
-            <img 
-              onClick={(e) => {
-                handleLikeClick(e)
-                e.preventDefault()
-                e.stopPropagation()
-              }}  
-              src={isLiked ? HeartClicked : Heart} 
-              alt="heart" className="filter-(--icon-filter)"/>
-            {likesCount}
-          </div>
+      <div className="title-section text-primary-text mt-2 ">
+        <h1 className="line-clamp-2 ">{title}</h1>
+        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
+      </div>
+      <div className="flex flex-row items-center justify-between mt-auto">
+        <h1 className="text-sm font-light">@{seller_name}</h1>
+        <div className="flex flex-row gap-2">
+          <img 
+            onClick={(e) => {
+              handleLikeClick(e)
+              e.preventDefault()
+              e.stopPropagation()
+            }}  
+            src={isLiked ? HeartClicked : Heart} 
+            alt="heart" className="filter-(--icon-filter) h-6"/>
+          {likesCount}
         </div>
+        
       </div>
     </Link>
   )
 }
+
+
 
 
 function UserCard({userId, avatar_url, firstname, lastname, username }: {
@@ -134,7 +135,11 @@ export default function SearchPage(){
   const getSearchResults = (category: string) => {
     if(searchInput.length > 0){
       if(category === 'Items'){
-        const searchRes = items?.filter(item => item.title.toLowerCase().includes(searchInput.toLowerCase()))
+        const searchRes = items?.filter(item => {
+          if(item.deleted === false && item.status === 'available'){
+            return item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchInput.toLowerCase())
+          }
+        })
         setSearchResults(searchRes)
         setPrefill(false)
       }else{
@@ -206,15 +211,16 @@ export default function SearchPage(){
         {
         (prefill && searchResults.length === 0 && category === 'Items') && (
           items.map(item => (
-            <ItemCard 
-              key={item._id} 
-              item_id={item._id} 
-              title={item.title} 
-              price={item.price} 
-              description={item.description} 
-              seller_name={getUsername(item.seller_id)} 
-              likes={item.likes}
-            />
+            (item.status === 'available' && item.deleted === false && (
+              <ItemCard 
+                key={item._id} 
+                item_id={item._id} 
+                title={item.title} 
+                price={item.price} 
+                seller_name={getUsername(item.seller_id)} 
+                likes={item.likes}
+              />
+            ))
           ))    
         )
         }
@@ -244,15 +250,16 @@ export default function SearchPage(){
           ) : (    
           category === 'Items' ? (
             searchResults.map(item => (
+             
               <ItemCard 
                 key={item._id} 
                 item_id={item._id} 
                 title={item.title} 
                 price={item.price} 
-                description={item.description} 
                 seller_name={getUsername(item.seller_id)} 
                 likes={item.likes}
               />
+              
             ))
           ) : (
             searchResults.map(user => (

@@ -55,7 +55,7 @@ function ItemDetails(){
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null)
   const [sellerUsername, setSellerUsername] = useState('')
-
+  const [pageLoading, setPageLoading] = useState(true)
   const [openDropdown, setOpenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -67,6 +67,7 @@ function ItemDetails(){
     setOtherUser(founduser)
     setItem(foundItem)
     setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
+    setPageLoading(false)
   }, [items, id, getUsername, users])
 
 
@@ -85,6 +86,7 @@ function ItemDetails(){
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [openDropdown])
+
   const isUserItem = item?.seller_id === user?._id
 
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id, item?.likes || 0)
@@ -112,7 +114,7 @@ function ItemDetails(){
     naviagte(-1)
   }
 
-  if(dataLoading){
+  if(dataLoading || pageLoading){
     return(
       <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>

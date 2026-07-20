@@ -89,7 +89,9 @@ export default function UserProfile() {
 
   useEffect(() => {
     const getUserItems = () => {
-      const filteredItems = items.filter(item => item.seller_id === user._id)
+      const filteredItems = items.filter(item => {
+        return item.deleted === false && item.seller_id === user._id
+      })
       setUserItems(filteredItems)
     }
 

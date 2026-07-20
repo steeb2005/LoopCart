@@ -11,7 +11,7 @@ function LandingPage(){
   return(
     
     <div className="py-5 lg:mx-20 ">
-      <div className='main-section flex flex-col text-primary-text mt-20 mx-10 '>
+      <div className='min-h-dvh flex flex-col justify-center text-primary-text mx-10 '>
         
         <div className='flex flex-row'>
           <h1 className='text-4xl font-semibold'>LoopCart</h1>
@@ -40,7 +40,7 @@ function LandingPage(){
       </div>
 
 
-      <div className='benefits flex flex-col mt-20 mx-7'>
+      <div className='benefits flex flex-col min-h-dvh mx-7'>
         <h1 className='text-2xl text-center text-primary-text mb-5'>Why Choose LoopCart?</h1>
         <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
           <img src={MoneyBag} alt="money" className='h-7 w-7 filter-(--icon-filter)'/>
@@ -67,8 +67,10 @@ function LandingPage(){
         </div>
       </div>
 
-      <div className='mt-20 pb-10 flex flex-col mx-7 text-primary-text'>
-        <h1 className='font-bold text-3xl text-center'>Ready to clear <br />your clutter?</h1>
+      <div className='min-h-dvh pb-10 flex flex-col mx-7 text-primary-text pt-1 justify-center'>
+       
+
+        <h1 className='font-bold text-3xl text-center '>Ready to clear <br />your clutter?</h1>
         <p className='font-light text-center mt-5'>Join thousands of users giving <br />a second life to great clothes and tech.</p>
         <div className='flex flex-row justify-center mt-10'>
           <Link to={'/register'}>
@@ -77,6 +79,7 @@ function LandingPage(){
             </button>
           </Link>
         </div>
+    
         
       </div>
 

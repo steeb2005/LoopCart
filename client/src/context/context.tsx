@@ -1,4 +1,3 @@
-import { rootProjectionNode } from "framer-motion";
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
 
@@ -84,7 +83,7 @@ type MessageSend = {
 }
 
 type Conversation = {
-  conversation_id: string;
+  _id: string;
   item_id: string;
   other_user: string;
   unread_count: number;
@@ -122,6 +121,7 @@ type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  delete_conversation: (conversationId: string) => Promise<void>;
   delete_item: (itemId: string) => Promise<void>;
   toggleTheme: () => void;
   update_item: (itemId: string, updateData: Item) => Promise<void>;
@@ -789,6 +789,29 @@ export function AppContext({children}) {
       console.error('network error in deleting item');
     }
   }
+
+
+  const delete_conversation = async (conversationId: string) => {
+    try{
+      const res = await fetch(`${API_URL}/conversations/${conversationId}/delete`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        credentials: 'include'
+      })
+
+      if(res.ok){
+        setDataLoading(true)
+        await load_inbox(user._id)
+        console.log('successfully deleted conversation');
+      }else{
+        console.error('error in deleting conversation');
+      }
+      setDataLoading(false)
+    }catch{
+      console.error('network error in deleting conversation');
+    }
+  }
+
   
   // Websocket ------------------------------------------------------------------------------------
   const wsRef = useRef<WebSocket | null>(null)
@@ -827,6 +850,7 @@ export function AppContext({children}) {
     authLoading,
     theme,
 
+    delete_conversation,
     delete_item,
     toggleTheme,
     update_item,

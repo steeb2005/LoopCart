@@ -478,7 +478,8 @@ async def get_user_liked_items(user_id: str ,current_user: dict = Depends(get_cu
                 "seller_id": item["seller_id"],
                 "buyer_id": item["buyer_id"],
                 "image": item["image"],
-                "likes": item.get("likes", 0)
+                "likes": item.get("likes", 0),
+                "deleted": item.get("deleted", False)
             })
 
     return items_list
@@ -634,7 +635,7 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
     
     conversations_list = []
 
-    async for conversation in conversations.find({"participants": user_id}):
+    async for conversation in conversations.find({"participants": user_id, "deleted_by": {"$ne": user_id}}):
         try:
             participants = conversation.get("participants", [])
             other_participant = [p for p in participants if p != user_id]
@@ -658,7 +659,8 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
                 "other_user": other_participant_id,
                 "unread_count": unread_count,
                 "last_message": last_message,
-                "last_updated": conversation["last_updated"]
+                "last_updated": conversation["last_updated"],
+            
             })
         except Exception as e:
             print(f"Error processing conversation {conversation.get('_id')}: {e}")
@@ -929,6 +931,28 @@ async def delete_item(item_id: str, current_user: dict = Depends(get_current_use
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
 
+
+@app.patch('/conversations/{conversation_id}/delete')
+async def delete_conversation(conversation_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
+
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        if current_user["sub"] not in conversation["participants"]: 
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
+        await conversations.update_one(
+            {"_id": ObjectId(conversation_id)},
+            {"$addToSet": {
+                "deleted_by": current_user["sub"]}
+            }
+        )
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
 
 
 # Websocket Connection ----------------------------------------------------------------

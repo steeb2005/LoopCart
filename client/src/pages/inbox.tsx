@@ -5,10 +5,6 @@ import { Skeleton } from "../components/ui/skeleton";
 import InboxIcon from "../assets/inbox.svg"
 import { useSearchParams } from "react-router-dom";
 
-// TODO
-// - Implement a soft deletion in the backend
-// - Add a delete button in the inbox
-// - Add a delete button in the conversation
 
 
 type Item = {
@@ -200,7 +196,13 @@ function Inbox(){
 
   const filteredInbox = getFilteredInbox()
 
- 
+  // Sorts from most to least unread
+  const sortedInbox = [...filteredInbox].sort((a, b) =>   
+    b.unread_count - a.unread_count 
+  )
+
+
+  
   return(
     <div className="mx-5 py-2 lg:mx-30"> 
 
@@ -253,7 +255,7 @@ function Inbox(){
               <div className='text-empty-state text-center mt-10 px-10 justify-center font-light'>You don't have any messages</div>
             )
             : (
-                filteredInbox?.map((entry: any) => (
+                sortedInbox?.map((entry: any) => (
                 <InboxEntry 
                   key={entry._id} 
                   itemId={entry.item_id} 
