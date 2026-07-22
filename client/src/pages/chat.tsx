@@ -11,7 +11,7 @@ import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
 /*
   TODO
-  - handle delete conversation
+  - Test: delete the conversation when there is no conversation yet, and check results
   - Make the conversation no longer accessible in the backend if deleted
   - Finish the category 
   - Make a sort filter
@@ -88,7 +88,7 @@ function Chat(){
   const navigate = useNavigate()
 
   const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, } = useAppContext()
+  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, delete_conversation} = useAppContext()
    
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
@@ -98,10 +98,13 @@ function Chat(){
   const [conversationId, setConversationId] = useState('')
   const [soldConfirmation, setSoldConfirmation] = useState(false)
   const [revertSold, setRevertSold] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [otherUser, setOtherUser] = useState<User | null>(null)
   const [openDropdown, setOpenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const chatWsRef = useRef<WebSocket | null>(null)
+  const chatWsIntentionalClose = useRef(false)
+
 
   const messageEndRef = useRef<HTMLDivElement>(null);
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
@@ -194,15 +197,11 @@ function Chat(){
       }
     }
     
-    setIsLoading(true)  
+    setIsLoading(true)
     loadMessages() // loads messages
     findItem()
     setIsLoading(false)  
   }, [items, itemId, getUsername, get_item, users])
-
-
-  const chatWsRef = useRef<WebSocket | null>(null)
-  const chatWsIntentionalClose = useRef(false)
 
 
   const connectChatSocket = (conv_id: string) => {
@@ -358,6 +357,21 @@ function Chat(){
   const handleConfirmDelete = () => {
     setConfirmDelete(!confirmDelete)
   }
+
+  const handleDeleteConversation = async () => {
+    try{
+      if(!conversationId){
+        setConfirmDelete(false)
+        return
+      } 
+        
+      await delete_conversation(conversationId)
+      await load_items()
+      navigate('/inbox')
+    }catch{
+      console.error('error in deleting conversation');
+    }
+  }
   return (
     <>
       <div className="flex flex-col h-dvh ">
@@ -410,9 +424,9 @@ function Chat(){
                         </div>
                       ): (
                         <Link to={`/item/${itemId}`}>
-                          <div className={`flex flex-row gap-1 items-center ml-2 bg-bg-inverse text-primary-text-inverse cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                          <div className={`flex flex-row gap-1 items-center ml-2 border border-border-color  cursor-pointer rounded-full py-2 px-3 text-xs `}>
                             <p>View item</p>
-                            <img src={ArrowRight} alt="arrow_right_svg" className="h-3 invert"/>
+                            <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
                           </div>
                         </Link>
                       )
@@ -429,7 +443,7 @@ function Chat(){
 
         <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">
           
-
+         
           {!isLoading && messageList.length > 0 ? (
             
             messageList.map((message) => (
@@ -651,11 +665,13 @@ function Chat(){
               <div className="flex flex-row justify-end p-4  border-t border-border-color">
                 <button 
                   className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
+                  onClick={handleConfirmDelete}
                 >
                   Cancel
                 </button>
                 <button 
                   className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
+                  onClick={handleDeleteConversation}
                 >
                   Delete
                 </button>

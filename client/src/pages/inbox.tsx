@@ -5,6 +5,10 @@ import { Skeleton } from "../components/ui/skeleton";
 import InboxIcon from "../assets/inbox.svg"
 import { useSearchParams } from "react-router-dom";
 
+// TODO
+// - Implement a soft deletion in the backend
+// - Add a delete button in the inbox
+// - Add a delete button in the conversation
 
 
 type Item = {

@@ -4,25 +4,11 @@ import Search from '../assets/search.svg'
 import { useAppContext } from '../context/context'
 import Erase from '../assets/close.svg'
 import React, { useState, useRef, useEffect } from 'react'
-import { Skeleton } from '../components/ui/skeleton'
 import Heart from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
 import { useItemLike } from '../hooks/handle-like'
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 
-
-function SkeletonCard(){
-  return(
-    <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
-      <Skeleton className="h-48 bg-border-color" />
-      <div className="p-2 space-y-3">
-        <Skeleton className="h-4 w-3/4 bg-border-color" />
-        <Skeleton className="h-4 w-1/2 bg-border-color" />
-        <Skeleton className="h-4 w-2/3 bg-border-color" />
-      </div>
-    </Skeleton>
-  )
-}
 
 
 function ItemCard({item_id, title, price, seller_name, likes}: {
@@ -45,7 +31,7 @@ function ItemCard({item_id, title, price, seller_name, likes}: {
       </div>
       <div className="title-section text-primary-text mt-2 ">
         <h1 className="line-clamp-2 ">{title}</h1>
-        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
+        <h1 className=" font-bold text-lg">₱{price?.toLocaleString('en-US')}</h1>
       </div>
       <div className="flex flex-row items-center justify-between mt-auto">
         <h1 className="text-sm font-light">@{seller_name}</h1>
@@ -82,7 +68,7 @@ function UserCard({userId, avatar_url, firstname, lastname, username }: {
       className="border border-border-color p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full bg-bg-inverse flex justify-center items-center">
-          {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username.charAt(0).toUpperCase()}</span>) }
+          {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username?.charAt(0).toUpperCase()}</span>) }
         </div>
         <div className="flex flex-col ">
           <p className="">{firstname} {lastname}</p>
@@ -107,22 +93,24 @@ export default function SearchPage(){
 
   const [searchResults, setSearchResults] = useState([])
   const [searchInput, setSearchInput] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
   
   const inputRef = useRef<HTMLInputElement>(null)
-  const [searchParams, setSearchParams] = useSearchParams()
   const [prefill, setPrefill] = useState(true)
-  const [category, setCategory] = useState(searchParams.get('tab') || 'Items')
 
+  const category = searchParams.get('tab') || 'Items'
+  const query = searchParams.get('query') || ''
+  
   useEffect(() => {
-    const tab = searchParams.get('tab')
-    if(tab){
-      setCategory(tab)
-    }  
-  }, [searchParams])
+    setSearchInput(query)
+    getSearchResults(category, query)
+  },[category, query, items, users])
+
 
   const handleBackClick = () => {
-    navigate(-1)
+    navigate('/home')
   }
+
 
   const handleErase = (e: any) => {
     inputRef.current?.focus()
@@ -130,20 +118,21 @@ export default function SearchPage(){
     setSearchInput('')
     setPrefill(true)
     setSearchResults([])
+    const newParams = new URLSearchParams(searchParams)
+    newParams.delete('query')
+    setSearchParams(newParams, {replace: true})
   }
 
-  const getSearchResults = (category: string) => {
-    if(searchInput.length > 0){
+  const getSearchResults = (category: string, searchQuery: string) => {
+    if(searchQuery.length > 0){
       if(category === 'Items'){
-        const searchRes = items?.filter(item => {
-          if(item.deleted === false && item.status === 'available'){
-            return item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchInput.toLowerCase())
-          }
-        })
+        const searchRes = items?.filter(item => 
+          item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
+        )
         setSearchResults(searchRes)
         setPrefill(false)
       }else{
-        const searchRes = users?.filter(user => user.username.toLowerCase().includes(searchInput.toLowerCase()))
+        const searchRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
         setSearchResults(searchRes)
         setPrefill(false)
       }
@@ -156,15 +145,23 @@ export default function SearchPage(){
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      getSearchResults(category)
+      const newParams = new URLSearchParams(searchParams)
+      if(searchInput.length > 0){
+        newParams.set('query', searchInput)
+      }else{
+        newParams.delete('query')
+      }
+      setSearchParams(newParams, {replace: true})
+      getSearchResults(category, searchInput)
     }
   }
 
 
   const handleClickCategory = (newCategory: string) => {
-    setCategory(newCategory)
-    getSearchResults(newCategory)
-    setSearchParams({tab: newCategory})
+    const newParams =  new URLSearchParams(searchParams)
+    newParams.set('tab', newCategory)
+    setSearchParams(newParams, {replace: true}) // This overwrites the url in the same stack
+   
   }
 
 
@@ -206,8 +203,6 @@ export default function SearchPage(){
       
       
       <div className={`mx-5 px-2 py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
-
-
         {
         (prefill && searchResults.length === 0 && category === 'Items') && (
           items.map(item => (
@@ -236,13 +231,12 @@ export default function SearchPage(){
                 lastname={user.lastname} 
                 avatar_url={user.avatar_url}
               />
+              
             ))
           )
         }
-
-
+         
         {
-          
           (searchResults.length === 0 && !prefill) ? (
             <div className='flex items-center justify-center text-empty-state '>
               No results found

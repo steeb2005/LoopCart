@@ -654,7 +654,7 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
             
             
             conversations_list.append({
-                "conversation_id": str(conversation["_id"]),
+                "_id": str(conversation["_id"]),
                 "item_id": conversation["item_id"],
                 "other_user": other_participant_id,
                 "unread_count": unread_count,
@@ -672,9 +672,13 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
 
 
 
+
 @app.post('/messages/send')
-async def send_message(message: MessageSend):
+async def send_message(message: MessageSend, current_user: dict = Depends(get_current_user)):
     item = await items.find_one({"_id": ObjectId(message.item_id)})
+
+    if current_user["sub"] != message.sender_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
 
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -702,6 +706,10 @@ async def send_message(message: MessageSend):
 
     # If Found
     if conversation:
+        deleted_by_users = conversation.get("deleted_by", [])
+        if current_user["sub"] in deleted_by_users: 
+            await restore_conversation(str(conversation["_id"]), current_user["sub"])
+
         await conversations.update_one(
             {"_id": conversation["_id"]},
             {
@@ -709,6 +717,7 @@ async def send_message(message: MessageSend):
                 "$set": {"last_updated": datetime.now(tz=timezone.utc).isoformat()}
             }
         )
+
         conversation_id = str(conversation["_id"])
     else:
         new_conversation = { # this inserted into the db
@@ -734,7 +743,18 @@ async def send_message(message: MessageSend):
     return {"conversation_id": conversation_id}
 
 
-
+# Helper function to restore conversation 
+async def restore_conversation(conversation_id: str, user_id: str):
+    conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
+    
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    if user_id not in conversation["participants"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
+    await conversations.update_one({"_id": ObjectId(conversation_id)}, {"$pull": {"deleted_by": user_id}})
+   
 
 # Load messages of a conversation
 @app.get('/conversation/{conversation_id}/messages')
@@ -953,6 +973,7 @@ async def delete_conversation(conversation_id: str, current_user: dict = Depends
         raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
+
 
 
 # Websocket Connection ----------------------------------------------------------------

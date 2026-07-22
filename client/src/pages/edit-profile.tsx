@@ -94,7 +94,17 @@ export default function EditProfile() {
           <NativeSelect 
             value={gender}
             onChange={handleGenderSelect}
-            className="flex w-full border-none outline-none [&_select]:outline-none [&_select]:focus:ring-0 [&_select]:focus:outline-none [&_select]:focus-visible:ring-0">
+            className="mt-5 w-full border border-border-color rounded-md bg-bg-surface px-3 py-3 text-sm text-primary-text outline-none 
+                [&_select]:bg-bg-surface 
+                [&_select]:border-none 
+                [&_select]:outline-none 
+                [&_select]:focus-visible:ring-0 
+                [&_select]:appearance-none
+                [&_select]:w-full
+                [&_select]:h-full
+                [&_select]:p-0
+                [&_select]:pl-0
+                [&_select]:text-primary-text">
             <NativeSelectOption value={''} disabled className="bg-bg-surface text-primary-text">Select Gender</NativeSelectOption>
             <NativeSelectOption value={'male'} className="bg-bg-surface text-primary-text">Male</NativeSelectOption>
             <NativeSelectOption value={'female'} className="bg-bg-surface text-primary-text">Female</NativeSelectOption>

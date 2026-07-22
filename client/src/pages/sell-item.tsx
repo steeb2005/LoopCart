@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import {NumericFormat} from 'react-number-format'
-
+import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../components/ui/native-select'
 
 function SellItem(){
   const location = useLocation()
@@ -27,7 +27,8 @@ function SellItem(){
     seller_id: '',
     buyer_id: null as string,
     image: null as string,
-    likes: 0
+    likes: 0,
+    deleted: false
   })
 
   const defaultData = {
@@ -42,7 +43,8 @@ function SellItem(){
     seller_id: '',
     buyer_id: null as string,
     image: null as string,
-    likes: 0
+    likes: 0,
+    deleted: false
   }
 
 
@@ -64,7 +66,8 @@ function SellItem(){
         seller_id: initialData.seller_id,
         buyer_id: initialData.buyer_id,
         image: initialData.image,
-        likes: initialData.likes
+        likes: initialData.likes,
+        deleted: initialData.deleted
       }
       setItem(itemToEdit)
     }else{
@@ -154,22 +157,90 @@ function SellItem(){
               required
             />
 
-            <TextareaAutosize  
+
+            <NativeSelect 
+              className="
+                mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
+                [&_select]:bg-bg-surface 
+                [&_select]:border-none 
+                [&_select]:outline-none 
+                [&_select]:focus-visible:ring-0 
+                [&_select]:appearance-none
+                [&_select]:w-full
+                [&_select]:h-full
+                [&_select]:p-0
+                [&_select]:pl-0
+                [&_select]:text-primary-text
+              "
+              required
               value={item.category}
               onChange={(e) => setItem({...item, category: e.target.value})}
-              className='mt-5 resize-none text-sm border border-border-color items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Category'
-              required
-            />
+            >
+              <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
+                Select Category
+              </NativeSelectOption>
 
-            <TextareaAutosize 
+              <NativeSelectOptGroup label="Electronics" className='bg-bg-surface text-primary-text '>
+                <NativeSelectOption value="phones" className='bg-bg-surface text-secondary-text'>
+                  Mobile Phone
+                </NativeSelectOption>
+                <NativeSelectOption value="electronics_computers" className='bg-bg-surface text-secondary-text'>
+                  Electronics & Computers
+                </NativeSelectOption>
+              </NativeSelectOptGroup>
+
+              <NativeSelectOptGroup label="Clothing & Accessories" className='bg-bg-surface text-primary-text'>
+                <NativeSelectOption value="jewelry" className='bg-bg-surface text-secondary-text'>
+                  Jewelry
+                </NativeSelectOption>
+                <NativeSelectOption value="bags" className='bg-bg-surface text-secondary-text'>
+                  Bags
+                </NativeSelectOption>
+                <NativeSelectOption value="mens_clothing" className='bg-bg-surface text-secondary-text'>
+                  Men's clothing & shoes
+                </NativeSelectOption>
+                <NativeSelectOption value="womens_clothing" className='bg-bg-surface text-secondary-text'>
+                  Women's clothing & shoes
+                </NativeSelectOption>
+              </NativeSelectOptGroup>
+            </NativeSelect>
+
+            <NativeSelect 
+              className="
+                mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
+                [&_select]:bg-bg-surface 
+                [&_select]:border-none 
+                [&_select]:outline-none 
+                [&_select]:focus-visible:ring-0 
+                [&_select]:appearance-none
+                [&_select]:w-full
+                [&_select]:h-full
+                [&_select]:p-0
+                [&_select]:pl-0
+                [&_select]:text-primary-text
+              "
+              required
               value={item.condition}
               onChange={(e) => setItem({...item, condition: e.target.value})}
-              className='mt-5 resize-none text-sm border border-border-color items-center text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Condition'
-              required
-            />
+            >
+              <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
+                Condition
+              </NativeSelectOption>
+              <NativeSelectOption value="new" className="bg-bg-surface text-primary-text">
+                New
+              </NativeSelectOption>
+              <NativeSelectOption value="like_new" className="bg-bg-surface text-primary-text">
+                Used - Like New
+              </NativeSelectOption>
+              <NativeSelectOption value="good" className="bg-bg-surface text-primary-text">
+                Used - Good
+              </NativeSelectOption>
+              <NativeSelectOption value="fair" className="bg-bg-surface text-primary-text">
+                Used - Fair
+              </NativeSelectOption>
+            </NativeSelect>
 
+            
             <TextareaAutosize 
               value={item.description}
               onChange={(e) => setItem({...item, description: e.target.value})}

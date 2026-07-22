@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
 import Category from "../assets/category.svg"
-import Filter from "../assets/filter.svg"
 import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
 import HeartClicked from "../assets/clickedHeart.svg"
@@ -9,8 +8,15 @@ import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import { Link } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
 import { Skeleton } from "../components/ui/skeleton.tsx"
-
-
+import Sort from "../assets/sort.svg"
+import { useSearchParams } from "react-router-dom"
+/*
+  TODO
+  - Make it so that liking an item doesn't reload the page (check like pages)
+  - Add location for the user
+  - Make the user be able to import an avatar and image for the user profile and item
+  
+*/
 function ItemCard({item_id, title, price, seller_name, likes}: {
   item_id: string,
   title: string,
@@ -53,12 +59,12 @@ function ItemCard({item_id, title, price, seller_name, likes}: {
 }
 
 
-
-
-
-
-
 function SkeletonCard(){
+
+
+
+
+
   return(
     <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
       <Skeleton className="h-48 bg-border-color" />
@@ -72,13 +78,67 @@ function SkeletonCard(){
 }
 
 
-
-
 function Home(){
   
   const {items, getUsername, load_items, load_users} = useAppContext()
-    
   const [pageLoading, setPageLoading] = useState(true)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filteredItems, setFilteredItems] = useState([])
+  const [categoryMenu, setCategoryMenu] = useState(false)
+  const [sortMenu, setSortMenu] = useState(false)
+  
+  const currentCategory = searchParams.get('category') || 'explore'
+  const currentSort = searchParams.get('sort') || 'recent'
+
+  const CATEGORIES = [
+    { id: 'explore', label: 'Explore' },
+    { id: 'phones', label: 'Mobile Phones' },
+    { id: 'electronics_computers', label: 'Electronics & Computers' },
+    { id: 'jewelry', label: 'Jewelry' },
+    { id: 'bags', label: 'Bags' },
+    { id: 'mens_clothing', label: "Men's clothing & shoes" },
+    { id: 'womens_clothing', label: "Women's clothing & shoes" },
+  ];
+
+  const SORT = [
+    {id: 'recent', label: 'Most Recent'},
+    {id: 'popular', label: 'Most Popular'},
+    {id: 'price_low', label: 'Price: Low to High'},
+    {id: 'price_high', label: 'Price: High to Low'},
+  ]
+  
+  const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
+  const activeSort = SORT.find(sort => sort.id === currentSort)
+
+  const handleCategoryChange = (newCategory: string) => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('category', newCategory)
+    setSearchParams(newParams)
+  }
+
+  const handleSortChange = (newSort: string) => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('sort', newSort)
+    setSearchParams(newParams)
+  }
+
+  useEffect(() => {
+    
+    let categorizedItems = currentCategory === 'explore' ? [...items] : items?.filter(item => item.category === currentCategory)
+
+    if(currentSort === 'recent'){
+      categorizedItems.sort((a, b) => b.created_at.localeCompare(a.created_at))
+    }else if(currentSort === 'popular'){
+      categorizedItems?.sort((a, b) => b.likes - a.likes)
+    }else if(currentSort === 'price_low'){
+      categorizedItems?.sort((a, b) => a.price - b.price)
+    }else if(currentSort === 'price_high'){
+      categorizedItems?.sort((a, b) => b.price - a.price)
+    }
+
+    setFilteredItems(categorizedItems)
+  }, [currentCategory, items, currentSort])
+
   
   useEffect(() => {
     const loadItems = async() =>{
@@ -91,13 +151,16 @@ function Home(){
     loadItems()
   }, [])
 
+  const handleCategoryMenu = () => {
+    setCategoryMenu(!categoryMenu)
+  }
 
- 
-
+  const handleSortMenu = () => {
+    setSortMenu(!sortMenu)
+  }
+  
   const scrollDirection = useScrollDirection();
   const isHidden = scrollDirection === 'down';
-
-  
 
   return(
     <>
@@ -116,18 +179,49 @@ function Home(){
 
       <div className="top-section flex flex-col mx-5">
         
-        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between">
-          <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-2">
-            <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-            Category
-            <img src={ArrowDown} alt="arrow_down" className="filter-(--icon-filter)"/>
-          </button>
-
-          <div className="flex flex-row gap-3">
-            <button className="cursor-pointer bg-bg-surface px-2 py-1 rounded-md flex flex-row items-center gap-1">
-              <img src={Filter} alt="filter" className="filter-(--icon-filter)"/>
-              Filter
+        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
+          <div className="relative">
+            <button
+              onClick={handleCategoryMenu}
+              className="cursor-pointer border border-border-color px-2 py-1 rounded-md flex flex-row items-center gap-2">
+              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
+              {activeCategory.label}
+              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
             </button>
+            {categoryMenu && 
+              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-surface border border-border-color rounded-md flex flex-col">        
+                {CATEGORIES.map((category) => (
+                  <div
+                    onClick={() => handleCategoryChange(category.id)} 
+                    className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`} >
+                    {category.label}
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+
+          <div className="relative">
+            <button onClick={handleSortMenu} className="cursor-pointer border border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
+              <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
+              {activeSort.label}
+              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
+            </button>
+            {sortMenu && 
+              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-surface border border-border-color rounded-md flex flex-col">        
+                {SORT.map((sort) => (
+                  <div
+                    onClick={() => handleSortChange(sort.id)} 
+                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`}>
+                    {sort.label}
+                  </div>
+                ))}
+              
+              </div>
+            }
+            <div>
+
+            </div>
           </div>
         </div>
 
@@ -140,11 +234,10 @@ function Home(){
             Array.from({ length: 8 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))
-
           }
 
           {
-            items.map((item: any) => (
+            filteredItems.map((item: any) => (
               (item.status === 'available' && item.deleted === false) && (
                 <ItemCard 
                   key={item._id}
@@ -153,13 +246,10 @@ function Home(){
                   price={item.price}
                   seller_name={getUsername(item.seller_id)}
                   likes={item.likes}
-                  
                 />
               )
             ))
           }
-
-
         </div>
       </div>
     </>
