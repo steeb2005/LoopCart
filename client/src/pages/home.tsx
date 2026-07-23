@@ -1,22 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAppContext } from "../context/context"
 import Category from "../assets/category.svg"
 import ArrowDown from "../assets/arrow_down.svg"
 import Heart from "../assets/Heart.svg"
 import HeartClicked from "../assets/clickedHeart.svg"
-import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import { Link } from "react-router-dom"
 import { useItemLike } from "../hooks/handle-like.tsx" 
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
-/*
-  TODO
-  - Make it so that liking an item doesn't reload the page (check like pages)
-  - Add location for the user
-  - Make the user be able to import an avatar and image for the user profile and item
-  
-*/
+
 function ItemCard({item_id, title, price, seller_name, likes}: {
   item_id: string,
   title: string,
@@ -83,10 +76,9 @@ function Home(){
   const {items, getUsername, load_items, load_users} = useAppContext()
   const [pageLoading, setPageLoading] = useState(true)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [filteredItems, setFilteredItems] = useState([])
   const [categoryMenu, setCategoryMenu] = useState(false)
   const [sortMenu, setSortMenu] = useState(false)
-  
+
   const currentCategory = searchParams.get('category') || 'explore'
   const currentSort = searchParams.get('sort') || 'recent'
 
@@ -122,13 +114,14 @@ function Home(){
     setSearchParams(newParams)
   }
 
-  useEffect(() => {
+  const filteredItems = useMemo(() => {
+    if (!items) return []
     
     let categorizedItems = currentCategory === 'explore' ? [...items] : items?.filter(item => item.category === currentCategory)
 
     if(currentSort === 'recent'){
       categorizedItems.sort((a, b) => b.created_at.localeCompare(a.created_at))
-    }else if(currentSort === 'popular'){
+    }else if(currentSort === 'popular'){  
       categorizedItems?.sort((a, b) => b.likes - a.likes)
     }else if(currentSort === 'price_low'){
       categorizedItems?.sort((a, b) => a.price - b.price)
@@ -136,10 +129,12 @@ function Home(){
       categorizedItems?.sort((a, b) => b.price - a.price)
     }
 
-    setFilteredItems(categorizedItems)
-  }, [currentCategory, items, currentSort])
+    return categorizedItems
+  }, [currentCategory, currentSort, items.length])
 
-  
+ 
+
+
   useEffect(() => {
     const loadItems = async() =>{
       setPageLoading(true)
@@ -159,8 +154,6 @@ function Home(){
     setSortMenu(!sortMenu)
   }
   
-  const scrollDirection = useScrollDirection();
-  const isHidden = scrollDirection === 'down';
 
   return(
     <>

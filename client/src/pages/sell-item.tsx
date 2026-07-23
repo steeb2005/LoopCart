@@ -1,14 +1,14 @@
 import Back from '../assets/back.svg'
-import {Link, useLocation} from 'react-router-dom'
+import { useLocation} from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Location from '../assets/location.svg'
-import Logo from '../assets/Logo.svg'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import {NumericFormat} from 'react-number-format'
 import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../components/ui/native-select'
+
 
 function SellItem(){
   const location = useLocation()
@@ -123,6 +123,7 @@ function SellItem(){
     navigate(-1)
   }
 
+ 
   return(
     <>
       <div className='mx-5 pb-2 lg:mx-30'> 
@@ -259,7 +260,6 @@ function SellItem(){
           <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 '>
             <p>{mode === 'edit' ? 'Save' : 'Post to the Loop'}</p>
           </button>
-          
           
         </div>
       </div>

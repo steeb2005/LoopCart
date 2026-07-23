@@ -12,6 +12,9 @@ import { useNavigate } from 'react-router-dom'
 import { Skeleton } from '../components/ui/skeleton'
 import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
+import Tag from '../assets/Tag.svg'
+import Time from '../assets/clock.svg'
+import { format } from 'date-fns'
 
 type Item = {
   _id?: string;
@@ -207,12 +210,41 @@ function ItemDetails(){
               {/* Add image here */}
             </div>
 
-            <h1 className='font-semibold text-xl mt-2'>{item.title}</h1>
-            <h1 className='font-semibold text-xl mt-2'>₱{item.price.toLocaleString('en-US')}</h1>
-            <h1 className='font-semibold text-xl mt-3'>Condition</h1>
-            <p className='mt-1'>{item.condition}</p>
-            <h1 className='font-semibold text-xl mt-3'>Description</h1>
-            <p className='mt-1'>{item.description}</p>
+            <div className='flex flex-col gap-3 mt-2'>   
+
+              <h1 className='font-semibold text-xl'>{item.title}</h1>
+
+              <div className='flex flex-row items-center gap-2'>
+                <img src={Tag} alt="tag_svg" className='filter-(--icon-filter) h-5'/>
+                <h1 className='font-semibold text-xl'>₱{item.price.toLocaleString('en-US')}</h1>
+              </div>
+
+              <div className='flex flex-row items-center gap-2'>
+                <img src={Time} alt="time_svg" className='filter-(--icon-filter) h-6'/>
+                <h1 className='text-secondary-text'>{format(item.created_at, 'MMMM, d, yyyy')}</h1> {/* Replace with actual time */}
+              </div>
+
+              <div className='flex flex-row gap-2'>
+                <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer'/>
+                <h1 className='text-secondary-text'>{likesCount} Likes</h1>
+              </div>
+
+              <div className='flex flex-row items-center gap-2'>
+                <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
+                <p className='text-secondary-text'>Butuan City</p>
+              </div>
+
+              <div className='flex flex-row gap-4 items-center'>
+                <h1 className='text-secondary-text text-lg'>Condition</h1>
+                <p className=''>{item.condition}</p>
+              </div>
+
+              <div className='flex flex-col'>
+                <h1 className='font-semibold text-xl gap-2'>Description</h1>
+                <p className=''>{item.description}</p>
+              </div>
+              
+            </div>
           </div>
           
           
@@ -221,28 +253,19 @@ function ItemDetails(){
               <h1>Seller</h1>
               <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
             </div>
-            <div className='flex flex-row gap-3 mr-4'>
-              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer'/>
-              <h1>{likesCount}</h1>
-            </div>
+            
           </div>
 
           <Link  
             to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
-            className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
+            className='flex flex-row gap-3 mt-2 text-primary-text items-center mb-5 cursor-pointer'>
             <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
             </div>
             <h1>@{sellerUsername}</h1>
           </Link>
 
-          <div className='text-primary-text mt-5 mb-5'>
-            <h1 className='text-xl font-semibold'>Location</h1>
-            <div className='flex flex-row items-center gap-2 mt-2'>
-              <img src={Location} alt="location" className='filter-(--icon-filter)'/>
-              <p>Butuan City</p>
-            </div>
-          </div>
+          
           
           {isUserItem ? (
             <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>

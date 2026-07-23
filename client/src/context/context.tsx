@@ -506,7 +506,7 @@ export function AppContext({children}) {
         if(userId){ // only logged in users can like
           await load_liked_items(userId) // Loads the liked items of the logged in user
         }
-        await load_items() // Reloads the items that have been liked
+        setItems(prev => (prev.map(item => item._id === itemId ? {...item, likes: item.likes + 1} : item)))
         console.log('liked item: ' + itemId);
         return true
       }else{
@@ -531,7 +531,7 @@ export function AppContext({children}) {
         if(userId){
           await load_liked_items(userId)
         }
-        await load_items()
+        setItems(prev => (prev.map(item => item._id === itemId ? {...item, likes: item.likes - 1} : item)))
         console.log('unliked item: ' + itemId);
         return true
       }else{

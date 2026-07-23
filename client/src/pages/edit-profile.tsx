@@ -8,7 +8,42 @@ import TextareaAutosize from "react-textarea-autosize"
 import { DatePicker } from '../components/date-picker'
 import {format} from "date-fns"
 import { NativeSelect, NativeSelectOption } from "../components/ui/native-select"
+import Erase from '../assets/close.svg'
+import BackArrow from '../assets/arrow_back.svg'
 
+/*
+  TODO
+  - Add location for the user
+  - Make the user be able to import an avatar and image for the user profile and item
+  - Make the address be broken to muliple parts to be patched to the db
+  - The user should be unable to post items if they don't have an address (make an error message)
+*/
+type NominatimResult = {
+  place_id: number,
+  display_name: string,
+  lat: string,
+  lon: string,
+  address: {
+    city: string,
+    suburb: string,
+    neighbourhood: string,
+    street: string,
+    road: string,
+    state_district: string,
+    postcode: string,
+    state: string,
+    city_district: string,
+    building: string,
+    municipality: string,
+    county: string,
+    amenity: string, 
+    landuse: string,
+    region: string,
+    village: string,
+    quarter: string
+  }
+
+}
 
 
 
@@ -25,6 +60,12 @@ export default function EditProfile() {
   const [error, setError] = useState('')
   const [editGender, setEditGender] = useState(false)
   const [gender, setGender] = useState('')
+  const [openLocationMenu, setOpenLocationMenu] = useState(false)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [results, setResults] = useState<NominatimResult[]>([])
+  const [address, setAddress] = useState<NominatimResult | null>(null)
 
   useEffect(() => {
     if(user.bio){
@@ -59,8 +100,65 @@ export default function EditProfile() {
     setEditGender(!editGender)
   }
 
+
+
+  const handleEditLocation = () => {
+    setOpenLocationMenu(!openLocationMenu)
+  }
+
+ 
+  const handleSearch = async (query: string) => {
+    setIsLoading(true)
+    try{
+      
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+        `q=${encodeURIComponent(query)}` +
+        `&format=json` +
+        `&limit=5` +
+        `&countrycodes=ph` +  
+        `&addressdetails=1`,
+        {
+          headers: {
+            'Accept-language': 'en-US'
+          }
+        }
+      )
+      if(res.ok){
+        console.log('success in searching location');
+      }
+      const data = await res.json()
+      setResults(data)
+      setIsLoading(false)
+    }catch{
+      console.error('error in searching location');
+    }finally{
+      setIsLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSearch(searchQuery)
+    }
+  }
+
+  // Break the address into multiple parts then patch it to the db
+  const handleSelectAddress = (result: NominatimResult) => {
+    if(!result) return
+    setAddress(result)
+    setOpenLocationMenu(false)
+    setSearchQuery('')
+    setResults([])
+
+    console.log(result)
+  }
   
 
+    
+    
+    
   if(editGender){
     const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
       setGender(e.target.value)
@@ -124,10 +222,6 @@ export default function EditProfile() {
   }
 
 
-
-
-
-
   if(editBirthdate){
     const handleDateSelect = (date: string) => {
       setError('')
@@ -183,9 +277,7 @@ export default function EditProfile() {
     )
   }
 
-  
-
-  
+    
   if(editBio){
     const handleChangeBio = async (e: React.SubmitEvent<HTMLFormElement>) => {
       e.preventDefault()
@@ -250,89 +342,111 @@ export default function EditProfile() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   return(
     <>
-   
-
-    <div className='mx-5 lg:mx-30 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
-      <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
-      Edit Profile
-    </div>
-    <div className="lg:mx-30">
-      
-      <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
-
-        <div className=" flex flex-row gap-5 text-primary-text ">
-          <div className="w-20 h-20 bg-bg-inverse rounded-full items-center justify-center flex">
-            {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
-          </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="font-bold text-2xl">
-                {user?.firstname} {user?.lastname}
-              </h1>
-              <h1 className="text-secondary-text">@{user?.username}</h1>
-              
-            </div>
-        </div>
-
-
-        <div className="flex flex-col text-primary-text mt-5">
-          <h1 className="text-xl font-bold mb-2 ">About</h1>
-          <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-            {user?.bio || 'No bio yet'}
-          </p>
-        </div>
-
-        
-        <div className="flex flex-col gap-5 text-primary-text mt-5">
-          <div className='flex flex-row justify-between items-center '>
-            <h1 className="text-xl font-bold">Personal Details</h1>
-          </div>
-
-          <div className="flex flex-col">
-            <h1 className="font-semibold ">Birthdate</h1>
-            <div onClick={handleEditBirthdate} className="flex flex-row py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-              <p className="text-secondary-text">{user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : 'Set birthdate'}</p>
-              <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <h1 className="font-semibold ">Gender</h1>
-            <div onClick={handleEditGender} className="flex flex-row justify-between items-center  py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
-              <p className="text-secondary-text ">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'Set gender'}</p>
-              <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <h1 className="font-semibold ">Address</h1>
-            <div className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-              <p className="text-secondary-text">{user?.address || 'Current city or town'}</p>
-              <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
-            </div>
-          </div>
-        </div>
+      <div className='mx-5 lg:mx-30 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
+        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
+        Edit Profile
       </div>
-    </div>
-
+      <div className="lg:mx-30">
         
-      
+        <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
+
+          <div className=" flex flex-row gap-5 text-primary-text ">
+            <div className="w-20 h-20 bg-bg-inverse rounded-full items-center justify-center flex">
+              {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+            </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="font-bold text-2xl">
+                  {user?.firstname} {user?.lastname}
+                </h1>
+                <h1 className="text-secondary-text">@{user?.username}</h1>
+                
+              </div>
+          </div>
+
+
+          <div className="flex flex-col text-primary-text mt-5">
+            <h1 className="text-xl font-bold mb-2 ">About</h1>
+            <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+              {user?.bio || 'No bio yet'}
+            </p>
+          </div>
+
+          
+          <div className="flex flex-col gap-5 text-primary-text mt-5">
+            <div className='flex flex-row justify-between items-center '>
+              <h1 className="text-xl font-bold">Personal Details</h1>
+            </div>
+
+            <div className="flex flex-col">
+              <h1 className="font-semibold ">Birthdate</h1>
+              <div onClick={handleEditBirthdate} className="flex flex-row py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+                <p className="text-secondary-text">{user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : 'Set birthdate'}</p>
+                <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <h1 className="font-semibold ">Gender</h1>
+              <div onClick={handleEditGender} className="flex flex-row justify-between items-center  py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
+                <p className="text-secondary-text ">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'Set gender'}</p>
+                <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <h1 className="font-semibold ">Address</h1>
+              <div onClick={handleEditLocation} className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+                <p className="text-secondary-text">{user?.address || 'Current city or town'}</p>
+                <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
+              </div>
+              {openLocationMenu && 
+                <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                  <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
+
+                    <div className={`search-bar sticky p-2 flex flex-row justify-between top-0 w-full z-50  transition-all duration-300 ease-in-out `}>
+                      <img src={BackArrow} onClick={() => setOpenLocationMenu(false)} alt="back_arrow_svg" className="cursor-pointer absolute left-4.5 top-4 filter-(--icon-filter) h-5"/>
+                      <input 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        type="text" 
+                        className="pl-13 text-sm items-center text-secondary-text bg-bg-surface py-2 px-13 w-full rounded-full outline-0" 
+                        placeholder="Search your location"
+                        onKeyDown={handleKeyDown}
+                      />
+                      
+                      <div className={` cursor-pointer absolute right-4 top-3.5 items-center p-1 bg-bg-gray-surface rounded-full`}>
+                        <img src={Erase} alt="Erase" className='h-4 filter-(--icon-filter)'/>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 px-6 py-4 h-[50vh] overflow-y-auto scrollbar-thin scrollbar-thumb-bg-gray-surface">
+                      {isLoading ? (
+                        <div className='flex flex-row text-center justify-center text-sm text-secondary-text'>Loading...</div>
+                      ): (
+                        results.length > 0 ? (
+                        results.map((result, index) => (
+                          <div onClick={() => handleSelectAddress(result)} key={index} className='flex flex-col gap-1 text-sm cursor-pointer hover:bg-bg-gray-surface text-primary-text py-2 px-2 duration-100 border-b border-border-color last:border-0'>
+                            <p>{result.display_name}</p>
+                            <p>{result.address.city} {result.address.state} {result.address.region} {result.address.state_district} {result.address.city_district} {result.address.county}</p>
+                            <p className="text-secondary-text">{result.address.landuse} {result.address.amenity} {result.address.building} {result.address.village} {result.address.road} {result.address.street} {result.address.suburb} {result.address.neighbourhood} {result.address.postcode} {result.address.municipality}</p>
+                          </div>
+                        ))
+                        ) : (
+                          <div className='flex flex-row text-center justify-center text-sm text-secondary-text'>No results</div>
+                        )
+                      )}
+                    </div>    
+                  </div>
+                </div>}
+            </div>
+          </div>
+        </div>
+      </div>     
     </>
   )
 
 }
+                      
+                      
