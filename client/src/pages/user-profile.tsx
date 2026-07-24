@@ -160,7 +160,20 @@ export default function UserProfile() {
     )
   }
 
-
+  const displayAddress = [
+    user.address?.building,
+    user.address?.street,
+    user.address?.road,
+    user.address?.neighbourhood,
+    user.address?.suburb,
+    user.address?.quarter,
+    user.address?.village,
+    user.address?.city,
+    user.address?.city_district,
+    user.address?.municipality,
+    user.address?.state_district,
+    user.address?.state,
+  ].filter(Boolean)
 
   return (
     <div className='pb-2'> 
@@ -223,7 +236,7 @@ export default function UserProfile() {
 
           <div className="flex flex-col">
             <h1 className="font-semibold mt-5">Address</h1>
-            <p className="text-secondary-text">{user?.address || 'No address yet'}</p>
+            <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address'}</p>
           </div>
         </div>
       </div>

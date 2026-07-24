@@ -18,6 +18,28 @@ import Trash from '../assets/trash.svg'
   - create a dropdown for category (and maybe for condition) in sell-item page
 */
 
+type AddressDetails = { 
+  country?: string,
+  country_code?: string,
+  city?: string,
+  suburb?: string,
+  neighbourhood?: string,
+  street?: string,
+  road?: string,
+  state_district?: string,
+  postcode?: string,
+  state?: string,
+  city_district?: string,
+  building?: string,
+  municipality?: string,
+  county?: string,
+  amenity?: string, 
+  landuse?: string,
+  region?: string,
+  village?: string,
+  quarter?: string
+}
+
 type Item = {
   _id?: string;
   title: string;
@@ -36,6 +58,7 @@ type Item = {
 }
 
 
+
 type User = {
   _id?: string;
   username: string;
@@ -44,7 +67,7 @@ type User = {
   email: string;
   join_date: string;
   avatar_url?: string 
-  address?: string 
+  address?: AddressDetails | null
   gender?: string 
   bio?: string 
   birthdate?: string 

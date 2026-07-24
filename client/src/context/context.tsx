@@ -1,5 +1,26 @@
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
+type AddressDetails = { 
+  country?: string,
+  country_code?: string,
+  city?: string,
+  suburb?: string,
+  neighbourhood?: string,
+  street?: string,
+  road?: string,
+  state_district?: string,
+  postcode?: string,
+  state?: string,
+  city_district?: string,
+  building?: string,
+  municipality?: string,
+  county?: string,
+  amenity?: string, 
+  landuse?: string,
+  region?: string,
+  village?: string,
+  quarter?: string
+}
 
 type User = {
   _id?: string;
@@ -8,12 +29,13 @@ type User = {
   lastname: string;
   email: string;
   join_date: string;
-  avatar_url?: string 
-  address?: string 
+  avatar_url?: string | null; 
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
   birthdate?: string 
 }
+
 
 type RegisterData = {
   _id?: string;
@@ -51,7 +73,6 @@ type Item = {
 }
 
 
-
 type RequestUsers = {
   _id?: string;
   username: string;
@@ -60,7 +81,7 @@ type RequestUsers = {
   email: string;
   join_date: string;
   avatar_url?: string | null;
-  address?: string 
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
   birthdate?: string
@@ -92,7 +113,6 @@ type Conversation = {
 }
 
 
-
 type ItemUpdate = {
   _id?: string;
   title: string;
@@ -121,6 +141,7 @@ type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  update_address: (userId: string, address: AddressDetails) => Promise<void>;
   delete_conversation: (conversationId: string) => Promise<void>;
   delete_item: (itemId: string) => Promise<void>;
   toggleTheme: () => void;
@@ -771,6 +792,25 @@ export function AppContext({children}) {
   }
 
 
+  const update_address = async (userId: string, address: AddressDetails) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/address`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(address),
+        credentials: 'include'
+      })
+      if(res.ok){
+        console.log('successfully updated address');
+      }else{
+        console.error('error in updating address');
+      }
+    }catch{
+      console.error('network error in updating address');
+    } 
+     
+  }
+
   const delete_item = async (itemId: string) => {
     try{
       const res = await fetch(`${API_URL}/items/${itemId}/delete`, {
@@ -850,6 +890,7 @@ export function AppContext({children}) {
     authLoading,
     theme,
 
+    update_address,
     delete_conversation,
     delete_item,
     toggleTheme,

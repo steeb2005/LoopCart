@@ -7,21 +7,46 @@ import Items from '../assets/items.svg'
 import { useItemLike } from "../hooks/handle-like"
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
-import {format} from "date-fns"
+import {format, set} from "date-fns"
 import { Skeleton } from "../components/ui/skeleton"
 
+type AddressDetails = { 
+  country?: string,
+  country_code?: string,
+  city?: string,
+  suburb?: string,
+  neighbourhood?: string,
+  street?: string,
+  road?: string,
+  state_district?: string,
+  postcode?: string,
+  state?: string,
+  city_district?: string,
+  building?: string,
+  municipality?: string,
+  county?: string,
+  amenity?: string, 
+  landuse?: string,
+  region?: string,
+  village?: string,
+  quarter?: string
+}
+
+
 type User = {
-  username: string
-  firstname: string
-  lastname: string
-  email: string
-  join_date: string
-  avatar_url?: string 
-  address?: string 
+  _id?: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  join_date: string;
+  avatar_url?: string | null;
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
-  birthdate?: string 
+  birthdate?: string
 }
+
 
 
 type Item = {
@@ -91,6 +116,8 @@ export default function SellerProfile(){
   const {users, items, getUsername, dataLoading} = useAppContext()
   const {userId} = useParams() 
 
+  const [sellerLoading, setSellerLoading] = useState(true)
+
   const [user, setUser] = useState<User | null>(null)
   const [sellerItems, setSellerItems] = useState<Item[]>([])
   
@@ -101,9 +128,9 @@ export default function SellerProfile(){
       const filteredItems = items?.filter(item => item.seller_id === userId)
       setSellerItems(filteredItems)
       setUser(user)
-    }
-      
+    }    
     findUser()
+    setSellerLoading(false)
   }, [users, items])
 
   const handleBackClick = () => {
@@ -117,8 +144,9 @@ export default function SellerProfile(){
     year: 'numeric'
   });
 
+  
 
-  if(dataLoading){
+  if(sellerLoading || dataLoading){
     return(
       <div> 
         <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
@@ -171,7 +199,36 @@ export default function SellerProfile(){
     )
   }
 
+  // const displayAddress = [
+  //   user?.address?.building,
+  //   user?.address?.street,
+  //   user?.address?.road,
+  //   user?.address?.neighbourhood,
+  //   user?.address?.suburb,
+  //   user?.address?.quarter,
+  //   user?.address?.village,
+  //   user?.address?.city,
+  //   user?.address?.city_district,
+  //   user?.address?.municipality,
+  //   user?.address?.state_district,
+  //   user?.address?.state,
+  // ].filter(Boolean)
 
+  const displayAddress = [
+    user.address?.building,
+    user.address?.street,
+    user.address?.road,
+    user.address?.neighbourhood,
+    user.address?.suburb,
+    user.address?.quarter,
+    user.address?.village,
+    user.address?.city,
+    user.address?.city_district,
+    user.address?.municipality,
+    user.address?.state_district,
+    user.address?.state,
+  ].filter(Boolean)
+  
   return(
     <div className="pb-2"> 
       <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
@@ -204,7 +261,6 @@ export default function SellerProfile(){
 
             <h1 className="text-xl font-bold">Personal Details</h1>
         
-
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Join Date</h1>
               <p className="text-secondary-text">{formattedDate}</p>
@@ -226,7 +282,7 @@ export default function SellerProfile(){
 
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Address</h1>
-              <p className="text-secondary-text">{user?.address || 'No address yet'}</p>
+              <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address yet'}</p>
             </div>
           </div>
         </div>

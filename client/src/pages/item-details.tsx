@@ -33,7 +33,27 @@ type Item = {
   deleted: boolean;
 }
 
-
+type AddressDetails = { 
+  country?: string,
+  country_code?: string,
+  city?: string,
+  suburb?: string,
+  neighbourhood?: string,
+  street?: string,
+  road?: string,
+  state_district?: string,
+  postcode?: string,
+  state?: string,
+  city_district?: string,
+  building?: string,
+  municipality?: string,
+  county?: string,
+  amenity?: string, 
+  landuse?: string,
+  region?: string,
+  village?: string,
+  quarter?: string
+}
 
 type User = {
   _id?: string;
@@ -43,7 +63,7 @@ type User = {
   email: string;
   join_date: string;
   avatar_url?: string 
-  address?: string 
+  address?: AddressDetails 
   gender?: string 
   bio?: string 
   birthdate?: string 
@@ -183,6 +203,20 @@ function ItemDetails(){
     )
   }
 
+  const displayAddress = [
+    otherUser.address?.building,
+    otherUser.address?.street,
+    otherUser.address?.road,
+    otherUser.address?.neighbourhood,
+    otherUser.address?.suburb,
+    otherUser.address?.quarter,
+    otherUser.address?.village,
+    otherUser.address?.city,
+    otherUser.address?.city_district,
+    otherUser.address?.municipality,
+    otherUser.address?.state_district,
+    otherUser.address?.state,
+  ].filter(Boolean)
 
   return(
     <>
@@ -231,7 +265,7 @@ function ItemDetails(){
 
               <div className='flex flex-row items-center gap-2'>
                 <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
-                <p className='text-secondary-text'>Butuan City</p>
+                <p className='text-secondary-text'>{otherUser.address ? displayAddress.join(' ') : 'N/A' }</p>
               </div>
 
               <div className='flex flex-row gap-4 items-center'>

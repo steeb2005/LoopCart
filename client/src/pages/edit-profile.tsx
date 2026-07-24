@@ -13,10 +13,9 @@ import BackArrow from '../assets/arrow_back.svg'
 
 /*
   TODO
-  - Add location for the user
   - Make the user be able to import an avatar and image for the user profile and item
-  - Make the address be broken to muliple parts to be patched to the db
-  - The user should be unable to post items if they don't have an address (make an error message)
+  - Add password hashing
+  - Add google account (only allow certain websites or account providers)
 */
 type NominatimResult = {
   place_id: number,
@@ -24,6 +23,8 @@ type NominatimResult = {
   lat: string,
   lon: string,
   address: {
+    country: string,
+    country_code: string,
     city: string,
     suburb: string,
     neighbourhood: string,
@@ -42,14 +43,36 @@ type NominatimResult = {
     village: string,
     quarter: string
   }
+}
 
+
+type AddressDetails = { 
+  country: string,
+  country_code: string,
+  city: string,
+  suburb: string,
+  neighbourhood: string,
+  street: string,
+  road: string,
+  state_district: string,
+  postcode: string,
+  state: string,
+  city_district: string,
+  building: string,
+  municipality: string,
+  county: string,
+  amenity: string, 
+  landuse: string,
+  region: string,
+  village: string,
+  quarter: string
 }
 
 
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const {user, update_bio, update_birthdate, update_gender} = useAppContext()
+  const {user, update_bio, update_birthdate, update_gender, update_address} = useAppContext()
 
 
   const [editBio, setEditBio] = useState(false)
@@ -65,7 +88,7 @@ export default function EditProfile() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState<NominatimResult[]>([])
-  const [address, setAddress] = useState<NominatimResult | null>(null)
+  const [address, setAddress] = useState<AddressDetails | null>(null)
 
   useEffect(() => {
     if(user.bio){
@@ -104,6 +127,8 @@ export default function EditProfile() {
 
   const handleEditLocation = () => {
     setOpenLocationMenu(!openLocationMenu)
+    setSearchQuery('')
+    setResults([])
   }
 
  
@@ -144,21 +169,96 @@ export default function EditProfile() {
     }
   }
 
+  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(e.target.value === ''){
+      setAddress(null)
+    }
+    setSearchQuery(e.target.value)
+  }
+  
+  const handleErase = () => {
+    setSearchQuery('')
+    setAddress(null)
+  }
+
   // Break the address into multiple parts then patch it to the db
   const handleSelectAddress = (result: NominatimResult) => {
     if(!result) return
-    setAddress(result)
-    setOpenLocationMenu(false)
-    setSearchQuery('')
-    setResults([])
+    
+    const { 
+      country, country_code, city, suburb, neighbourhood, street, road,
+      state_district, postcode, state, city_district,
+      building, municipality, county, amenity,
+      landuse, region, village, quarter
+    } = result.address
 
-    console.log(result)
+    setAddress({
+      country, country_code, city, suburb, neighbourhood, street, road,
+      state_district, postcode, state, city_district,
+      building, municipality, county, amenity,
+      landuse, region, village, quarter
+    })
+
+    setSearchQuery(result.display_name)
   }
-  
 
+  
+  const handleChangeAddress = async () => {
+    if(!address) return
     
-    
-    
+    const prev = user.address
+    try{
+      user.address = address
+      await update_address(user._id, address)
+    }catch{
+      user.address = prev
+    }finally{
+      setOpenLocationMenu(false)
+      setSearchQuery('')
+      setResults([])
+      setAddress(null)
+    }
+  }
+
+  /**
+  const displayAddress = [
+    user.address?.building,
+    user.address?.amenity,
+    user.address?.landuse,
+    user.address?.street,
+    user.address?.road,
+    user.address?.neighbourhood,
+    user.address?.suburb,
+    user.address?.quarter,
+    user.address?.village,
+    user.address?.city_district,
+    user.address?.city,
+    user.address?.municipality,
+    user.address?.county,
+    user.address?.state_district,
+    user.address?.state,
+    user.address?.region,
+    user.address?.postcode,
+    user.address?.country,
+    user.address?.country_code
+  ].filter(Boolean)
+   */
+
+  const displayAddress = [
+    user.address?.building,
+    user.address?.street,
+    user.address?.road,
+    user.address?.neighbourhood,
+    user.address?.suburb,
+    user.address?.quarter,
+    user.address?.village,
+    user.address?.city,
+    user.address?.city_district,
+    user.address?.municipality,
+    user.address?.state_district,
+    user.address?.state,
+  ].filter(Boolean)
+
   if(editGender){
     const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
       setGender(e.target.value)
@@ -398,7 +498,9 @@ export default function EditProfile() {
             <div className="flex flex-col">
               <h1 className="font-semibold ">Address</h1>
               <div onClick={handleEditLocation} className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-                <p className="text-secondary-text">{user?.address || 'Current city or town'}</p>
+                <p className="text-secondary-text">
+                  {user?.address ? displayAddress.join(' ') : 'Current city or town'}
+                  </p>
                 <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
               </div>
               {openLocationMenu && 
@@ -409,14 +511,14 @@ export default function EditProfile() {
                       <img src={BackArrow} onClick={() => setOpenLocationMenu(false)} alt="back_arrow_svg" className="cursor-pointer absolute left-4.5 top-4 filter-(--icon-filter) h-5"/>
                       <input 
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={handleQueryChange}
                         type="text" 
                         className="pl-13 text-sm items-center text-secondary-text bg-bg-surface py-2 px-13 w-full rounded-full outline-0" 
                         placeholder="Search your location"
                         onKeyDown={handleKeyDown}
                       />
                       
-                      <div className={` cursor-pointer absolute right-4 top-3.5 items-center p-1 bg-bg-gray-surface rounded-full`}>
+                      <div onClick={handleErase} className={` cursor-pointer absolute right-4 top-3.5 items-center p-1 bg-bg-gray-surface rounded-full`}>
                         <img src={Erase} alt="Erase" className='h-4 filter-(--icon-filter)'/>
                       </div>
                     </div>
@@ -428,7 +530,6 @@ export default function EditProfile() {
                         results.length > 0 ? (
                         results.map((result, index) => (
                           <div onClick={() => handleSelectAddress(result)} key={index} className='flex flex-col gap-1 text-sm cursor-pointer hover:bg-bg-gray-surface text-primary-text py-2 px-2 duration-100 border-b border-border-color last:border-0'>
-                            <p>{result.display_name}</p>
                             <p>{result.address.city} {result.address.state} {result.address.region} {result.address.state_district} {result.address.city_district} {result.address.county}</p>
                             <p className="text-secondary-text">{result.address.landuse} {result.address.amenity} {result.address.building} {result.address.village} {result.address.road} {result.address.street} {result.address.suburb} {result.address.neighbourhood} {result.address.postcode} {result.address.municipality}</p>
                           </div>
@@ -438,6 +539,11 @@ export default function EditProfile() {
                         )
                       )}
                     </div>    
+                    <div className={`${address ? 'flex' : 'hidden'} border-t border-border-color justify-end px-5 py-2 transition-transform duration-100`}>
+                      <button onClick={handleChangeAddress} className="cursor-pointer bg-bg-inverse px-4 py-2 rounded-md font-semibold text-primary-text-inverse">
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>}
             </div>

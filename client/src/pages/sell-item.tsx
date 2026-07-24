@@ -14,6 +14,7 @@ function SellItem(){
   const location = useLocation()
   const navigate = useNavigate()
   const {user, post_item, update_item} = useAppContext() 
+  const [error, setError] = useState('')
 
   const [item, setItem] = useState({
     title: '',
@@ -81,8 +82,10 @@ function SellItem(){
     e.preventDefault()
     const created_at = new Date().toISOString();
     const seller_id = user._id || ''
-    if(!seller_id){
-      console.error('user not logged in');
+    
+
+    if(!user.address){
+      setError('Add an address to your profile first')
       return
     }
 
@@ -123,6 +126,20 @@ function SellItem(){
     navigate(-1)
   }
 
+  const displayAddress = [
+    user.address?.building,
+    user.address?.street,
+    user.address?.road,
+    user.address?.neighbourhood,
+    user.address?.suburb,
+    user.address?.quarter,
+    user.address?.village,
+    user.address?.city,
+    user.address?.city_district,
+    user.address?.municipality,
+    user.address?.state_district,
+    user.address?.state,
+  ].filter(Boolean)
  
   return(
     <>
@@ -227,16 +244,16 @@ function SellItem(){
               <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
                 Condition
               </NativeSelectOption>
-              <NativeSelectOption value="new" className="bg-bg-surface text-primary-text">
+              <NativeSelectOption value="New" className="bg-bg-surface text-primary-text">
                 New
               </NativeSelectOption>
-              <NativeSelectOption value="like_new" className="bg-bg-surface text-primary-text">
+              <NativeSelectOption value="Used - Like New" className="bg-bg-surface text-primary-text">
                 Used - Like New
               </NativeSelectOption>
-              <NativeSelectOption value="good" className="bg-bg-surface text-primary-text">
+              <NativeSelectOption value="Used - Good" className="bg-bg-surface text-primary-text">
                 Used - Good
               </NativeSelectOption>
-              <NativeSelectOption value="fair" className="bg-bg-surface text-primary-text">
+              <NativeSelectOption value="Used - Fair" className="bg-bg-surface text-primary-text">
                 Used - Fair
               </NativeSelectOption>
             </NativeSelect>
@@ -254,8 +271,19 @@ function SellItem(){
           <h1 className='text-md text-primary-text font-semibold mt-5 mb-1'>Location</h1>
           <div className='flex flex-row gap-2 mb-5'>
             <img src={Location} alt="Location" className='filter-(--icon-filter)'/>
-            <h1 className='font-light text-primary-text'>Butuan City</h1>
+            {user?.address ? (
+              <h1 className='font-light text-secondary-text text-sm'>{displayAddress.join(' ')}</h1>
+            ) : (
+              <>
+                <div className='flex flex-col'>
+
+                  <h1 onClick={() => navigate(`/edit-profile/${user?._id}`)} className='cursor-pointer font-light text-primary-text'>No address set</h1>  
+                  {error && <h1 className='font-light text-red-500 text-sm'>{error}</h1>}
+                </div>
+              </>
+            )}
           </div>          
+            
           
           <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 '>
             <p>{mode === 'edit' ? 'Save' : 'Post to the Loop'}</p>

@@ -173,6 +173,28 @@ class ItemUpdate(BaseModel):
     likes: int 
 
 
+class AddressUpdate(BaseModel):
+    city: str | None = None
+    suburb: str | None = None
+    neighbourhood: str | None = None
+    street: str | None = None
+    road: str | None = None
+    state_district: str | None = None
+    postcode: str | None = None
+    state: str | None = None
+    city_district: str | None = None
+    building: str | None = None
+    municipality: str | None = None
+    county: str | None = None
+    amenity: str | None = None
+    landuse: str | None = None
+    region: str | None = None
+    village: str | None = None
+    quarter: str | None = None  
+    country: str | None = None
+    country_code: str | None = None
+
+   
 
 # Routes ----------------------------------------------------------------------------------------------
 
@@ -389,7 +411,12 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 #add item to database
 @app.post("/items")
 async def create_item(item: Item, current_user: dict = Depends(get_current_user)):
-    ''' This allows only authenticated users to create items '''
+    ''' This allows only authenticated users to create items '''    
+    has_address = await users.find_one({"_id" : ObjectId(current_user["sub"]), "address": {"$exists": True}})
+
+    if not has_address:
+        raise HTTPException(status_code=400, detail="User must have an address to create an item")
+    
     result = await items.insert_one({
         "title": item.title,
         "price": item.price,
@@ -976,6 +1003,20 @@ async def delete_conversation(conversation_id: str, current_user: dict = Depends
 
 
 
+@app.patch('/users/{user_id}/address')
+async def update_address(user_id: str, addressData: AddressUpdate, current_user: dict = Depends(get_current_user)):
+    try:
+        if user_id != current_user["sub"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"address" : addressData.model_dump(exclude_none=True)}}
+        )
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
 # Websocket Connection ----------------------------------------------------------------
 @app.websocket("/ws/chat/{conversation_id}")
 async def chat_websocket(conversation_id: str, websocket: WebSocket):
