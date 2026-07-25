@@ -406,7 +406,7 @@ function Chat(){
               <div className="flex flex-row items-center gap-5">
                 <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
                 <div className="flex flex-row gap-2 items-center">
-                  <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
+                  <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center overflow-hidden">
                     {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
                   </div>
                   <h1>{otherUsername}</h1>

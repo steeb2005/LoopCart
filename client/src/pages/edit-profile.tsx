@@ -13,10 +13,13 @@ import BackArrow from '../assets/arrow_back.svg'
 
 /*
   TODO
-  - Make the user be able to import an avatar and image for the user profile and item
+  - Attempt to move the profile editor to the profile-edit page.
+  - Make an item image upload and make it mandatory to add an image.  
+  - Make toasts that show if the profile is updated or not (from shadcn). 
   - Add password hashing
   - Add google account (only allow certain websites or account providers)
 */
+
 type NominatimResult = {
   place_id: number,
   display_name: string,
@@ -133,9 +136,12 @@ export default function EditProfile() {
 
  
   const handleSearch = async (query: string) => {
+    if(isLoading){
+      return
+    }
+
     setIsLoading(true)
     try{
-      
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?` +
         `q=${encodeURIComponent(query)}` +
@@ -453,7 +459,7 @@ export default function EditProfile() {
         <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
 
           <div className=" flex flex-row gap-5 text-primary-text ">
-            <div className="w-20 h-20 bg-bg-inverse rounded-full items-center justify-center flex">
+            <div className="w-20 h-20 ring ring-border-color bg-bg-inverse rounded-full items-center justify-center flex overflow-hidden">
               {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
             </div>
               <div className="flex flex-col justify-center">

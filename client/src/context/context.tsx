@@ -141,6 +141,7 @@ type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  upload_avatar: (userId: string, file: File) => Promise<Boolean>
   update_address: (userId: string, address: AddressDetails) => Promise<void>;
   delete_conversation: (conversationId: string) => Promise<void>;
   delete_item: (itemId: string) => Promise<void>;
@@ -181,7 +182,7 @@ const API_URL = 'http://192.168.1.15:8000' // backend url
 const WS_URL = 'ws://192.168.1.15:8000'
 const TOKEN_KEY = 'loopcart_token'
 
-
+// SET THESE IN ENVIRONMENT VARIABLES
 
 // JWT helpers -------------------------------------------------------------------------------------
 
@@ -807,9 +808,37 @@ export function AppContext({children}) {
       }
     }catch{
       console.error('network error in updating address');
-    } 
-     
+    }   
   }
+
+
+  const upload_avatar = async (userId: string, file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/avatar`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      })
+
+      const data = await res.json()
+      
+      if(res.ok){
+        setUser(prev => ({...prev, avatar_url: data.avatar_url}))
+        console.log('successfully uploaded avatar');
+        return true
+      }else{
+        console.error('error uploading avatar')
+        return false
+      }
+    }catch{
+      console.error('network error in uploading avatar');
+      return false
+    }
+  }
+
 
   const delete_item = async (itemId: string) => {
     try{
@@ -890,6 +919,7 @@ export function AppContext({children}) {
     authLoading,
     theme,
 
+    upload_avatar,
     update_address,
     delete_conversation,
     delete_item,

@@ -128,7 +128,7 @@ export function Header({openSidebar, isDesktop}: {
           {/* User profile display for large screens */}
           <div className='hidden lg:flex flex-row items-center gap-3'>
             <Link to={'/user-profile'}>
-              <div className='flex h-8 w-8 rounded-full bg-bg-inverse justify-center items-center cursor-pointer'>
+              <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
                 {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-sm '>{user?.username.charAt(0).toUpperCase()}</span>) }
               </div>
             </Link>

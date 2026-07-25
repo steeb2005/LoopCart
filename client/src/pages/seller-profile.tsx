@@ -237,7 +237,7 @@ export default function SellerProfile(){
       </div>
       <div className="flex flex-col">
         <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
-          <div className="w-20 h-20 bg-bg-inverse rounded-full items-center flex justify-center">
+          <div className="w-25 h-25 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
             {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
 
           </div>
@@ -246,10 +246,8 @@ export default function SellerProfile(){
               {user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase() + user?.lastname.slice(1)}
             </h1>
             <h1 className="text-secondary-text">@{user?.username}</h1>
-            
           </div>
         </div>
-
 
         <div className="flex flex-col text-primary-text px-5 mt-5">
           <h1 className="text-xl font-bold mb-2">About</h1>

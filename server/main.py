@@ -1,12 +1,18 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response, Request, Cookie
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response, Request, Cookie, File, UploadFile
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import cloudinary
+import cloudinary.uploader
+import asyncio
+
 import jwt
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 
+
+# PUT IN EVIRONEMNT VARIABLES
 SECRET_KEY = "450ed82ef026750abdb1ba72cd0e9d7fa7b9f30d52f386ee6e9d57a08dacc58b"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30 
@@ -23,13 +29,22 @@ app.add_middleware(
     allow_credentials=True
 )
 
-client = AsyncIOMotorClient("mongodb://localhost:27017")
+# PUT IN ENVIRONMENTAL VARIABLES
+client = AsyncIOMotorClient("mongodb://localhost:27017") 
 db = client.LoopCart
 users = db.users
 items = db.items
 likes = db.likes
 conversations = db.conversations
 
+
+# PUT IN ENVIRONMENTAL VARIABLES
+cloudinary.config(
+    cloud_name="y9u4ub18",
+    api_key="432245532655762",
+    api_secret="FrmBO66aL9YUg8sR12uLYtYDUd8",
+    secure=True
+)
 
 
 # Websocket connection manager ------------------------------------------------------------------
@@ -952,6 +967,86 @@ async def update_gender(user_id: str, genderDate: GenderUpdate, current_user: di
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
 
+ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+@app.post("/users/{user_id}/avatar")
+async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if current_user["sub"] != user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    contents = await file.read()
+
+    if len(contents) > (2 * 1024 * 1024):
+        raise HTTPException(status_code=400, detail="File size too large")
+
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type")    
+
+    try:
+        result = await asyncio.to_thread(
+            cloudinary.uploader.upload,
+            contents,
+            folder="LoopCart/avatars",
+            public_id=f"avatar_{user_id}",
+            overwrite=True,
+            invalidate=True,
+            transformation=[
+                {"quality": "auto", "fetch_format": "auto"} 
+            ]
+
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload avatar: {str(e)}")
+
+    avatar_url = result.get("secure_url")
+
+    await users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"avatar_url": avatar_url}}
+    )
+
+    return {"avatar_url": avatar_url}
+
+
+# TODO : FINISH THIS 
+
+@app.post('/items/{item_id}/{user_id}/image')
+async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if userId != current_user["sub"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    contents = await file.read()
+    
+    if len(contents) > (2 * 1024 * 1024):
+        raise HTTPException(status_code=400, detail="File size too large")
+
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type")    
+
+    try:
+        result = await asyncio.to_thread(
+            cloudinary.uploader.upload,
+            contents,
+            folder="LoopCart/item-images",
+            public_id=f"item_{itemId}",
+            overwrite=True,
+            invalidate=True,
+            transformation=[
+                {"quality": "auto", "fetch_format": "auto"} 
+            ]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+
+    image_url = result.get("secure_url")
+
+    await items.update_one(
+        {"_id": ObjectId(itemId)},
+        {"$set": {"image": image_url}}
+    )
+    
+    return {"image_url": image_url}
+# Delete ------------------------------------------------------------------
 
 @app.patch('/items/{item_id}/delete')
 async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):

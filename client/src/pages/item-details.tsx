@@ -293,7 +293,7 @@ function ItemDetails(){
           <Link  
             to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
             className='flex flex-row gap-3 mt-2 text-primary-text items-center mb-5 cursor-pointer'>
-            <div className='bg-bg-inverse rounded-full w-8 h-8 flex justify-center items-center'>
+            <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
               {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
             </div>
             <h1>@{sellerUsername}</h1>
