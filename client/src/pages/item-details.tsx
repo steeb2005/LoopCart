@@ -238,13 +238,21 @@ function ItemDetails(){
               </div>
             )}
           </div>
-          <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
-            
-            <div className='min-h-50 bg-bg-inverse border-2 rounded-md '>
-              {/* Add image here */}
+          
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
+            <div className='border border-border-color max-h-120 w-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+              {item?.image ? (
+                <img src={item.image} className="w-full h-full object-contain" alt="image"/>
+              ) : (
+                <div className=" h-full flex justify-center items-center text-secondary-text">
+                  No Image
+                </div>
+              )}
             </div>
 
-            <div className='flex flex-col gap-3 mt-2'>   
+              
+            <div className='flex flex-col gap-3 '>   
 
               <h1 className='font-semibold text-xl'>{item.title}</h1>
 
@@ -277,50 +285,48 @@ function ItemDetails(){
                 <h1 className='font-semibold text-xl gap-2'>Description</h1>
                 <p className=''>{item.description}</p>
               </div>
-              
-            </div>
-          </div>
-          
-          
-          <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
-            <div className='flex items-center'>
-              <h1>Seller</h1>
-              <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
-            </div>
-            
-          </div>
 
-          <Link  
-            to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
-            className='flex flex-row gap-3 mt-2 text-primary-text items-center mb-5 cursor-pointer'>
-            <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-              {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
-            </div>
-            <h1>@{sellerUsername}</h1>
-          </Link>
-
-          
-          
-          {isUserItem ? (
-            <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-              Edit Listing
-            </button>
-          ) : (item?.sold_at ? (
-            <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-              Item Sold
-            </button>
-          ) : (
-            <Link
-              to={`/chat/${item?._id}/${item?.seller_id}`}  
-            >
-              <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+              <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
+                <div className='flex items-center'>
+                  <h1>Seller</h1>
+                  <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
+                </div>
                 
-                Make an Offer
-              </button>
-            </Link>
-            
-            )
-          )}
+              </div>
+
+              <Link  
+                to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
+                className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
+                <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
+                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                </div>
+                <h1>@{sellerUsername}</h1>
+              </Link>
+              
+              {isUserItem ? (
+                <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+                  Edit Listing
+                </button>
+              ) : (item?.sold_at ? (
+                <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+                  Item Sold
+                </button>
+              ) : (
+                <Link
+                  to={`/chat/${item?._id}/${item?.seller_id}`}  
+                >
+                  <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'> 
+                    Make an Offer
+                  </button>
+                </Link>
+                
+                )
+              )}
+            </div>
+          </div>
+
+          
+          
 
           {confirmDelete && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">

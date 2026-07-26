@@ -6,8 +6,9 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { Skeleton } from '../components/ui/skeleton'
 
-function ItemCard({item_id, title, price, status, seller_name, likes, deleted}: {
+function ItemCard({item_id, image, title, price, status, seller_name, likes, deleted}: {
   item_id: string,
+  image: string,
   title: string,
   price: number,
   status: string,
@@ -24,8 +25,12 @@ function ItemCard({item_id, title, price, status, seller_name, likes, deleted}: 
       to={`/item/${item_id}`}
       className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row m-0'>
 
-      <div className='image-entry h-20 min-w-20 bg-bg-inverse rounded-md shrink-0'>
-        {/* Image */}
+      <div className='image-entry h-20 overflow-hidden w-20 bg-bg-canvas rounded-md shrink-0'>
+        {image ? (
+          <img src={image} alt="image" className="object-contain" />
+        ) : (
+          <div className="h-full text-xs flex justify-center items-center">No image</div>
+        )}
       </div>
 
       <div className='data-entry flex flex-col w-full text-primary-text space-y-1'>
@@ -115,6 +120,7 @@ function LikedItems() {
           : (copyItems?.map((item: any) => (
             <ItemCard 
               key={item._id}
+              image={item.image}
               item_id={item._id}
               title={item.title}
               price={item.price}

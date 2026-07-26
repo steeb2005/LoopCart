@@ -471,7 +471,6 @@ export default function EditProfile() {
               </div>
           </div>
 
-
           <div className="flex flex-col text-primary-text mt-5">
             <h1 className="text-xl font-bold mb-2 ">About</h1>
             <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">

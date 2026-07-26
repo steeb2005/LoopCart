@@ -73,6 +73,23 @@ type Item = {
 }
 
 
+type ItemUpload = {
+  _id?: string;
+  title: string;
+  price: number;
+  category: string;
+  condition: string;
+  description: string;
+  created_at: string;
+  status: string;
+  sold_at: string;
+  seller_id: string;
+  buyer_id: string;
+  image: string;
+  likes: number;
+  deleted: boolean;
+}
+
 type RequestUsers = {
   _id?: string;
   username: string;
@@ -168,7 +185,7 @@ type ContextType = {
     error?: string}
   >;
   load_users: () => Promise<void>;
-  post_item: (data: Item) => Promise<boolean>;
+  post_item: (data: Item, file: File) => Promise<boolean>;
   load_items: () => Promise<void>;
 }
 
@@ -413,28 +430,44 @@ export function AppContext({children}) {
   // Items ------------------------------------------------------------------------------------ 
 
   // Creates a new item in the database
-  const post_item = async(formData: Item): Promise<boolean> => {
-    const tempId = `temp_${Date.now()}_${Math.random()}`  // Creates a temp item
-    const tempItem = {...formData, _id: tempId}
+  const post_item = async(formData: ItemUpload, file: File): Promise<boolean> => {
+    //const tempId = `temp_${Date.now()}_${Math.random()}`  // Creates a temp item
+    //const tempItem = {...formData, _id: tempId}
+    const payload = new FormData()
 
-    setItems(prev => [...items, tempItem])
+    if(!file){
+      console.error('No file provided');  
+      return false
+    }
+    payload.append('file', file)
+    payload.append('title', formData.title)
+    payload.append('price', formData.price.toString())
+    payload.append('category', formData.category)
+    payload.append('condition', formData.condition)
+    payload.append('description', formData.description)
+    payload.append('created_at', formData.created_at)
+    payload.append('status', formData.status)
+    payload.append('seller_id', formData.seller_id)
+    payload.append('likes', formData.likes.toString())
+
+    
+
+    //setItems(prev => [...items, tempItem])
     try{
       const res = await fetch(`${API_URL}/items`, {
         method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify(formData),
+        body: payload,
         credentials:'include'
       })
 
       const data = await res.json()
 
       if(res.ok){
-        
-        setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
+        //setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
         console.log('item posted successfully: ' + data.title);
         return true
       }else{
-        setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
+        //setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
         if(res.status === 401){
           console.log("not authenticated")
         }else{
@@ -443,7 +476,7 @@ export function AppContext({children}) {
         return false
       }
     }catch{
-      setItems(prev => prev.filter(item => item._id !== tempId)) 
+      //setItems(prev => prev.filter(item => item._id !== tempId)) 
       console.error('Network error or system error in posting item');
       return false
     }

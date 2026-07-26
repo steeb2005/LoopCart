@@ -1,6 +1,6 @@
 import Back from '../assets/back.svg'
 import { useLocation} from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Location from '../assets/location.svg'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
@@ -8,13 +8,19 @@ import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import {NumericFormat} from 'react-number-format'
 import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../components/ui/native-select'
-
+import AddPhoto from '../assets/add_photo.svg'
+import Close from '../assets/close.svg'
+import { Spinner } from '../components/ui/spinner'
 
 function SellItem(){
   const location = useLocation()
   const navigate = useNavigate()
   const {user, post_item, update_item} = useAppContext() 
   const [error, setError] = useState('')
+  const [itemImageFile, setItemImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const [loading, setLoading] = useState(false)
 
   const [item, setItem] = useState({
     title: '',
@@ -108,7 +114,13 @@ function SellItem(){
       if(mode === 'edit'){
         await update_item(item_id, itemToEdit)
       }else{
-        await post_item(itemToPost)
+        if(!itemImageFile){
+          console.error('No image file selected')
+          return
+        } 
+        setLoading(true)
+        await post_item(itemToPost, itemImageFile)
+        setLoading(false)
       }
       
     }catch(error){
@@ -140,7 +152,24 @@ function SellItem(){
     user.address?.state_district,
     user.address?.state,
   ].filter(Boolean)
- 
+  
+  const imageInputTrigger = () => {
+    imageInputRef.current?.click()
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if(file){
+      setItemImageFile(file)
+      setImagePreview(URL.createObjectURL(file))
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setItemImageFile(null)
+    setImagePreview(null)
+  }
+
   return(
     <>
       <div className='mx-5 pb-2 lg:mx-30'> 
@@ -148,146 +177,175 @@ function SellItem(){
           <img src={Back} alt="back" onClick={handleBackClick} className='filter-(--icon-filter) cursor-pointer'/>
           {mode === 'create' ? 'Create Listing' : 'Edit Listing'}
         </div>
-        <div className='flex flex-col mx-5 flex-1'>
+
+        <div className='mx-5 grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
+          <div className='relative'>
+            <div onClick={handleRemoveImage} className={`${imagePreview ? 'block' : 'hidden'} h-6 w-6 absolute cursor-pointer top-2 right-2 bg-bg-surface flex items-center rounded-full justify-center`}>
+              <img src={Close} alt="close_svg" className='filter-(--icon-filter) h-4'/>
+            </div>
+            <input 
+              ref={imageInputRef}
+              className='hidden'
+              type="file" 
+              onChange={handleImageChange}
+              accept='image/png, image/jpeg, image/webp'
+            />
+
+            <div className='h-120 flex justify-center bg-bg-canvas border border-border-color rounded-md overflow-hidden'>
+              
+              {imagePreview ? (
+                <img src={imagePreview} alt="item" className='w-full h-full object-contain '/>
+              ) : (
+                item?.image ? (
+                  <img src={item.image} alt="item" className='w-full h-full object-contain'/>
+                ): (
+                  <div onClick={imageInputTrigger} className='cursor-pointer h-full flex flex-col justify-center items-center'>
+                    <img src={AddPhoto} alt="add_photo_svg" className="filter-(--icon-filter)" />
+                    <div className='text-secondary-text'>Add image</div>  
+                  </div>
+                )
+              )}
+            </div>
+          </div>
           
-          <div className='min-h-50 bg-bg-canvas border-2 border-border-color rounded-md mt-7'>
-            {/* Add image here */}
+
+          <div className='flex flex-col'>
+            <form id='form' onSubmit={handlePost}>
+              <TextareaAutosize
+                value={item.title}
+                onChange={(e) => setItem({...item, title: e.target.value})}
+                className='resize-none text-sm items-center text-primary-text bg-bg-surface border border-border-color px-4 py-5 w-full rounded-md decoration-none outline-0 '
+                placeholder='Title'
+                required
+              />
+
+              <NumericFormat
+                allowNegative={false}
+                thousandSeparator={","}
+                decimalScale={2}
+                inputMode='decimal'
+                value={item.price}
+                onValueChange={handlePrice}
+                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+                placeholder='Price'
+                required
+              />
+
+
+              <NativeSelect 
+                className="
+                  mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
+                  [&_select]:bg-bg-surface 
+                  [&_select]:border-none 
+                  [&_select]:outline-none 
+                  [&_select]:focus-visible:ring-0 
+                  [&_select]:appearance-none
+                  [&_select]:w-full
+                  [&_select]:h-full
+                  [&_select]:p-0
+                  [&_select]:pl-0
+                  [&_select]:text-primary-text
+                "
+                required
+                value={item.category}
+                onChange={(e) => setItem({...item, category: e.target.value})}
+              >
+                <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
+                  Select Category
+                </NativeSelectOption>
+
+                <NativeSelectOptGroup label="Electronics" className='bg-bg-surface text-primary-text '>
+                  <NativeSelectOption value="phones" className='bg-bg-surface text-secondary-text'>
+                    Mobile Phone
+                  </NativeSelectOption>
+                  <NativeSelectOption value="electronics_computers" className='bg-bg-surface text-secondary-text'>
+                    Electronics & Computers
+                  </NativeSelectOption>
+                </NativeSelectOptGroup>
+
+                <NativeSelectOptGroup label="Clothing & Accessories" className='bg-bg-surface text-primary-text'>
+                  <NativeSelectOption value="jewelry" className='bg-bg-surface text-secondary-text'>
+                    Jewelry
+                  </NativeSelectOption>
+                  <NativeSelectOption value="bags" className='bg-bg-surface text-secondary-text'>
+                    Bags
+                  </NativeSelectOption>
+                  <NativeSelectOption value="mens_clothing" className='bg-bg-surface text-secondary-text'>
+                    Men's clothing & shoes
+                  </NativeSelectOption>
+                  <NativeSelectOption value="womens_clothing" className='bg-bg-surface text-secondary-text'>
+                    Women's clothing & shoes
+                  </NativeSelectOption>
+                </NativeSelectOptGroup>
+              </NativeSelect>
+
+              <NativeSelect 
+                className="
+                  mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
+                  [&_select]:bg-bg-surface 
+                  [&_select]:border-none 
+                  [&_select]:outline-none 
+                  [&_select]:focus-visible:ring-0 
+                  [&_select]:appearance-none
+                  [&_select]:w-full
+                  [&_select]:h-full
+                  [&_select]:p-0
+                  [&_select]:pl-0
+                  [&_select]:text-primary-text
+                "
+                required
+                value={item.condition}
+                onChange={(e) => setItem({...item, condition: e.target.value})}
+              >
+                <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
+                  Condition
+                </NativeSelectOption>
+                <NativeSelectOption value="New" className="bg-bg-surface text-primary-text">
+                  New
+                </NativeSelectOption>
+                <NativeSelectOption value="Used - Like New" className="bg-bg-surface text-primary-text">
+                  Used - Like New
+                </NativeSelectOption>
+                <NativeSelectOption value="Used - Good" className="bg-bg-surface text-primary-text">
+                  Used - Good
+                </NativeSelectOption>
+                <NativeSelectOption value="Used - Fair" className="bg-bg-surface text-primary-text">
+                  Used - Fair
+                </NativeSelectOption>
+              </NativeSelect>
+
+              
+              <TextareaAutosize 
+                value={item.description}
+                onChange={(e) => setItem({...item, description: e.target.value})}
+                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+                placeholder='Description'
+                required
+              />
+            </form>
+            <h1 className='text-md text-primary-text font-semibold mb-1'>Location</h1>
+            <div className='flex flex-row gap-2 mb-5 items-center'>
+              <img src={Location} alt="Location" className='filter-(--icon-filter) h-7'/>
+              {user?.address ? (
+                <h1 className='font-light text-secondary-text text-sm'>{displayAddress.join(' ')}</h1>
+              ) : (
+                <>
+                  <div className='flex flex-col'>
+
+                    <h1 onClick={() => navigate(`/edit-profile/${user?._id}`)} className='cursor-pointer font-light text-primary-text'>No address set</h1>  
+                    {error && <h1 className='font-light text-red-500 text-sm'>{error}</h1>}
+                  </div>
+                </>
+              )}
+            </div>          
+            <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 '>
+              {loading && <Spinner/>}
+              <p>{mode === 'edit' ? 'Save' : 'Post to the Loop'}</p>
+            </button>
           </div>
 
-          <form id='form' onSubmit={handlePost}>
-            <TextareaAutosize
-              value={item.title}
-              onChange={(e) => setItem({...item, title: e.target.value})}
-              className='mt-5 resize-none text-sm items-center text-primary-text bg-bg-surface border border-border-color px-4 py-5 w-full rounded-md decoration-none outline-0 '
-              placeholder='Title'
-              required
-            />
-
-            <NumericFormat
-              allowNegative={false}
-              thousandSeparator={","}
-              decimalScale={2}
-              inputMode='decimal'
-              value={item.price}
-              onValueChange={handlePrice}
-              className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Price'
-              required
-            />
-
-
-            <NativeSelect 
-              className="
-                mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
-                [&_select]:bg-bg-surface 
-                [&_select]:border-none 
-                [&_select]:outline-none 
-                [&_select]:focus-visible:ring-0 
-                [&_select]:appearance-none
-                [&_select]:w-full
-                [&_select]:h-full
-                [&_select]:p-0
-                [&_select]:pl-0
-                [&_select]:text-primary-text
-              "
-              required
-              value={item.category}
-              onChange={(e) => setItem({...item, category: e.target.value})}
-            >
-              <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
-                Select Category
-              </NativeSelectOption>
-
-              <NativeSelectOptGroup label="Electronics" className='bg-bg-surface text-primary-text '>
-                <NativeSelectOption value="phones" className='bg-bg-surface text-secondary-text'>
-                  Mobile Phone
-                </NativeSelectOption>
-                <NativeSelectOption value="electronics_computers" className='bg-bg-surface text-secondary-text'>
-                  Electronics & Computers
-                </NativeSelectOption>
-              </NativeSelectOptGroup>
-
-              <NativeSelectOptGroup label="Clothing & Accessories" className='bg-bg-surface text-primary-text'>
-                <NativeSelectOption value="jewelry" className='bg-bg-surface text-secondary-text'>
-                  Jewelry
-                </NativeSelectOption>
-                <NativeSelectOption value="bags" className='bg-bg-surface text-secondary-text'>
-                  Bags
-                </NativeSelectOption>
-                <NativeSelectOption value="mens_clothing" className='bg-bg-surface text-secondary-text'>
-                  Men's clothing & shoes
-                </NativeSelectOption>
-                <NativeSelectOption value="womens_clothing" className='bg-bg-surface text-secondary-text'>
-                  Women's clothing & shoes
-                </NativeSelectOption>
-              </NativeSelectOptGroup>
-            </NativeSelect>
-
-            <NativeSelect 
-              className="
-                mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
-                [&_select]:bg-bg-surface 
-                [&_select]:border-none 
-                [&_select]:outline-none 
-                [&_select]:focus-visible:ring-0 
-                [&_select]:appearance-none
-                [&_select]:w-full
-                [&_select]:h-full
-                [&_select]:p-0
-                [&_select]:pl-0
-                [&_select]:text-primary-text
-              "
-              required
-              value={item.condition}
-              onChange={(e) => setItem({...item, condition: e.target.value})}
-            >
-              <NativeSelectOption value="" disabled className="bg-bg-surface text-primary-text">
-                Condition
-              </NativeSelectOption>
-              <NativeSelectOption value="New" className="bg-bg-surface text-primary-text">
-                New
-              </NativeSelectOption>
-              <NativeSelectOption value="Used - Like New" className="bg-bg-surface text-primary-text">
-                Used - Like New
-              </NativeSelectOption>
-              <NativeSelectOption value="Used - Good" className="bg-bg-surface text-primary-text">
-                Used - Good
-              </NativeSelectOption>
-              <NativeSelectOption value="Used - Fair" className="bg-bg-surface text-primary-text">
-                Used - Fair
-              </NativeSelectOption>
-            </NativeSelect>
-
-            
-            <TextareaAutosize 
-              value={item.description}
-              onChange={(e) => setItem({...item, description: e.target.value})}
-              className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
-              placeholder='Description'
-              required
-            />
-          </form>
-
-          <h1 className='text-md text-primary-text font-semibold mt-5 mb-1'>Location</h1>
-          <div className='flex flex-row gap-2 mb-5'>
-            <img src={Location} alt="Location" className='filter-(--icon-filter)'/>
-            {user?.address ? (
-              <h1 className='font-light text-secondary-text text-sm'>{displayAddress.join(' ')}</h1>
-            ) : (
-              <>
-                <div className='flex flex-col'>
-
-                  <h1 onClick={() => navigate(`/edit-profile/${user?._id}`)} className='cursor-pointer font-light text-primary-text'>No address set</h1>  
-                  {error && <h1 className='font-light text-red-500 text-sm'>{error}</h1>}
-                </div>
-              </>
-            )}
-          </div>          
             
           
-          <button form='form' type='submit' className='gap-2 justify-center items-center flex flex-row mt-auto w-full bg-button-color text-primary-text-inverse font-semibold text-md cursor-pointer rounded-md py-2 '>
-            <p>{mode === 'edit' ? 'Save' : 'Post to the Loop'}</p>
-          </button>
           
         </div>
       </div>

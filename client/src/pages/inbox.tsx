@@ -63,8 +63,12 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
     <Link 
       to={`/chat/${itemId}/${otherId}`}
       className='cursor-pointer item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row shrink-0'>
-      <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
-        {/* Image */}
+      <div className='image-entry h-20 w-20 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
+        {item?.image ? (
+          <img src={item?.image} alt="image" className="object-fill "/>
+        ) : (
+          <div className="h-full text-xs flex justify-center items-center">No image</div>
+        )}
       </div>
       <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
         <div className='flex flex-row justify-between items-center'>

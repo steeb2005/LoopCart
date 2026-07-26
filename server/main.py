@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response, Request, Cookie, File, UploadFile
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Response, Request, Cookie, File, UploadFile, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
@@ -6,16 +6,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import cloudinary
 import cloudinary.uploader
 import asyncio
-
 import jwt
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 
+from config import settings
 
-# PUT IN EVIRONEMNT VARIABLES
-SECRET_KEY = "450ed82ef026750abdb1ba72cd0e9d7fa7b9f30d52f386ee6e9d57a08dacc58b"
-ALGORITHM = "HS256"
+# # PUT IN EVIRONEMNT VARIABLES
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30 
+ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 app = FastAPI()
@@ -28,9 +29,9 @@ app.add_middleware(
     allow_headers=["*"],
     allow_credentials=True
 )
-
 # PUT IN ENVIRONMENTAL VARIABLES
-client = AsyncIOMotorClient("mongodb://localhost:27017") 
+MONGODB_URL = settings.MONGODB_URL
+client = AsyncIOMotorClient(MONGODB_URL) 
 db = client.LoopCart
 users = db.users
 items = db.items
@@ -40,9 +41,9 @@ conversations = db.conversations
 
 # PUT IN ENVIRONMENTAL VARIABLES
 cloudinary.config(
-    cloud_name="y9u4ub18",
-    api_key="432245532655762",
-    api_secret="FrmBO66aL9YUg8sR12uLYtYDUd8",
+    cloud_name=settings.CLOUDINARY_CLOUDNAME,
+    api_key=settings.CLOUDINARY_API_KEY,
+    api_secret=settings.CLOUDINARY_API_SECRET,
     secure=True
 )
 
@@ -144,6 +145,7 @@ class Item(BaseModel):
     buyer_id: str | None = None
     image: str | None = None
     likes: int = 0
+
 
 
 class LikeRequest(BaseModel):
@@ -284,18 +286,6 @@ async def create_user(user: User):
 
     user_id = str(result.inserted_id) # Gets the id of the user created by mongodb
 
-    """
-    token = create_access_token(user_id, user.email)
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax",
-        max_age=60*60
-    )
-    """
-
     return {
         "user": {
             "_id": user_id,
@@ -422,45 +412,87 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 
 
+# TODO : RIGHT HERE NIGGER
 
 #add item to database
 @app.post("/items")
-async def create_item(item: Item, current_user: dict = Depends(get_current_user)):
+async def create_item(
+    title: str = Form(...),
+    price: float = Form(...),
+    category: str = Form(...),
+    condition: str = Form(...),
+    description: str = Form(...),
+    created_at: str = Form(...),
+    status: str = Form('available'),
+    likes: int = Form(0),
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user)
+):
     ''' This allows only authenticated users to create items '''    
     has_address = await users.find_one({"_id" : ObjectId(current_user["sub"]), "address": {"$exists": True}})
 
     if not has_address:
         raise HTTPException(status_code=400, detail="User must have an address to create an item")
+
+    if not file:
+        raise HTTPException(status_code=400, detail="Image is required")
     
-    result = await items.insert_one({
-        "title": item.title,
-        "price": item.price,
-        "category": item.category,
-        "condition": item.condition,
-        "description": item.description,
-        "created_at": item.created_at,
-        "status": item.status,
-        "sold_at": item.sold_at,
-        "seller_id": current_user["sub"],
-        "buyer_id": item.buyer_id,
-        "image": item.image,
-        "likes": item.likes
-    })
+    contents = await file.read()
+
+    if len(contents) > (2 * 1024 * 1024):
+        raise HTTPException(status_code=400, detail="File size too large")
+
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type")    
+
+    item_id = ObjectId()
+
+    try:
+        upload_image_res = await asyncio.to_thread(
+            cloudinary.uploader.upload,
+            contents,
+            folder="LoopCart/item-images",
+            public_id=f"item_{str(item_id)}",
+            overwrite=True,
+            invalidate=True,
+            transformation=[
+                {"quality": "auto", "fetch_format": "auto"} 
+            ]
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+
+    image_url = upload_image_res.get("secure_url")
+    
+    try: 
+        result = await items.insert_one({
+            "_id": item_id,  
+            "title": title,
+            "price": price,
+            "category": category,
+            "condition": condition,
+            "description": description,
+            "created_at": created_at,
+            "status": status,
+            "seller_id": current_user["sub"],
+            "image": image_url,
+            "likes": likes
+        })
+    except:
+        raise HTTPException(status_code=400, detail="Network error")
 
     return {
         "_id": str(result.inserted_id),
-        "title": item.title,
-        "price": item.price,
-        "category": item.category,
-        "condition": item.condition,
-        "description": item.description,
-        "created_at": item.created_at,
-        "status": item.status,
-        "sold_at": item.sold_at,
+        "title": title,
+        "price": price,
+        "category": category,
+        "condition": condition,
+        "description": description,
+        "created_at": created_at,
+        "status": status,
         "seller_id": current_user["sub"],
-        "buyer_id": item.buyer_id,
-        "image": item.image,
-        "likes": item.likes
+        "image": image_url,
+        "likes": likes
     }
 
 
@@ -516,9 +548,9 @@ async def get_user_liked_items(user_id: str ,current_user: dict = Depends(get_cu
                 "description": item["description"],
                 "created_at": item["created_at"],
                 "status": item["status"],
-                "sold_at": item["sold_at"],
+                "sold_at": item.get("sold_at"),
                 "seller_id": item["seller_id"],
-                "buyer_id": item["buyer_id"],
+                "buyer_id": item.get("buyer_id"),
                 "image": item["image"],
                 "likes": item.get("likes", 0),
                 "deleted": item.get("deleted", False)
@@ -572,9 +604,9 @@ async def get_items():
             "description": item["description"],
             "created_at": item["created_at"],
             "status": item["status"],
-            "sold_at": item["sold_at"],
+            "sold_at": item.get("sold_at"),
             "seller_id": item["seller_id"],
-            "buyer_id": item["buyer_id"],
+            "buyer_id": item.get("buyer_id"),
             "image": item["image"],
             "likes": item.get("likes", 0),
             "deleted": item.get("deleted", False)
@@ -967,7 +999,26 @@ async def update_gender(user_id: str, genderDate: GenderUpdate, current_user: di
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
 
-ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+
+@app.patch('/users/{user_id}/address')
+async def update_address(user_id: str, addressData: AddressUpdate, current_user: dict = Depends(get_current_user)):
+    try:
+        if user_id != current_user["sub"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"address" : addressData.model_dump(exclude_none=True)}}
+        )
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+    
+
+
 
 @app.post("/users/{user_id}/avatar")
 async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
@@ -993,7 +1044,6 @@ async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user
             transformation=[
                 {"quality": "auto", "fetch_format": "auto"} 
             ]
-
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload avatar: {str(e)}")
@@ -1008,7 +1058,6 @@ async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user
     return {"avatar_url": avatar_url}
 
 
-# TODO : FINISH THIS 
 
 @app.post('/items/{item_id}/{user_id}/image')
 async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
@@ -1046,6 +1095,11 @@ async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(..
     )
     
     return {"image_url": image_url}
+
+
+
+
+
 # Delete ------------------------------------------------------------------
 
 @app.patch('/items/{item_id}/delete')
@@ -1098,20 +1152,6 @@ async def delete_conversation(conversation_id: str, current_user: dict = Depends
 
 
 
-@app.patch('/users/{user_id}/address')
-async def update_address(user_id: str, addressData: AddressUpdate, current_user: dict = Depends(get_current_user)):
-    try:
-        if user_id != current_user["sub"]:
-            raise HTTPException(status_code=403, detail="Unauthorized")
-
-        await users.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$set": {"address" : addressData.model_dump(exclude_none=True)}}
-        )
-    except HTTPException:
-        raise
-    except:
-        raise HTTPException(status_code=400, detail="Invalid request")
 # Websocket Connection ----------------------------------------------------------------
 @app.websocket("/ws/chat/{conversation_id}")
 async def chat_websocket(conversation_id: str, websocket: WebSocket):

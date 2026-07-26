@@ -423,24 +423,29 @@ function Chat(){
               
             </div>
             
-            <div className='item-entry border-b border-border-color border-t pt-2 pb-2 m-0'>
-              <div className="flex flex-row px-5 gap-2 items-center">
 
-                <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
-                  {/* Image */}
+            <div className='item-entry border-b border-border-color border-t pt-2 pb-2 '>
+              <div className="flex flex-row px-5 gap-2 items-center">
+                <div className='image-entry flex justify-center items-center overflow-hidden border border-border-color h-20 w-20 shrink-0 bg-bg-canvas rounded-md'>
+                  {item?.image ? (
+                    <img src={item?.image} alt="image" className="object-contain" />
+                  ) : (
+                    <div className="h-full text-xs flex justify-center items-center">No image</div>
+                  )}
                 </div>
 
                 <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
+                  
                   <h1>₱{item?.price.toLocaleString('en-US')}</h1>
                   <h1 className="font-light line-clamp-1">{item?.title}</h1>
-                  <div className="flex flex-row ">
-                    <div className="font-light ml-2 bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
+                  <div className="flex flex-row gap-2">
+                    <div className="font-light  bg-bg-surface rounded-md justify-center items-center py-2 px-3 text-xs">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
                     {item?.deleted ? (
-                      <div className="font-light ml-2 bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+                      <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
                     ) : (
                       role === 'seller' ? (
                         <div 
-                          className={` ml-2 ${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
+                          className={`${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
                           onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
                         >
                           {isSold ? 'Item Sold' : 'Mark as Sold'}
@@ -455,8 +460,6 @@ function Chat(){
                       )
                     )
                     }
-                                      
-                    
                   </div>
                 </div>
               </div>
@@ -620,10 +623,14 @@ function Chat(){
                 {/* Buyer info card */}
                 <div className="p-4 bg-bg-canvas/50 rounded-xl border border-border-color/50">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-bg-inverse">
+                    <div className="w-15 h-15 rounded-full flex items-center justify-center overflow-hidden shrink-0 bg-bg-inverse">
+                      {otherUser?.avatar_url ? (
+                        <img src={otherUser?.avatar_url} alt="avatar" className="object-contain"/>
+                      ) : (
                       <span className="text-accent font-semibold text-sm">
                         {otherUsername?.charAt(0).toUpperCase() || '?'}
                       </span>
+                      )}
                     </div>
                     <div>
                       <p className="text-xs text-primary-text">Buyer</p>
@@ -635,7 +642,16 @@ function Chat(){
                 {/* Item preview */}
                 {item && (
                   <div className="mt-3 flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-color/30">
-                    <div className="w-12 h-12 bg-bg-inverse rounded-lg shrink-0" />
+
+                    <div className="w-15 h-15 bg-bg-canvas border border-border-color justify-centeritems-center rounded-lg shrink-0 overflow-hidden">
+                      {item?.image ? (
+                        <img src={item?.image} alt="item" className="object-contain"/>
+                      ) : (
+                        <div className="h-full flex justify-center items-center text-xs text-secondary-text">
+                          No image
+                        </div>
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-light text-primary-text">{item.title}</p>
                       <p className="text-primary-text font-semibold text-sm">₱{item.price?.toLocaleString()}</p>
