@@ -163,7 +163,7 @@ type ContextType = {
   delete_conversation: (conversationId: string) => Promise<void>;
   delete_item: (itemId: string) => Promise<void>;
   toggleTheme: () => void;
-  update_item: (itemId: string, updateData: Item) => Promise<void>;
+  update_item: (itemId: string, updateData: Item, file?: File | null) => Promise<void>;
   update_gender: (userId: string, gender: string) => Promise<void>;
   update_birthdate: (userId: string, birthdate: string) => Promise<void>;
   update_bio: (userId: string, bio: string) => Promise<void>;
@@ -469,7 +469,7 @@ export function AppContext({children}) {
       }else{
         //setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
         if(res.status === 401){
-          console.log("not authenticated")
+          console.error("not authenticated")
         }else{
           console.error('error in posting item');
         }
@@ -724,14 +724,27 @@ export function AppContext({children}) {
 
   // Updates ------------------------------------------------------------------------------------
 
-  const update_item = async (itemId: string, updateData: ItemUpdate) => {
+  const update_item = async (itemId: string, updateData: ItemUpdate, file?: File | null) => {
     try{
-    
+      const payload = new FormData()
+
+      if(file){
+        payload.append('file', file)
+      }
+      payload.append('title', updateData.title)
+      payload.append('price', updateData.price.toString())
+      payload.append('category', updateData.category)
+      payload.append('condition', updateData.condition)
+      payload.append('description', updateData.description)
+      payload.append('created_at', updateData.created_at)
+      payload.append('status', updateData.status)
+      payload.append('seller_id', updateData.seller_id)
+      payload.append('likes', updateData.likes.toString())
+
     
       const res = await fetch(`${API_URL}/items/${itemId}`, {
-        method: 'PUT',        
-        headers: authHeaders(),
-        body: JSON.stringify(updateData),
+        method: 'PUT',     
+        body: payload,
         credentials: 'include'
       })
       

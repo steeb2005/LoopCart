@@ -26,7 +26,7 @@ function ItemCard({item_id, image, title, price, seller_name, likes}: {
       to={`/item/${item_id}`}
       className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
     >
-      <div className="img-section bg-bg-canvas w-full min-h-50 rounded-md">
+      <div className="img-section bg-bg-canvas overflow-hidden w-full min-h-50 rounded-md">
         {image ? (
           <img src={image} className="w-full h-full object-contain" alt="image"/>
         ) : (

@@ -1,6 +1,6 @@
 import Back from '../assets/back.svg'
 import { useLocation} from 'react-router-dom'
-import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Location from '../assets/location.svg'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
@@ -11,16 +11,20 @@ import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../compo
 import AddPhoto from '../assets/add_photo.svg'
 import Close from '../assets/close.svg'
 import { Spinner } from '../components/ui/spinner'
+import { Edit } from 'lucide-react'
 
 function SellItem(){
   const location = useLocation()
   const navigate = useNavigate()
   const {user, post_item, update_item} = useAppContext() 
   const [error, setError] = useState('')
+  const [imgError, setImgError] = useState('')
   const [itemImageFile, setItemImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const imageInputRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
+
+  
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const [item, setItem] = useState({
     title: '',
@@ -72,10 +76,11 @@ function SellItem(){
         status: initialData.status,
         seller_id: initialData.seller_id,
         buyer_id: initialData.buyer_id,
-        image: initialData.image,
+        image: null as string,
         likes: initialData.likes,
         deleted: initialData.deleted
       }
+      setImagePreview(initialData.image)
       setItem(itemToEdit)
     }else{
       setItem(defaultData)
@@ -94,6 +99,24 @@ function SellItem(){
       setError('Add an address to your profile first')
       return
     }
+    
+    if(mode === 'create'){
+      if(!itemImageFile){
+        setImgError('Please select an image file')
+        return
+      }
+  
+      if(itemImageFile.size > 2 * 1024 * 1024){
+        setImgError('Please select a file less than 2mb')
+        return
+      }
+  
+      if(!itemImageFile.type.startsWith('image/')){
+        setError('Please select a png, jpeg, webp file')
+        return
+      } 
+      
+    }
 
     const itemToPost = {
       ...item,
@@ -111,14 +134,30 @@ function SellItem(){
 
 
     try{
+      setLoading(true)
       if(mode === 'edit'){
-        await update_item(item_id, itemToEdit)
+        if(itemImageFile){
+          if(itemImageFile.size > 2 * 1024 * 1024){
+            setImgError('Please select a file less than 2mb')
+            return
+          }
+
+          if(!itemImageFile.type.startsWith('image/')){
+            setError('Please select a png, jpeg, webp file')
+            return
+          } 
+        }
+
+        await update_item(item_id, itemToEdit, itemImageFile)
+        setLoading(false)
+
       }else{
         if(!itemImageFile){
           console.error('No image file selected')
+          setLoading(false)
           return
         } 
-        setLoading(true)
+        
         await post_item(itemToPost, itemImageFile)
         setLoading(false)
       }
@@ -160,6 +199,7 @@ function SellItem(){
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if(file){
+      setImgError('')
       setItemImageFile(file)
       setImagePreview(URL.createObjectURL(file))
     }
@@ -206,6 +246,7 @@ function SellItem(){
                 )
               )}
             </div>
+            {imgError && <h1 className=' text-red-500 text-sm'>{imgError}</h1>}
           </div>
           
 

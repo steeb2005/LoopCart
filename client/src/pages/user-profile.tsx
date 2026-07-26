@@ -30,8 +30,9 @@ type Item = {
 
 
 
-function ItemCard({item_id, title, price, seller_name, likes}: {
+function ItemCard({item_id, image, title, price, seller_name, likes}: {
   item_id: string,
+  image: string,
   title: string,
   price: number,
   seller_name: string,
@@ -46,8 +47,14 @@ function ItemCard({item_id, title, price, seller_name, likes}: {
       to={`/item/${item_id}`}
       className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
     >
-      <div className="img-section bg-bg-inverse w-full min-h-50 rounded-md">
-        {/* Image goes here */}
+      <div className="img-section bg-bg-canvas w-full min-h-50 rounded-md">
+        {image ? (
+          <img src={image} className="w-full h-full object-contain" alt="image"/>
+        ) : (
+          <div className="h-full flex justify-center items-center text-secondary-text">
+            No Image
+          </div>
+        )}
       </div>
       <div className="title-section text-primary-text mt-2 ">
         <h1 className="line-clamp-2 ">{title}</h1>
@@ -359,6 +366,7 @@ export default function UserProfile() {
                 userItems.map((item: any) => (
                   <ItemCard 
                     key={item._id}
+                    image={item.image}
                     item_id={item._id}
                     title={item.title}
                     price={item.price}

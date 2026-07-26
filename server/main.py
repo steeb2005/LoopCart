@@ -7,6 +7,7 @@ import cloudinary
 import cloudinary.uploader
 import asyncio
 import jwt
+from typing import Optional
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 
@@ -505,7 +506,19 @@ async def logout(response: Response):
 
 # Edit item
 @app.put('/items/{item_id}')
-async def edit_item(item_id: str, itemData: ItemUpdate, current_user: dict = Depends(get_current_user)):
+async def update_item(
+    item_id: str, 
+    title: str = Form(...),
+    price: float = Form(...),
+    category: str = Form(...),
+    condition: str = Form(...),
+    description: str = Form(...),
+    created_at: str = Form(...),
+    status: str = Form(...),
+    likes: int = Form(...),
+    file: Optional[UploadFile] = File(None),
+    current_user: dict = Depends(get_current_user)
+): 
     try:
         existing_item = await items.find_one({"_id": ObjectId(item_id)})
     except:
@@ -517,9 +530,50 @@ async def edit_item(item_id: str, itemData: ItemUpdate, current_user: dict = Dep
     if existing_item.get("seller_id") != current_user["sub"]:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
+    image_url = existing_item.get("image")
+
+    if file and file.filename:
+        
+        contents = await file.read()
+
+        if len(contents) > (2 * 1024 * 1024):
+            raise HTTPException(status_code=400, detail="File size too large")
+
+        if file.content_type not in ALLOWED_TYPES:
+            raise HTTPException(status_code=400, detail="Invalid file type")    
+
+        try:
+            upload_image_res = await asyncio.to_thread(
+                cloudinary.uploader.upload,
+                contents,
+                folder="LoopCart/item-images",
+                public_id=f"item_{str(item_id)}",
+                overwrite=True,
+                invalidate=True,
+                transformation=[
+                    {"quality": "auto", "fetch_format": "auto"} 
+                ]
+            )
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
+        
+        image_url = upload_image_res.get("secure_url")
+
+    itemData = {
+            "title": title,
+            "price": price,
+            "category": category,
+            "condition": condition,
+            "description": description,
+            "created_at": created_at,
+            "status": status,
+            "likes": likes,
+            "image": image_url
+        }
+    
     await items.update_one(
         {"_id": ObjectId(item_id)},
-        {"$set": itemData.model_dump()}
+        {"$set": itemData}
     )
     
     return {"success": True}    
