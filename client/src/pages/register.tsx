@@ -148,7 +148,7 @@ function Register(){
               </div>
               <p className="text-tertiary-text mt-5 text-center font-light text-sm">By registering an account you agree to the terms and conditions</p>
     
-              <button className='mt-10 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+              <button className='mt-5 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
                 Create account
               </button>
             </form>

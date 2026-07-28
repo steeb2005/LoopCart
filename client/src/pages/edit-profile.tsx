@@ -6,18 +6,15 @@ import React, { useEffect, useState } from "react"
 import Close from '../assets/close.svg'
 import TextareaAutosize from "react-textarea-autosize"
 import { DatePicker } from '../components/date-picker'
-import {format} from "date-fns"
+import { format } from "date-fns"
 import { NativeSelect, NativeSelectOption } from "../components/ui/native-select"
 import Erase from '../assets/close.svg'
 import BackArrow from '../assets/arrow_back.svg'
 
 /*
   TODO
-  - Attempt to move the profile editor to the profile-edit page.
-  - Make an item image upload and make it mandatory to add an image.  
   - Make toasts that show if the profile is updated or not (from shadcn). 
   - Add password hashing
-  - Add google account (only allow certain websites or account providers)
 */
 
 type NominatimResult = {
@@ -75,7 +72,7 @@ type AddressDetails = {
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const {user, update_bio, update_birthdate, update_gender, update_address} = useAppContext()
+  const {user, update_bio, update_birthdate, update_gender, update_address, update_username} = useAppContext()
 
 
   const [editBio, setEditBio] = useState(false)
@@ -92,7 +89,8 @@ export default function EditProfile() {
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState<NominatimResult[]>([])
   const [address, setAddress] = useState<AddressDetails | null>(null)
-
+  const [editUsername, setEditUsername] = useState(false)
+  const [username, setUsername] = useState(user?.username || '')
   useEffect(() => {
     if(user.bio){
       setBio(user.bio)  
@@ -226,30 +224,27 @@ export default function EditProfile() {
     }
   }
 
-  /**
-  const displayAddress = [
-    user.address?.building,
-    user.address?.amenity,
-    user.address?.landuse,
-    user.address?.street,
-    user.address?.road,
-    user.address?.neighbourhood,
-    user.address?.suburb,
-    user.address?.quarter,
-    user.address?.village,
-    user.address?.city_district,
-    user.address?.city,
-    user.address?.municipality,
-    user.address?.county,
-    user.address?.state_district,
-    user.address?.state,
-    user.address?.region,
-    user.address?.postcode,
-    user.address?.country,
-    user.address?.country_code
-  ].filter(Boolean)
-   */
+  const handleEditUsername = () => {
+    setEditUsername(!editUsername)
+    setUsername(user.username)  
+  }
 
+  const handleUpdateUsername = async () => {
+    setError('')
+    if(username === user.username){
+      setError('Username is the same')
+      return
+    }
+    const prev = user.username
+    try{
+      user.username = username
+      await update_username(user._id, username)
+    }catch{
+      user.username = prev
+    }finally{
+      setEditUsername(false)
+    }
+  }
   const displayAddress = [
     user.address?.building,
     user.address?.street,
@@ -466,8 +461,27 @@ export default function EditProfile() {
                 <h1 className="font-bold text-2xl">
                   {user?.firstname} {user?.lastname}
                 </h1>
-                <h1 className="text-secondary-text">@{user?.username}</h1>
-                
+                <div className="flex flex-row gap-4 items-center">
+                  
+                  <h1 className={`${editUsername ? 'hidden' : 'block'} text-secondary-text`}>@{user?.username}</h1>
+                  <div className={`${!editUsername ? 'hidden' : 'block'} relative`}>
+                    <input 
+                      type="text" 
+                      className={`border focus:outline-none border-border-color text-sm py-1 rounded-md px-2`} 
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                    />
+                    <button 
+                      onClick={handleUpdateUsername} 
+                      className={`${username === user?.username ? 'hidden' : 'block'} font-semibold absolute bg-button-color cursor-pointer text-primary-text-inverse text-sm rounded-md py-1 px-2 right-0 top-9`}
+                    >
+                      Save
+                    </button>
+                  </div>
+
+                  <img src={Edit} onClick={handleEditUsername} alt="edit_svg" className="cursor-pointer filter-(--icon-filter) h-5"/>
+                </div>
+              
               </div>
           </div>
 
@@ -503,9 +517,9 @@ export default function EditProfile() {
             <div className="flex flex-col">
               <h1 className="font-semibold ">Address</h1>
               <div onClick={handleEditLocation} className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
-                <p className="text-secondary-text">
+                <p className={` text-secondary-text`}>
                   {user?.address ? displayAddress.join(' ') : 'Current city or town'}
-                  </p>
+                </p>
                 <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
               </div>
               {openLocationMenu && 

@@ -15,6 +15,8 @@ import Trash from '../assets/trash.svg'
 import Tag from '../assets/Tag.svg'
 import Time from '../assets/clock.svg'
 import { format } from 'date-fns'
+import Close from '../assets/close.svg'
+
 
 type Item = {
   _id?: string;
@@ -81,7 +83,7 @@ function ItemDetails(){
   const [pageLoading, setPageLoading] = useState(true)
   const [openDropdown, setOpenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-
+  const [displayImage, setDisplayImage] = useState(false)
   const dropDownRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
@@ -137,6 +139,7 @@ function ItemDetails(){
     naviagte(-1)
   }
 
+  
   if(dataLoading || pageLoading){
     return(
       <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col lg:mx-30"> 
@@ -203,6 +206,17 @@ function ItemDetails(){
     )
   }
 
+  if(displayImage){
+    return(
+      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+        <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
+        <div className='h-dvh w-full p-10 flex items-center justify-center'>
+          <img src={item.image} alt="image" className='object-contain h-full w-full' />
+        </div>
+      </div>
+    )
+  }
+
   const displayAddress = [
     otherUser.address?.building,
     otherUser.address?.street,
@@ -241,9 +255,9 @@ function ItemDetails(){
           
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
-            <div className='border border-border-color max-h-120 w-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+            <div className='border border-border-color max-h-120  overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
               {item?.image ? (
-                <img src={item.image} className="w-full h-full object-contain" alt="image"/>
+                <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
               ) : (
                 <div className=" h-full flex justify-center items-center text-secondary-text">
                   No Image

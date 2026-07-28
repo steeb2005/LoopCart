@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY : str = ""
     CLOUDINARY_API_SECRET : str = ""
 
+    GOOGLE_CLIENT_ID : str = ""
+    GOOGLE_CLIENT_SECRET : str = ""
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()

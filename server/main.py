@@ -7,10 +7,12 @@ import cloudinary
 import cloudinary.uploader
 import asyncio
 import jwt
+import httpx
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
-
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from config import settings
 
 # # PUT IN EVIRONEMNT VARIABLES
@@ -18,6 +20,15 @@ SECRET_KEY = settings.SECRET_KEY
 ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+MAX_FILE_SIZE = 2 * 1024 * 1024
+API_URL = "http://localhost:8000" # Change this depending on where the backend is hosted
+
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+# GOOGLE_REDIRECT_URI = f"{API_URL}/auth/google/callback"
+GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 
 app = FastAPI()
@@ -45,6 +56,7 @@ cloudinary.config(
     cloud_name=settings.CLOUDINARY_CLOUDNAME,
     api_key=settings.CLOUDINARY_API_KEY,
     api_secret=settings.CLOUDINARY_API_SECRET,
+    timeout=30,
     secure=True
 )
 
@@ -212,60 +224,94 @@ class AddressUpdate(BaseModel):
     country: str | None = None
     country_code: str | None = None
 
-   
+class GoogleAuthRequest(BaseModel):
+    token: str
+
+class UsernameUpdate(BaseModel):
+    username: str
 
 # Routes ----------------------------------------------------------------------------------------------
 
 
 # Auth ------------------------------------------------------------------------------------------------
 
-"""
+
+
 #add user to database
-@app.post("/users")
-async def create_user(user: User):
+@app.post("/auth/google")
+async def google_auth(payload: GoogleAuthRequest, response: Response):
 
-    #check if user already exists
-    existing_email = await users.find_one({"email": user.email})
-    if existing_email:
-        raise HTTPException(status_code=400, detail="User already exists")
+    async with httpx.AsyncClient() as client:
+        user_info_res = await client.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {payload.token}"}
+        ) 
 
-    existing_username = await users.find_one({"username": user.username})
-    if existing_username:
-        raise HTTPException(status_code=400, detail="Username already taken")
+    if user_info_res.status_code != 200:
+        raise HTTPException(status_code=400, detail="Could not get user info from google")
 
-    result = await users.insert_one({
-        "username": user.username,
-        "firstname": user.firstname, 
-        "lastname": user.lastname, 
-        "email": user.email, 
-        "password": user.password,
-        "join_date": user.join_date,
-        "avatar_url": user.avatar_url
-    })
+    id_info = user_info_res.json()
 
-    user_id = str(result.inserted_id) # Gets the id of the user created by mongodb
-    token = create_access_token(user_id, user.email)
+    email = id_info.get("email")
+    firstname = id_info.get("given_name", "")
+    lastname = id_info.get("family_name", "")
+    avatar_url = id_info.get("picture")
+    google_id = id_info.get("sub")
 
-    return {
-        "access_token": token,
-        "token_type": "bearer",
+    if not email:
+        raise HTTPException(status_code=400, detail="Could not get the email from google")
+
+    existing_user = await users.find_one({"email": email})
+
+    if existing_user:
+        user_id = str(existing_user["_id"])
+        user_doc = existing_user
+    else:
+        
+        new_user = {
+            "username": email.split("@")[0],
+            "firstname": firstname,
+            "lastname": lastname,
+            "email": email,
+            "google_id": google_id,
+            "avatar_url": avatar_url,
+            "google_id": google_id,
+            "auth_provider": "google",
+            "join_date": datetime.now(tz=timezone.utc).isoformat()
+        }
+        result = await users.insert_one(new_user)
+        user_id = str(result.inserted_id)
+        user_doc = new_user
+
+    token = create_access_token(user_id, email)
+
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        httponly=True,
+        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="lax",
+        max_age=60*60*24*30 # Set cookie to expire in 30 days
+    )
+
+    return {    
         "user": {
             "_id": user_id,
-            "username": user.username,
-            "firstname": user.firstname, 
-            "lastname": user.lastname, 
-            "email": user.email, 
-            "password": user.password,
-            "join_date": user.join_date,
-            "avatar_url": user.avatar_url
-        }
-    }     
-"""
+            "username": user_doc["username"],
+            "firstname": user_doc["firstname"],
+            "lastname": user_doc["lastname"],
+            "email": user_doc["email"],
+            "avatar_url": user_doc.get("avatar_url"),
+            "join_date": user_doc["join_date"],
+            "address": user_doc.get("address"),
+            "gender": user_doc.get("gender"),
+            "bio": user_doc.get("bio"),
+            "birthdate": user_doc.get("birthdate")
+        } 
+    }
 
-#add user to database
 @app.post("/users")
 async def create_user(user: User):
-
     #check if user already exists
     existing_email = await users.find_one({"email": user.email})
     if existing_email:
@@ -302,41 +348,6 @@ async def create_user(user: User):
 
 
 
-'''
-# login 
-@app.post("/login")
-async def login(login_data: LoginRequest):
-    
-    user = await users.find_one({"email": login_data.email}) # Find user by email
-
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    if user["password"] != login_data.password:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-
-    user_id = str(user["_id"])
-    token = create_access_token(user_id, login_data.email)
-
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {
-            "_id": user_id,
-            "username": user["username"],
-            "firstname": user["firstname"],
-            "lastname": user["lastname"],
-            "email": user["email"],
-            "join_date": user["join_date"],
-            "avatar_url": user.get("avatar_url"),
-            "address": user.get("address"),
-            "gender": user.get("gender"),
-            "bio": user.get("bio"),
-            "birthdate": user.get("birthdate")
-        }
-    }
-'''
 # login 
 @app.post("/login")
 async def login(login_data: LoginRequest, response: Response):
@@ -390,6 +401,14 @@ async def login(login_data: LoginRequest, response: Response):
     }
 
 
+
+# Logout
+@app.post('/logout')
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    return{"success": True}
+
+
 # Protected routes ---------------------------------------------------------------------------
 
 @app.get("/users/me")       
@@ -437,11 +456,13 @@ async def create_item(
 
     if not file:
         raise HTTPException(status_code=400, detail="Image is required")
-    
-    contents = await file.read()
 
-    if len(contents) > (2 * 1024 * 1024):
-        raise HTTPException(status_code=400, detail="File size too large")
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
+
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File size is too large")
 
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Invalid file type")    
@@ -451,7 +472,7 @@ async def create_item(
     try:
         upload_image_res = await asyncio.to_thread(
             cloudinary.uploader.upload,
-            contents,
+            file.file,
             folder="LoopCart/item-images",
             public_id=f"item_{str(item_id)}",
             overwrite=True,
@@ -497,11 +518,6 @@ async def create_item(
     }
 
 
-# Logout
-@app.post('/logout')
-async def logout(response: Response):
-    response.delete_cookie("access_token")
-    return{"success": True}
 
 
 # Edit item
@@ -513,17 +529,16 @@ async def update_item(
     category: str = Form(...),
     condition: str = Form(...),
     description: str = Form(...),
-    created_at: str = Form(...),
     status: str = Form(...),
-    likes: int = Form(...),
     file: Optional[UploadFile] = File(None),
     current_user: dict = Depends(get_current_user)
 ): 
-    try:
-        existing_item = await items.find_one({"_id": ObjectId(item_id)})
-    except:
-        raise HTTPException(status_code=400, detail="Invalid Item ID")
+    
 
+    existing_item = await items.find_one(
+        {"_id": ObjectId(item_id)},
+        {"seller_id": 1, "image": 1})
+   
     if not existing_item:
         raise HTTPException(status_code=404, detail="Item not found")
     
@@ -533,19 +548,20 @@ async def update_item(
     image_url = existing_item.get("image")
 
     if file and file.filename:
-        
-        contents = await file.read()
-
-        if len(contents) > (2 * 1024 * 1024):
-            raise HTTPException(status_code=400, detail="File size too large")
-
         if file.content_type not in ALLOWED_TYPES:
             raise HTTPException(status_code=400, detail="Invalid file type")    
+        
+        file.file.seek(0, 2)
+        file_size = file.file.tell()
+        file.file.seek(0)
+
+        if file_size > MAX_FILE_SIZE:
+            raise HTTPException(status_code=400, detail="File size is too large")
 
         try:
             upload_image_res = await asyncio.to_thread(
                 cloudinary.uploader.upload,
-                contents,
+                file.file,
                 folder="LoopCart/item-images",
                 public_id=f"item_{str(item_id)}",
                 overwrite=True,
@@ -565,9 +581,7 @@ async def update_item(
             "category": category,
             "condition": condition,
             "description": description,
-            "created_at": created_at,
             "status": status,
-            "likes": likes,
             "image": image_url
         }
     
@@ -1079,10 +1093,15 @@ async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user
     if current_user["sub"] != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    contents = await file.read()
+    if not file:
+        raise HTTPException(status_code=400, detail="No image file provided")
+    
+    file.file.seek(0, 2)
+    file_size = file.file.tell()
+    file.file.seek(0)
 
-    if len(contents) > (2 * 1024 * 1024):
-        raise HTTPException(status_code=400, detail="File size too large")
+    if file_size > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File size is too large")
 
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail="Invalid file type")    
@@ -1090,7 +1109,7 @@ async def upload_avatar(user_id: str, file: UploadFile = File(...), current_user
     try:
         result = await asyncio.to_thread(
             cloudinary.uploader.upload,
-            contents,
+            file.file,
             folder="LoopCart/avatars",
             public_id=f"avatar_{user_id}",
             overwrite=True,
@@ -1151,9 +1170,26 @@ async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(..
     return {"image_url": image_url}
 
 
+@app.patch('/users/{user_id}/username')
+async def update_username(user_id: str, usernameData: UsernameUpdate, current_user: dict = Depends(get_current_user)):
+    try:
+        if current_user["sub"] != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
 
+        existing_username = await users.find_one({"username": usernameData.username})
 
+        if existing_username:
+            raise HTTPException(status_code=400, detail={"success": False, "message": "Username already exists"})
 
+        await users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"username": usernameData.username}}  
+        )   
+        return {"success": True}
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
 # Delete ------------------------------------------------------------------
 
 @app.patch('/items/{item_id}/delete')
@@ -1180,6 +1216,7 @@ async def delete_item(item_id: str, current_user: dict = Depends(get_current_use
         raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
+
 
 
 @app.patch('/conversations/{conversation_id}/delete')

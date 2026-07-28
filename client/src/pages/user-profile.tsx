@@ -254,7 +254,7 @@ export default function UserProfile() {
             accept='image/png, image/jpeg, image/webp'
           />
             
-          <div className="w-full h-full bg-bg-inverse ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
+          <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
             { loadingAvatar ? (
               <div className='animate-spin h-6 w-6 rounded-full border-b border-border-color'></div>
             ) : (
@@ -262,7 +262,7 @@ export default function UserProfile() {
               <img src={previewImageUrl} alt="avatar"/>
               ) : (
                 user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar"/>) : (
+                <img src={user.avatar_url} alt="avatar" className='w-full h-full object-contain'/>) : (
                 <span className='text-primary-text-inverse text-3xl font-bold'>
                   {user?.username.charAt(0).toUpperCase()}
                 </span>)

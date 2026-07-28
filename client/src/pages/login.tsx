@@ -6,10 +6,12 @@ import BackArrow from '../assets/arrow_back.svg'
 import { useEffect, useState } from 'react'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
+import GoogleIcon from '../assets/google_icon.svg'
+import { useGoogleLogin } from "@react-oauth/google";
 
 function Login(){
   const navigate = useNavigate()
-  const { login, user } = useAppContext()
+  const { login, user, google_login } = useAppContext()
   const [ showPassword, setShowPassword ] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -49,6 +51,20 @@ function Login(){
       setError('Something went wrong please try again')
     }
   }
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      if(!codeResponse.access_token) return
+
+      const res = await google_login(codeResponse.access_token) 
+      if(res.success){
+        navigate('/home')
+      }else{
+        console.error(res.error)
+      }
+    },
+    onError: (error) => console.log('Login Failed:', error)
+  })
 
   if(loading){
     return(
@@ -121,15 +137,20 @@ function Login(){
               <p className='ml-2'>Remember Me</p>
             </div>
             
-            <button className='mt-5 text-primary-text-inverse w-full bg-button-color  font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
-              Login
-            </button>
-            
-
+            <div className='flex flex-col gap-1'>
+              <button type='submit' className='mt-5 text-primary-text-inverse w-full bg-button-color  font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
+                Login
+              </button>
+              <span className='text-secondary-text text-center'>or</span>
+              <button onClick={() => handleGoogleLogin()} type='button' className='hover:bg-bg-surface duration-100 items-center gap-2 flex flex-row justify-center text-primary-text border-border-color border w-full font-semibold hover:cursor-pointer rounded-md py-2'>
+                <img src={GoogleIcon} alt="google" className='h-5'/>
+                Continue with Google
+              </button>
+            </div>
           </form>
 
 
-          <div className='text-center mt-10 text-primary-text'>
+          <div className='text-center mt-5 text-primary-text'>
             <p>New to LoopCart? <Link to={'/register'} className='underline'>Create an account</Link></p>
           </div>
         </div>

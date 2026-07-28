@@ -14,15 +14,15 @@ function LandingPage(){
       <div className='min-h-dvh flex flex-col justify-center text-primary-text mx-10 '>
         
         <div className='flex flex-row'>
-          <h1 className='text-4xl font-semibold'>LoopCart</h1>
+          <h1 className='text-4xl font-bold'>LoopCart</h1>
           <img src={Logo} alt="logo_svg" className='ml-4 filter-(--icon-filter)'/>
         </div>
         <div>
-          <p className='font-light text-3xl'>Buy. Sell. <br />Repeat the <br />Loop</p>
+          <p className='font-semibold text-3xl'>Buy. Sell. <br />Repeat the <br />Loop</p>
         </div>
 
         <div className='flex flex-col mt-10'>
-          <p className='font-light'>Turn your clutter into cash and your next find into a steal. LoopCart is the modern marketplace for pre-loved fashion and tech. Fast listings, secure connections, and smarter shopping—all in one seamless loop.</p>
+          <p className='font-normal'>Turn your clutter into cash and your next find into a steal. LoopCart is the modern marketplace for pre-loved fashion and tech. Fast listings, secure connections, and smarter shopping—all in one seamless loop.</p>
         </div>
 
         <div className='mt-10'>

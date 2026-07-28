@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, useRef } from "react";
 
+
 type AddressDetails = { 
   country?: string,
   country_code?: string,
@@ -158,6 +159,14 @@ type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  update_username: (userId: string, username: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
+  google_login: (credentials: string) => Promise<{
+    success: boolean; 
+    error?: string}
+  >;
   upload_avatar: (userId: string, file: File) => Promise<Boolean>
   update_address: (userId: string, address: AddressDetails) => Promise<void>;
   delete_conversation: (conversationId: string) => Promise<void>;
@@ -192,11 +201,11 @@ type ContextType = {
 
 const Context = createContext<ContextType | undefined>(undefined);
 
-//const API_URL = 'http://localhost:8000' // backend url
-const API_URL = 'http://192.168.1.15:8000' // backend url
-
-//const WS_URL = 'ws://localhost:8000'
-const WS_URL = 'ws://192.168.1.15:8000'
+const API_URL = 'http://localhost:8000' // backend url
+//const API_URL = 'http://192.168.1.15:8000' // backend url to connect with mobile
+ 
+const WS_URL = 'ws://localhost:8000'
+//const WS_URL = 'ws://192.168.1.15:8000'
 const TOKEN_KEY = 'loopcart_token'
 
 // SET THESE IN ENVIRONMENT VARIABLES
@@ -335,6 +344,56 @@ export function AppContext({children}) {
 
   // Auth -------------------------------------------------------------------------------------
 
+  const google_login = async (credential: string) => {
+    try{
+      setAuthLoading(true)
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: authHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ token: credential})
+      })
+
+      const data = await res.json()
+
+      if(res.ok){
+        setLikedItems([])
+     
+        const userData = {
+          _id: data.user._id || '',  // Make sure _id is included
+          username: data.user.username,
+          firstname: data.user.firstname,
+          lastname: data.user.lastname,
+          email: data.user.email,
+          join_date: data.user.join_date,
+          avatar_url: data.user.avatar_url,
+          address: data.user.address,
+          gender: data.user.gender,
+          bio: data.user.bio
+        }
+        setUser(userData)
+        load_liked_items(userData?._id)
+        console.log('logged in as: ' + data.user.username)
+        
+        await load_items()
+        await load_users()  
+        await load_inbox(data.user._id)
+        connectInboxSocket(userData._id)
+        return {success: true}
+      }else{
+        console.error('invalid email or password')
+        return {success: false, error: data.detail}
+      }
+    }catch{
+      console.error('network error in logging in');
+      return {success: false, error: 'Network Error, please try again'}
+    }finally{
+      setAuthLoading(false)
+    }
+    
+  }
+
+  
 
   // Sends the data to the backend to register the user
   const register = async (formData: RegisterData) => {
@@ -439,7 +498,8 @@ export function AppContext({children}) {
       console.error('No file provided');  
       return false
     }
-    payload.append('file', file)
+    const compressed = await compressImage(file)
+    payload.append('file', compressed)
     payload.append('title', formData.title)
     payload.append('price', formData.price.toString())
     payload.append('category', formData.category)
@@ -723,23 +783,63 @@ export function AppContext({children}) {
 
 
   // Updates ------------------------------------------------------------------------------------
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+
+      img.onload = () => {
+        const MAX = 1200
+        let { width, height } = img
+        if(width > MAX || height > MAX){
+          if(width > height){
+            height = Math.round((height * MAX) / width)
+            width = MAX
+          } else {
+            width = Math.round((width * MAX) / height)
+            height = MAX
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height)
+
+        canvas.toBlob(
+          (blob) => {
+            if(blob){
+              const compressed = new File([blob], file.name, { type: 'image/jpeg' })
+              resolve(compressed)
+            } else {
+              resolve(file)
+            }
+          },
+          'image/jpeg',
+          0.8  
+        )
+        URL.revokeObjectURL(url)
+      }
+      img.src = url
+    })
+  }
+
 
   const update_item = async (itemId: string, updateData: ItemUpdate, file?: File | null) => {
     try{
       const payload = new FormData()
 
       if(file){
-        payload.append('file', file)
+        const compressed = await compressImage(file)
+        payload.append('file', compressed)
       }
       payload.append('title', updateData.title)
       payload.append('price', updateData.price.toString())
       payload.append('category', updateData.category)
       payload.append('condition', updateData.condition)
       payload.append('description', updateData.description)
-      payload.append('created_at', updateData.created_at)
       payload.append('status', updateData.status)
       payload.append('seller_id', updateData.seller_id)
-      payload.append('likes', updateData.likes.toString())
 
     
       const res = await fetch(`${API_URL}/items/${itemId}`, {
@@ -860,7 +960,8 @@ export function AppContext({children}) {
 
   const upload_avatar = async (userId: string, file: File) => {
     const formData = new FormData()
-    formData.append('file', file)
+    const compress = await compressImage(file) 
+    formData.append('file', compress)
 
     try{
       const res = await fetch(`${API_URL}/users/${userId}/avatar`, {
@@ -886,6 +987,27 @@ export function AppContext({children}) {
   }
 
 
+  const update_username = async (userId: string, username: string) => {
+    try{
+      const res = await fetch(`${API_URL}/users/${userId}/username`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({username: username}),
+        credentials: 'include'
+      })
+
+      const data = await res.json()
+      if(!res.ok){
+        return {success: data.detail.success, error: data.detail.message} 
+      }
+
+    }catch{
+      console.error('network error in updating username');
+    }
+
+  }
+
+  // Delete ----------------------------------------------------------------------------
   const delete_item = async (itemId: string) => {
     try{
       const res = await fetch(`${API_URL}/items/${itemId}/delete`, {
@@ -965,6 +1087,8 @@ export function AppContext({children}) {
     authLoading,
     theme,
 
+    update_username,
+    google_login,
     upload_avatar,
     update_address,
     delete_conversation,

@@ -94,6 +94,10 @@ function SellItem(){
     const created_at = new Date().toISOString();
     const seller_id = user._id || ''
     
+    if(loading){
+      console.error('posting item')
+      return
+    }
 
     if(!user.address){
       setError('Add an address to your profile first')
