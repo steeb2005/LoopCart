@@ -432,8 +432,6 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 
 
-# TODO : RIGHT HERE NIGGER
-
 #add item to database
 @app.post("/items")
 async def create_item(

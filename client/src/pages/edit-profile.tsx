@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import Back from '../assets/back.svg'
 import { useAppContext } from "../context/context"
 import Edit from '../assets/edit.svg'
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
 import Close from '../assets/close.svg'
 import TextareaAutosize from "react-textarea-autosize"
 import { DatePicker } from '../components/date-picker'
@@ -10,7 +10,7 @@ import { format } from "date-fns"
 import { NativeSelect, NativeSelectOption } from "../components/ui/native-select"
 import Erase from '../assets/close.svg'
 import BackArrow from '../assets/arrow_back.svg'
-
+import Camera from '../assets/camera.svg'
 /*
   TODO
   - Make toasts that show if the profile is updated or not (from shadcn). 
@@ -72,7 +72,7 @@ type AddressDetails = {
 
 export default function EditProfile() {
   const navigate = useNavigate()
-  const {user, update_bio, update_birthdate, update_gender, update_address, update_username} = useAppContext()
+  const {user, update_bio, update_birthdate, update_gender, update_address, update_username, upload_avatar} = useAppContext()
 
 
   const [editBio, setEditBio] = useState(false)
@@ -91,6 +91,67 @@ export default function EditProfile() {
   const [address, setAddress] = useState<AddressDetails | null>(null)
   const [editUsername, setEditUsername] = useState(false)
   const [username, setUsername] = useState(user?.username || '')
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [loadingAvatar, setLoadingAvatar] = useState(false)
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleTriggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    setError('')
+    setLoadingAvatar(true)
+    const file = e.target.files?.[0]
+    if(!file.type.startsWith('image/')){
+      setError('Please select a png, jpeg, webp file')
+      setLoadingAvatar(false)
+      return 
+    } 
+
+    if(file.size > 2 * 1024 * 1024){
+      console.error('file size is greater than 2mb');
+      setError('Please select a file less than 2mb')
+      setLoadingAvatar(false)
+      return null
+    }
+
+    if(file){
+      if(file.type.startsWith('image/')){
+        setAvatarFile(file)
+        setPreviewImageUrl(URL.createObjectURL(file))
+      }else{
+        setPreviewImageUrl(null)
+      }
+    }
+    setLoadingAvatar(false)
+  }
+
+  const handleCancelPreview = () => {
+    setError('')
+    setAvatarFile(null)
+    setPreviewImageUrl(null)
+    setLoadingAvatar(false)
+  }
+
+  const handleSetAvatar = async () => {
+    setLoadingAvatar(true)
+    try{
+      if(avatarFile){
+        await upload_avatar(user._id, avatarFile)
+      } 
+    }catch{
+      console.error('something went wrong in uploading file');
+    }finally{
+      setLoadingAvatar(false)
+      setAvatarFile(null)
+      setPreviewImageUrl(null)
+    }
+  }
+
   useEffect(() => {
     if(user.bio){
       setBio(user.bio)  
@@ -454,37 +515,80 @@ export default function EditProfile() {
         <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
 
           <div className=" flex flex-row gap-5 text-primary-text ">
-            <div className="w-20 h-20 ring ring-border-color bg-bg-inverse rounded-full items-center justify-center flex overflow-hidden">
-              {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
-            </div>
-              <div className="flex flex-col justify-center">
-                <h1 className="font-bold text-2xl">
-                  {user?.firstname} {user?.lastname}
-                </h1>
-                <div className="flex flex-row gap-4 items-center">
-                  
-                  <h1 className={`${editUsername ? 'hidden' : 'block'} text-secondary-text`}>@{user?.username}</h1>
-                  <div className={`${!editUsername ? 'hidden' : 'block'} relative`}>
-                    <input 
-                      type="text" 
-                      className={`border focus:outline-none border-border-color text-sm py-1 rounded-md px-2`} 
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <button 
-                      onClick={handleUpdateUsername} 
-                      className={`${username === user?.username ? 'hidden' : 'block'} font-semibold absolute bg-button-color cursor-pointer text-primary-text-inverse text-sm rounded-md py-1 px-2 right-0 top-9`}
-                    >
-                      Save
-                    </button>
-                  </div>
-
-                  <img src={Edit} onClick={handleEditUsername} alt="edit_svg" className="cursor-pointer filter-(--icon-filter) h-5"/>
-                </div>
-              
+            <div className='relative group w-25 h-25'>
+              <input 
+                ref={fileInputRef}
+                className='hidden'
+                type="file" 
+                onChange={handleFileChange}
+                accept='image/png, image/jpeg, image/webp'
+              />
+                
+              <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
+                { loadingAvatar ? (
+                  <div className='animate-spin h-6 w-6 rounded-full border-b border-border-color'></div>
+                ) : (
+                  previewImageUrl ? (
+                  <img src={previewImageUrl} alt="avatar" className="h-full w-full object-cover"/>
+                  ) : (
+                    user?.avatar_url ? (
+                    <img src={user.avatar_url} alt="avatar" className='w-full h-full object-contain'/>) : (
+                    <span className='text-primary-text-inverse text-3xl font-bold'>
+                      {user?.username.charAt(0).toUpperCase()}
+                    </span>)
+                  )
+                )
+                }
               </div>
+              
+              <button
+                type="button" 
+                onClick={handleTriggerFileInput}
+                className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs gap-1 cursor-pointer "
+              >
+                <img src={Camera} alt="camera_svg" className="h-5 w-5" />
+                <span>Edit</span>
+              </button>
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1 className="font-bold text-2xl">
+                {user?.firstname} {user?.lastname}
+              </h1>
+              <div className="flex flex-row gap-4 items-center">
+                
+                <h1 className={`${editUsername ? 'hidden' : 'block'} text-secondary-text`}>@{user?.username}</h1>
+                <div className={`${!editUsername ? 'hidden' : 'block'} relative`}>
+                  <input 
+                    type="text" 
+                    className={`border focus:outline-none border-border-color text-sm py-1 rounded-md px-2`} 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <button 
+                    onClick={handleUpdateUsername} 
+                    className={`${username === user?.username ? 'hidden' : 'block'} font-semibold absolute bg-button-color cursor-pointer text-primary-text-inverse text-sm rounded-md py-1 px-2 right-0 top-9`}
+                  >
+                    Save
+                  </button>
+                </div>
+                <img src={Edit} onClick={handleEditUsername} alt="edit_svg" className="cursor-pointer filter-(--icon-filter) h-5"/>
+              </div>
+            </div>      
           </div>
+          {error && (
+            <div className='text-sm font-normal mt-3 text-red-500 flex flex-row'>{error}</div>
+          )}   
+          {previewImageUrl && (
+            <div className='flex flex-row gap-2 mt-3 text-sm'>
+              <button onClick={handleCancelPreview} className='cursor-pointer border border-border-color text-primary-text px-3 py-1 rounded-md '>
+                Cancel
+              </button>
 
+              <button onClick={handleSetAvatar} className='cursor-pointer bg-bg-inverse border border-border-color text-primary-text-inverse px-3 py-1 rounded-md '>
+                Save
+              </button>
+            </div>
+          )}
           <div className="flex flex-col text-primary-text mt-5">
             <h1 className="text-xl font-bold mb-2 ">About</h1>
             <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">

@@ -7,8 +7,9 @@ import Items from '../assets/items.svg'
 import { useItemLike } from "../hooks/handle-like"
 import HeartDefault from '../assets/Heart.svg'
 import HeartClicked from '../assets/clickedHeart.svg'
-import {format, set} from "date-fns"
+import { format } from "date-fns"
 import { Skeleton } from "../components/ui/skeleton"
+import Close from '../assets/close.svg'
 
 type AddressDetails = { 
   country?: string,
@@ -127,7 +128,8 @@ export default function SellerProfile(){
 
   const [user, setUser] = useState<User | null>(null)
   const [sellerItems, setSellerItems] = useState<Item[]>([])
-  
+  const [displayImage, setDisplayImage] = useState(false)
+
   useEffect(() => {
     const findUser = () => {
     
@@ -151,8 +153,18 @@ export default function SellerProfile(){
     year: 'numeric'
   });
 
-  
+  if(displayImage){
+    return(
+      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+        <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
+        <div className='h-dvh w-full p-30 flex items-center justify-center'>
+          <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+        </div>
+      </div>
+    )
+  }
 
+  
   if(sellerLoading || dataLoading){
     return(
       <div> 
@@ -206,21 +218,7 @@ export default function SellerProfile(){
     )
   }
 
-  // const displayAddress = [
-  //   user?.address?.building,
-  //   user?.address?.street,
-  //   user?.address?.road,
-  //   user?.address?.neighbourhood,
-  //   user?.address?.suburb,
-  //   user?.address?.quarter,
-  //   user?.address?.village,
-  //   user?.address?.city,
-  //   user?.address?.city_district,
-  //   user?.address?.municipality,
-  //   user?.address?.state_district,
-  //   user?.address?.state,
-  // ].filter(Boolean)
-
+ 
   const displayAddress = [
     user.address?.building,
     user.address?.street,
@@ -245,7 +243,7 @@ export default function SellerProfile(){
       <div className="flex flex-col">
         <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
           <div className="w-25 h-25 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
-            {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+            {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
 
           </div>
           <div className="flex flex-col justify-center">

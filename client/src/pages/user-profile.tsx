@@ -9,8 +9,7 @@ import Edit from '../assets/edit.svg'
 import {format} from "date-fns"
 import { Skeleton } from '../components/ui/skeleton'
 import { useEffect, useState } from 'react'
-import Camera from '../assets/camera.svg'
-import { useRef } from 'react'
+import Close from '../assets/close.svg'
 
 type Item = {
   _id?: string;
@@ -88,17 +87,13 @@ function ItemCard({item_id, image, title, price, seller_name, likes}: {
 
 export default function UserProfile() {
   const navigate = useNavigate()
-  const {user, items, getUsername, dataLoading, upload_avatar} = useAppContext()
-  const [loadingAvatar, setLoadingAvatar] = useState(false)
-  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [error, setError] = useState('')
+  const {user, items, getUsername, dataLoading} = useAppContext()
   const [userItems, setUserItems] = useState<Item[]>([])
+  const [displayImage, setDisplayImage] = useState(false)
   const handleBackClick = () => {
     navigate(-1)
   }
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const getUserItems = () => {
@@ -119,6 +114,17 @@ export default function UserProfile() {
   });
 
   const username = getUsername(user?._id)
+
+  if(displayImage){
+    return(
+      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+        <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
+        <div className='h-dvh w-full p-10 flex items-center justify-center'>
+          <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+        </div>
+      </div>
+    )
+  }
 
   if(dataLoading){
     return(
@@ -170,6 +176,7 @@ export default function UserProfile() {
     )
   }
 
+
   const displayAddress = [
     user.address?.building,
     user.address?.street,
@@ -185,55 +192,7 @@ export default function UserProfile() {
     user.address?.state,
   ].filter(Boolean)
 
-  const handleTriggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleFileChange = (e : React.ChangeEvent<HTMLInputElement>) => {
-    setError('')
-    setLoadingAvatar(true)
-    const file = e.target.files?.[0]
-    if(!file.type.startsWith('image/')){
-      setError('Please select a png, jpeg, webp file')
-      return
-    } 
-
-    if(file.size > 2 * 1024 * 1024){
-      setError('Please select a file less than 2mb')
-      return
-    }
-
-    if(file){
-      if(file.type.startsWith('image/')){
-        setAvatarFile(file)
-        setPreviewImageUrl(URL.createObjectURL(file))
-      }else{
-        setPreviewImageUrl(null)
-      }
-    }
-    setLoadingAvatar(false)
-  }
-
-  const handleCancelPreview = () => {
-    setError('')
-    setAvatarFile(null)
-    setPreviewImageUrl(null)
-  }
-
-  const handleSetAvatar = async () => {
-    setLoadingAvatar(true)
-    try{
-      if(avatarFile){
-        await upload_avatar(user._id, avatarFile)
-      } 
-    }catch{
-      console.error('something went wrong in uploading file');
-    }finally{
-      setLoadingAvatar(false)
-      setAvatarFile(null)
-      setPreviewImageUrl(null)
-    }
-  }
+ 
 
   return (
     <div className='pb-2'> 
@@ -243,45 +202,19 @@ export default function UserProfile() {
       </div>
 
       
-
       <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
         <div className='relative group w-25 h-25'>
-          <input 
-            ref={fileInputRef}
-            className='hidden'
-            type="file" 
-            onChange={handleFileChange}
-            accept='image/png, image/jpeg, image/webp'
-          />
-            
           <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
-            { loadingAvatar ? (
-              <div className='animate-spin h-6 w-6 rounded-full border-b border-border-color'></div>
-            ) : (
-              previewImageUrl ? (
-              <img src={previewImageUrl} alt="avatar"/>
-              ) : (
-                user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className='w-full h-full object-contain'/>) : (
+            {user?.avatar_url ? (
+                <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-contain'/>) : (
                 <span className='text-primary-text-inverse text-3xl font-bold'>
                   {user?.username.charAt(0).toUpperCase()}
                 </span>)
-              )
-            )
             }
           </div>
-          
-          <button
-            type="button" 
-            onClick={handleTriggerFileInput}
-            className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-xs gap-1 cursor-pointer "
-          >
-            <img src={Camera} alt="camera_svg" className="h-5 w-5" />
-            <span>Edit</span>
-          </button>
         </div>
-        
-
+          
+      
         <div className="flex flex-col justify-center">
           <h1 className="font-bold text-2xl">
             {user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase() + user?.lastname.slice(1)}
@@ -290,20 +223,8 @@ export default function UserProfile() {
           
         </div>
       </div>
-      {previewImageUrl && (
-        <div className='flex flex-row gap-2 mx-5 mt-3 text-sm'>
-          <button onClick={handleCancelPreview} className='cursor-pointer border border-border-color text-primary-text px-3 py-1 rounded-md '>
-            Cancel
-          </button>
-
-          <button onClick={handleSetAvatar} className='cursor-pointer bg-bg-inverse border border-border-color text-primary-text-inverse px-3 py-1 rounded-md '>
-            Save
-          </button>
-        </div>
-      )}
-      {error && (
-        <div className='text-sm font-normal text-red-500 flex flex-row'>{error}</div>
-      )}
+     
+      
        
       <div className="flex flex-col text-primary-text px-5 mt-5">
         <h1 className="text-xl font-bold mb-2">About</h1>
