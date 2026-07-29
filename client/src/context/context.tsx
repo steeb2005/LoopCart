@@ -201,12 +201,12 @@ type ContextType = {
 
 const Context = createContext<ContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:8000' // backend url
+const API_URL = import.meta.env.VITE_API_URL
 //const API_URL = 'http://192.168.1.15:8000' // backend url to connect with mobile
  
-const WS_URL = 'ws://localhost:8000'
+const WS_URL = import.meta.env.VITE_WS_URL
 //const WS_URL = 'ws://192.168.1.15:8000'
-const TOKEN_KEY = 'loopcart_token'
+const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY
 
 // SET THESE IN ENVIRONMENT VARIABLES
 
@@ -408,7 +408,6 @@ export function AppContext({children}) {
       const data = await res.json()
 
       if (res.ok){
-        console.log('registered successfully as:' + data.user.username);
         return {success: true}
       }else{
         console.error('registration failed');
@@ -452,7 +451,6 @@ export function AppContext({children}) {
         }
         setUser(userData)
         load_liked_items(userData?._id)
-        console.log('logged in as: ' + data.user.username)
         
         await load_items()
         await load_users()  
@@ -519,15 +517,10 @@ export function AppContext({children}) {
         body: payload,
         credentials:'include'
       })
-
-      const data = await res.json()
-
+      
       if(res.ok){
-        //setItems(prev => prev.map(item => item._id === tempId ? data : item)) // Replaces the temp id with the actual id
-        console.log('item posted successfully: ' + data.title);
         return true
       }else{
-        //setItems(prev => prev.filter(item => item._id !== tempId)) // removes the item with the temp id
         if(res.status === 401){
           console.error("not authenticated")
         }else{
@@ -550,7 +543,6 @@ export function AppContext({children}) {
       const res = await fetch(`${API_URL}/items`);
       const data = await res.json();
       setItems(data)
-      console.log('loaded items');
     }catch{
       console.error('error in loading items');
     }
@@ -580,7 +572,6 @@ export function AppContext({children}) {
       const data = await res.json();
       setUsers(data)
       
-      console.log('loaded users');
     }catch{
       console.error('error in loading users');
     }
@@ -600,7 +591,6 @@ export function AppContext({children}) {
       });
       const data = await res.json();
       setLikedItems(data) // Optimize (load only the liked items of the logged in user)
-      console.log('loaded liked items');
     }catch{
       console.error('error in loading liked items');
     }
@@ -622,7 +612,6 @@ export function AppContext({children}) {
           await load_liked_items(userId) // Loads the liked items of the logged in user
         }
         setItems(prev => (prev.map(item => item._id === itemId ? {...item, likes: item.likes + 1} : item)))
-        console.log('liked item: ' + itemId);
         return true
       }else{
 
@@ -647,7 +636,6 @@ export function AppContext({children}) {
           await load_liked_items(userId)
         }
         setItems(prev => (prev.map(item => item._id === itemId ? {...item, likes: item.likes - 1} : item)))
-        console.log('unliked item: ' + itemId);
         return true
       }else{
         console.error('error in unliking item');
@@ -1064,7 +1052,6 @@ export function AppContext({children}) {
         load_inbox(user_id)
       }
     }
-    console.log("connected to inbox socket")
     ws.onclose = () => {
       if(wsIntentionalClose.current) return
       if(wsRef.current !== ws) return

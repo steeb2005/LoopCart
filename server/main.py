@@ -21,7 +21,7 @@ ALGORITHM = settings.ALGORITHM
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30 
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 2 * 1024 * 1024
-API_URL = "http://localhost:8000" # Change this depending on where the backend is hosted
+API_URL = settings.API_URL # Change this depending on where the backend is hosted
 
 GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
@@ -289,7 +289,7 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
         samesite="lax",
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
@@ -369,7 +369,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24*30
         )
@@ -378,7 +378,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24
         )

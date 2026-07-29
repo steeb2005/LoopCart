@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     GOOGLE_CLIENT_ID : str = ""
     GOOGLE_CLIENT_SECRET : str = ""
+
+    API_URL : str = ""
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
