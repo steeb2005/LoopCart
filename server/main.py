@@ -25,8 +25,6 @@ API_URL = settings.API_URL # Change this depending on where the backend is hoste
 
 GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
-# GOOGLE_REDIRECT_URI = f"{API_URL}/auth/google/callback"
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
 
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 

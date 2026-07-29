@@ -16,7 +16,6 @@ import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
 import NotFound from './pages/not-found'
-import AuthCallback from './pages/auth-callback'
 
 function ProtectedRoute({children}){  // Frontend protection for login bypass  
   const { user, authLoading } = useAppContext();
@@ -53,10 +52,6 @@ function AppRoute(){
       <Route path="/" element={<LandingPage/>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-
-      <Route path='/auth/callback' element={
-        <AuthCallback/>
-      }/>
       
       <Route element={<Layout/>}>
         <Route path='/home' element={

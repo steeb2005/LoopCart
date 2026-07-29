@@ -547,12 +547,7 @@ function Chat(){
           </button>
         </form>
 
-
-            
-
-
-            
-          
+  
         {revertSold && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">

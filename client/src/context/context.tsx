@@ -373,7 +373,6 @@ export function AppContext({children}) {
         }
         setUser(userData)
         load_liked_items(userData?._id)
-        console.log('logged in as: ' + data.user.username)
         
         await load_items()
         await load_users()  
@@ -517,7 +516,7 @@ export function AppContext({children}) {
         body: payload,
         credentials:'include'
       })
-      
+
       if(res.ok){
         return true
       }else{
