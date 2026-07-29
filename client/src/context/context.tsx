@@ -152,7 +152,6 @@ type ContextType = {
   user: User | null;
   users: RequestUsers[];
   items: Item[];
-  token: string | null;
   likedItems: Item[];
   inbox: Conversation[];
   dataLoading: boolean;
@@ -206,23 +205,14 @@ const API_URL = import.meta.env.VITE_API_URL
  
 const WS_URL = import.meta.env.VITE_WS_URL
 //const WS_URL = 'ws://192.168.1.15:8000'
-const TOKEN_KEY = import.meta.env.VITE_TOKEN_KEY
 
 // SET THESE IN ENVIRONMENT VARIABLES
 
 // JWT helpers -------------------------------------------------------------------------------------
 
-function saveToken(token: string){           // Saves the token to local storage
-  localStorage.setItem(TOKEN_KEY, token)
-} 
 
-function clearToken(){
-  localStorage.removeItem(TOKEN_KEY)
-}
 
-function getToken(): string | null{
-  return localStorage.getItem(TOKEN_KEY)
-}
+
 
 /**
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
@@ -258,11 +248,10 @@ function authHeaders(extra: Record<string, string> = {}): Record<string, string>
 
 // Providers ------------------------------------------------------------------------------------ 
 
-export function AppContext({children}) {
+export function AppContext({children}: {children: React.ReactNode}) {
   const [user, setUser] = useState<User | null>(null);  // Current user
   const [users, setUsers] = useState<RequestUsers[]>([]);       // All users
   const [items, setItems] = useState<Item[]>([]);       // All items
-  const [token, setToken] = useState<string | null>()
   const [likedItems, setLikedItems] = useState<Item[]>([])
   const [usersMap, setUsersMap] = useState<Map<string, string>>(new Map())
   const [inbox, setInbox] = useState<Conversation[]>([])
@@ -1066,7 +1055,6 @@ export function AppContext({children}) {
     user,
     users,
     items,
-    token,
     likedItems,
     inbox,
     dataLoading,
@@ -1117,7 +1105,7 @@ export function AppContext({children}) {
 export function useAppContext(){
   const context = useContext(Context)
   if(context === undefined){
-    console.log("useAppContext must be used within a AppProvider");
+    throw new Error('useAppContext must be used within a AppProvider')
   }
   return context
 }
