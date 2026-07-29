@@ -17,7 +17,7 @@ import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
 import NotFound from './pages/not-found'
 
-function ProtectedRoute({children}: any){  // Frontend protection for login bypass  
+function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend protection for login bypass  
   const { user, authLoading } = useAppContext();
   if(authLoading){
     
