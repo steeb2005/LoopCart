@@ -287,7 +287,7 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
         samesite="lax",
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
@@ -367,7 +367,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24*30
         )
@@ -376,7 +376,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24
         )

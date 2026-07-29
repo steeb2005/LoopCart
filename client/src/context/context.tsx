@@ -25,11 +25,11 @@ type AddressDetails = {
 
 type User = {
   _id?: string;
-  username: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  join_date: string;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  join_date?: string;
   avatar_url?: string | null; 
   address?: AddressDetails | null 
   gender?: string 
@@ -122,12 +122,12 @@ type MessageSend = {
 }
 
 type Conversation = {
-  _id: string;
-  item_id: string;
-  other_user: string;
-  unread_count: number;
-  last_message: string;
-  last_updated: string;
+  _id?: string;
+  item_id?: string;
+  other_user?: string;
+  unread_count?: number;
+  last_message?: string;
+  last_updated?: string;
 }
 
 
@@ -148,7 +148,7 @@ type ItemUpdate = {
 }
 
 
-type ContextType = {
+export type ContextType = {
   user: User | null;
   users: RequestUsers[];
   items: Item[];
@@ -977,8 +977,10 @@ export function AppContext({children}: {children: React.ReactNode}) {
         return {success: data.detail.success, error: data.detail.message} 
       }
 
+      return {success: true}
     }catch{
       console.error('network error in updating username');
+      return {success: false, error: 'Something went wrong please try again'}
     }
 
   }
@@ -1014,7 +1016,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
       if(res.ok){
         setDataLoading(true)
-        await load_inbox(user._id)
+        await load_inbox(user?._id || '')
         console.log('successfully deleted conversation');
       }else{
         console.error('error in deleting conversation');

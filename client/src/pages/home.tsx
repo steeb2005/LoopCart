@@ -184,7 +184,7 @@ function Home(){
               onClick={handleCategoryMenu}
               className="cursor-pointer border border-border-color px-2 py-1 rounded-md flex flex-row items-center gap-2">
               <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-              {activeCategory.label}
+              {activeCategory?.label}
               <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
             </button>
             {categoryMenu && 
@@ -203,7 +203,7 @@ function Home(){
           <div className="relative">
             <button onClick={handleSortMenu} className="cursor-pointer border border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
               <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
-              {activeSort.label}
+              {activeSort?.label}
               <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
             </button>
             {sortMenu && 
