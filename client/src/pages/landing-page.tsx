@@ -1,6 +1,6 @@
 import Logo from '../assets/Logo.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
-import MoneyBag from '../assets/Money_bag.svg'
+import MoneyBag from '../assets/money_bag.svg'
 import DollarSign from '../assets/Dollarsign.svg'
 import Plant from '../assets/potted_plant.svg'
 import Handshake from '../assets/handshake.svg'
