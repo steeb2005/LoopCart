@@ -19,7 +19,12 @@ export function useItemLike(item_id: string, initialLikes: number){
 
   const handleLikeClick = async (e : React.MouseEvent) =>{
     e.stopPropagation()
-   
+    
+    if(!user?._id){
+      console.error('User must be logged in to like items');
+      return
+    }
+    
     const newIsLiked = !isLiked
     const prev = likesCount
     setIsLiked(newIsLiked)
