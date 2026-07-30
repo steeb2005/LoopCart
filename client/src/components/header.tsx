@@ -50,7 +50,7 @@ export function Header({openSidebar, isDesktop}: {
   }, [openDropdown])
 
   inbox.forEach((conversation) => {
-    unreadMessages += conversation.unread_count
+    unreadMessages += conversation.unread_count || 0
   })
 
   const scrollDirection = useScrollDirection();
@@ -66,6 +66,11 @@ export function Header({openSidebar, isDesktop}: {
     setIsLoading(true);    
     logout()
     navigate('/login');
+  }
+
+  const getStructuredName = (firstname?: string, lastname?: string) => {
+    if (!firstname || !lastname) return 'Unknown'
+    return (firstname.charAt(0).toUpperCase() + firstname.slice(1)) + " " + (lastname.charAt(0).toUpperCase()) + "."
   }
 
   if(isLoading){
@@ -129,11 +134,27 @@ export function Header({openSidebar, isDesktop}: {
           <div className='hidden lg:flex flex-row items-center gap-3'>
             <Link to={'/user-profile'}>
               <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
-                {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-sm '>{user?.username.charAt(0).toUpperCase()}</span>) }
+                {
+                  user?.avatar_url ? (
+                    <img src={user.avatar_url} alt="avatar"/>
+                  ) : (
+                    <span className='text-primary-text-inverse text-sm'>
+                      {
+                        user?.username ? (
+                          user?.username.charAt(0).toUpperCase()
+                        ) : (
+                          '?'
+                        )
+                      }
+                    </span>
+                  ) 
+                }
               </div>
             </Link>
             <div className='flex flex-col'>
-              <p className='text-sm font-bold'>{user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase()}.</p>
+              <p className='text-sm font-bold'>
+                {getStructuredName(user?.firstname, user?.lastname)}
+              </p>
               <p className='text-xs text-secondary-text font-light'>{user?.username}</p>
             </div>  
             

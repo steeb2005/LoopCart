@@ -83,16 +83,17 @@ type ItemUpload = {
   description: string;
   created_at: string;
   status: string;
-  sold_at: string;
+  sold_at: string | null;
   seller_id: string;
-  buyer_id: string;
-  image: string;
+  buyer_id: string | null;
+  image: string | null;
   likes: number;
   deleted: boolean;
 }
 
+
 type RequestUsers = {
-  _id?: string;
+  _id: string;
   username: string;
   firstname: string;
   lastname: string;
@@ -140,10 +141,10 @@ type ItemUpdate = {
   description: string;
   created_at: string;
   status: string;
-  sold_at: string;
+  sold_at: string | null;
   seller_id: string;
-  buyer_id: string;
-  image: string;
+  buyer_id: string | null;
+  image: string | null;
   likes: number;
 }
 
@@ -171,7 +172,7 @@ export type ContextType = {
   delete_conversation: (conversationId: string) => Promise<void>;
   delete_item: (itemId: string) => Promise<void>;
   toggleTheme: () => void;
-  update_item: (itemId: string, updateData: Item, file?: File | null) => Promise<void>;
+  update_item: (itemId: string, updateData: ItemUpdate, file?: File | null) => Promise<void>;
   update_gender: (userId: string, gender: string) => Promise<void>;
   update_birthdate: (userId: string, birthdate: string) => Promise<void>;
   update_bio: (userId: string, bio: string) => Promise<void>;
@@ -193,7 +194,7 @@ export type ContextType = {
     error?: string}
   >;
   load_users: () => Promise<void>;
-  post_item: (data: Item, file: File) => Promise<boolean>;
+  post_item: (data: ItemUpload, file: File) => Promise<boolean>;
   load_items: () => Promise<void>;
 }
 

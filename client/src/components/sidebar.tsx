@@ -45,7 +45,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
   let unreadMessages = 0
 
   inbox.forEach((conversation) => {
-    unreadMessages += conversation.unread_count
+    unreadMessages += conversation.unread_count || 0
   })
 
 
@@ -81,7 +81,21 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               <div className="head mb-3 text-primary-text font-semibold border-b border-b-border-color">
                 <div className="py-3 flex flex-col gap-1 justify-center">
                   <div className="bg-bg-inverse ring ring-border-color rounded-full h-16 w-16 flex items-center justify-center overflow-hidden">
-                    {user?.avatar_url ? (<img src={user.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+                    {
+                      user?.avatar_url ? (
+                        <img src={user.avatar_url} alt="avatar"/>
+                      ) : (
+                        <span className='text-primary-text-inverse text-3xl font-bold'>
+                          {
+                            user?.username ? (
+                              user?.username.charAt(0).toUpperCase()
+                            ) : (
+                              '?'
+                            )
+                          }
+                        </span>
+                      ) 
+                    }
                   </div>
                   <h1 className="text-3xl font-semibold">{user?.username}</h1>
                   <p className="font-light text-md">{user?.email}</p>

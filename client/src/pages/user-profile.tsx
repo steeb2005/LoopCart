@@ -87,7 +87,7 @@ function ItemCard({item_id, image, title, price, seller_name, likes}: {
 
 export default function UserProfile() {
   const navigate = useNavigate()
-  const {user, items, getUsername, dataLoading} = useAppContext()
+  const {user, items, dataLoading} = useAppContext()
   const [userItems, setUserItems] = useState<Item[]>([])
   const [displayImage, setDisplayImage] = useState(false)
   const handleBackClick = () => {
@@ -98,7 +98,7 @@ export default function UserProfile() {
   useEffect(() => {
     const getUserItems = () => {
       const filteredItems = items.filter(item => {
-        return item.deleted === false && item.seller_id === user._id
+        return item.deleted === false && item.seller_id === user?._id
       })
       setUserItems(filteredItems)
     }
@@ -106,21 +106,32 @@ export default function UserProfile() {
     getUserItems()
   }, [user, items])
 
-  const joinDate = new Date(user?.join_date)
+  const joinDate = new Date(user?.join_date!)
   const formattedJoinDate = joinDate.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   });
 
-  const username = getUsername(user?._id)
+  const capitalizeName = (name?: string) => {
+    if(!name) return 'Unknown'
+    return name.charAt(0).toUpperCase() + name.slice(1)
+  }
 
   if(displayImage){
     return(
       <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-10 flex items-center justify-center'>
-          <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+          {
+            user?.avatar_url ? (
+              <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+            ) : (
+              <div className="h-full flex justify-center items-center text-secondary-text">
+                No Image
+              </div>
+            )
+          }
         </div>
       </div>
     )
@@ -176,20 +187,19 @@ export default function UserProfile() {
     )
   }
 
-
   const displayAddress = [
-    user.address?.building,
-    user.address?.street,
-    user.address?.road,
-    user.address?.neighbourhood,
-    user.address?.suburb,
-    user.address?.quarter,
-    user.address?.village,
-    user.address?.city,
-    user.address?.city_district,
-    user.address?.municipality,
-    user.address?.state_district,
-    user.address?.state,
+    user?.address?.building,
+    user?.address?.street,
+    user?.address?.road,
+    user?.address?.neighbourhood,
+    user?.address?.suburb,
+    user?.address?.quarter,
+    user?.address?.village,
+    user?.address?.city,
+    user?.address?.city_district,
+    user?.address?.municipality,
+    user?.address?.state_district,
+    user?.address?.state,
   ].filter(Boolean)
 
  
@@ -205,11 +215,20 @@ export default function UserProfile() {
       <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
         <div className='relative group w-25 h-25'>
           <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
-            {user?.avatar_url ? (
-                <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-contain'/>) : (
-                <span className='text-primary-text-inverse text-3xl font-bold'>
-                  {user?.username.charAt(0).toUpperCase()}
-                </span>)
+            {
+              user?.avatar_url ? (
+              <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-contain'/>
+              ) : (
+                <span className='text-primary-text text-3xl font-bold'>
+                  {
+                    user?.username ? (
+                      user?.username.charAt(0).toUpperCase()
+                    ) : (
+                      "U"
+                    )
+                  }
+                </span>
+              )
             }
           </div>
         </div>
@@ -217,7 +236,7 @@ export default function UserProfile() {
       
         <div className="flex flex-col justify-center">
           <h1 className="font-bold text-2xl">
-            {user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase() + user?.lastname.slice(1)}
+            {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
           </h1>
           <h1 className="text-secondary-text">@{user?.username}</h1>
           
@@ -291,7 +310,7 @@ export default function UserProfile() {
                     item_id={item._id}
                     title={item.title}
                     price={item.price}
-                    seller_name={username}
+                    seller_name={user?.username ?? 'Unknown Seller'}
                     likes={item.likes}
                   />
                 )))

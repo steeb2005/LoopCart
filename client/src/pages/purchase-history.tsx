@@ -7,11 +7,11 @@ import History from '../assets/history.svg'
 
 
 
-function ItemEntry({itemId, title, price, avatar_url, sold_at, isUserTheBuyer, username, seller_id }: {
+function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, username, seller_id }: {
   itemId: string,
   title: string,
   price: number,
-  avatar_url: string,
+  image: string,
   sold_at: string,
   isUserTheBuyer: boolean,
   username: string,
@@ -40,8 +40,12 @@ function ItemEntry({itemId, title, price, avatar_url, sold_at, isUserTheBuyer, u
       </div>
 
       <div className='flex flex-row shrink-0 gap-2'>
-        <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md'>
-          {/* Image */}
+        <div className='image-entry max-w-20 max-h-20 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
+          {image ? (
+            <img src={image} alt="image" className="max-h-full max-w-full h-auto w-auto object-fill"/>
+          ) : (
+            <div className="h-full text-xs flex justify-center items-center">No image</div>
+          )}
         </div>
         <div className='data-entry w-full min-w-0 flex flex-col justify-center gap-1'>
           <h1 className='font-semibold line-clamp-2'>{title}</h1>  
@@ -49,13 +53,8 @@ function ItemEntry({itemId, title, price, avatar_url, sold_at, isUserTheBuyer, u
         </div>
       </div>
       <div className='flex flex-row gap-4 items-center text-sm'>
-        <div className='flex flex-row gap-2 items-center '>
-          <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center">
-            {avatar_url ? (<img src={avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-sm font-bold'>{entryUsername.charAt(0).toUpperCase()}</span>) }
-          </div>
-          <h1>{entryUsername}</h1>
-        </div>
-        <div className='font-light bg-bg-gray-surface py-1 px-2 rounded-full'>
+        <h1 className='text-secondary-text'>@{entryUsername}</h1>
+        <div className='font-light bg-bg-gray-surface py-1 px-3 rounded-xl text-secondary-text'>
           {isUserTheBuyer ? 'Purchased' : 'Sold'}
         </div>
       </div>
@@ -103,6 +102,10 @@ export default function PurchaseHistory(){
 
 
   const getFilteredItems = () => {
+    if(!user?._id){
+      console.error('User not found')
+      return
+    }
     if(filter === 'purchases'){
       const purchasedItems = items.filter(item => item.buyer_id === user._id)
       return purchasedItems
@@ -112,7 +115,7 @@ export default function PurchaseHistory(){
     }
   }
   
-  const itemHistory = getFilteredItems()
+  const itemHistory = getFilteredItems() ?? []
 
 
 
@@ -166,7 +169,7 @@ export default function PurchaseHistory(){
                     price={item.price}
                     isUserTheBuyer={isUserTheBuyer}
                     username={getUsername(item.buyer_id)}
-                    avatar_url={''} // SET LATER
+                    image={item.image} // SET LATER
                     sold_at={item.sold_at}
                     seller_id={item.seller_id}
                   />

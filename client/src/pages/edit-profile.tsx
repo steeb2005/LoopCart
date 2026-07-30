@@ -98,6 +98,8 @@ export default function EditProfile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
+  if(!user) return null
+  
   const handleTriggerFileInput = () => {
     fileInputRef.current?.click()
   }
@@ -106,7 +108,7 @@ export default function EditProfile() {
     setError('')
     setLoadingAvatar(true)
     const file = e.target.files?.[0]
-    if(!file.type.startsWith('image/')){
+    if(!file?.type.startsWith('image/')){
       setError('Please select a png, jpeg, webp file')
       setLoadingAvatar(false)
       return 
@@ -140,7 +142,7 @@ export default function EditProfile() {
   const handleSetAvatar = async () => {
     setLoadingAvatar(true)
     try{
-      if(avatarFile){
+      if(avatarFile && user?._id){
         await upload_avatar(user._id, avatarFile)
       } 
     }catch{
@@ -153,13 +155,13 @@ export default function EditProfile() {
   }
 
   useEffect(() => {
-    if(user.bio){
+    if(user?.bio){
       setBio(user.bio)  
     }
-    if(user.birthdate){
+    if(user?.birthdate){
       setBirthdate(user.birthdate)
     }
-    if(user.gender){
+    if(user?.gender){
       setGender(user.gender)
     }
   }, [])
@@ -170,7 +172,7 @@ export default function EditProfile() {
 
 
   const handleEditBio = () => {
-    if(user.bio){
+    if(user?.bio){
       setBio(user.bio)  
     }
     setEditBio(!editBio)
@@ -271,26 +273,29 @@ export default function EditProfile() {
   const handleChangeAddress = async () => {
     if(!address) return
     
-    const prev = user.address
-    try{
-      user.address = address
-      await update_address(user._id, address)
-    }catch{
-      user.address = prev
-    }finally{
-      setOpenLocationMenu(false)
-      setSearchQuery('')
-      setResults([])
-      setAddress(null)
+    const prev = user?.address
+    if(user?._id){
+      try{
+        user.address = address
+        await update_address(user._id, address)
+      }catch{
+        user.address = prev
+      }finally{
+        setOpenLocationMenu(false)
+        setSearchQuery('')
+        setResults([])
+        setAddress(null)
+      }
     }
   }
 
   const handleEditUsername = () => {
     setEditUsername(!editUsername)
-    setUsername(user.username)  
+    setUsername(user.username || '')  
   }
 
   const handleUpdateUsername = async () => {
+    if(!user._id) return
     setError('')
     if(username === user.username){
       setError('Username is the same')
@@ -300,6 +305,7 @@ export default function EditProfile() {
     try{
       user.username = username
       await update_username(user._id, username)
+      
     }catch{
       user.username = prev
     }finally{
@@ -327,6 +333,10 @@ export default function EditProfile() {
     }
 
     const handleGenderChange = async () => {
+      if(!user._id){
+        console.error('user id not found, error in updating gender');
+        return
+      } 
       setError('')
       if(gender === user.gender){
         setError('Gender is the same')
@@ -391,6 +401,10 @@ export default function EditProfile() {
     }
 
     const handleSubmitBirthdate = async () => {
+      if(!user._id){
+        console.error('user not found, error in updating birthdate');
+        return
+      }
       const now = new Date()
 
       if(!birthdate){
@@ -442,6 +456,10 @@ export default function EditProfile() {
     
   if(editBio){
     const handleChangeBio = async (e: React.SubmitEvent<HTMLFormElement>) => {
+      if(!user?._id){
+        console.error('user not found, error in updating bio');
+        return
+      } 
       e.preventDefault()
       const prev = user.bio
       user.bio = bio
@@ -533,9 +551,9 @@ export default function EditProfile() {
                   ) : (
                     user?.avatar_url ? (
                     <img src={user.avatar_url} alt="avatar" className='w-full h-full object-contain'/>) : (
-                    <span className='text-primary-text-inverse text-3xl font-bold'>
-                      {user?.username.charAt(0).toUpperCase()}
-                    </span>)
+                    <span className='text-primary-text text-3xl font-bold'>
+                      {(user?.username!.charAt(0).toUpperCase()) ?? 'U'}
+                    </span>)  
                   )
                 )
                 }

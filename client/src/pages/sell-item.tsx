@@ -11,7 +11,22 @@ import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../compo
 import AddPhoto from '../assets/add_photo.svg'
 import Close from '../assets/close.svg'
 import { Spinner } from '../components/ui/spinner'
-import { Edit } from 'lucide-react'
+
+type ItemFormData = {
+  title: string;
+  price: string;  // Keep as string for form input
+  category: string;
+  condition: string;
+  description: string;
+  created_at: string;
+  sold_at: string | null;
+  status: string;
+  seller_id: string;
+  buyer_id: string | null;
+  image: string | null;
+  likes: number;
+  deleted: boolean;
+}
 
 function SellItem(){
   const location = useLocation()
@@ -26,18 +41,18 @@ function SellItem(){
   
   const imageInputRef = useRef<HTMLInputElement>(null)
 
-  const [item, setItem] = useState({
+  const [item, setItem] = useState<ItemFormData>({
     title: '',
     price: '', 
     category: '',
     condition: '',
     description: '',
     created_at: '',
-    sold_at: null as string,
+    sold_at: null,
     status: 'available',
     seller_id: '',
-    buyer_id: null as string,
-    image: null as string,
+    buyer_id: null,
+    image: null,
     likes: 0,
     deleted: false
   })
@@ -49,11 +64,11 @@ function SellItem(){
     condition: '',
     description: '',
     created_at: '',
-    sold_at: null as string,
+    sold_at: null,
     status: 'available',
     seller_id: '',
-    buyer_id: null as string,
-    image: null as string,
+    buyer_id: null,
+    image: null,
     likes: 0,
     deleted: false
   }
@@ -66,19 +81,19 @@ function SellItem(){
     if(mode === 'edit'){
       const initialData = location.state?.item || item
       const itemToEdit = {
-        title: initialData.title,
-        price: initialData.price, 
-        category: initialData.category,
-        condition: initialData.condition,
-        description: initialData.description,
-        created_at: initialData.created_at,
-        sold_at: initialData.sold_at,
-        status: initialData.status,
-        seller_id: initialData.seller_id,
-        buyer_id: initialData.buyer_id,
-        image: null as string,
-        likes: initialData.likes,
-        deleted: initialData.deleted
+        title: initialData.title || '',
+        price: initialData.price || '', 
+        category: initialData.category || '',
+        condition: initialData.condition || '',
+        description: initialData.description || '',
+        created_at: initialData.created_at || '',
+        sold_at: initialData.sold_at || '',
+        status: initialData.status || 'available',
+        seller_id: initialData.seller_id || '',
+        buyer_id: initialData.buyer_id || '',
+        image: null,
+        likes: initialData.likes || 0,
+        deleted: initialData.deleted || false
       }
       setImagePreview(initialData.image)
       setItem(itemToEdit)
@@ -92,14 +107,14 @@ function SellItem(){
   const handlePost = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     const created_at = new Date().toISOString();
-    const seller_id = user._id || ''
+    const seller_id = user?._id || ''
     
     if(loading){
       console.error('posting item')
       return
     }
 
-    if(!user.address){
+    if(!user?.address){
       setError('Add an address to your profile first')
       return
     }
@@ -133,28 +148,37 @@ function SellItem(){
     const itemToEdit = {
       ...item,
       _id: item_id,
-      price: Number(item.price)
+      price: Number(item.price) || 0
     }
 
 
     try{
+      let success = false
       setLoading(true)
       if(mode === 'edit'){
         if(itemImageFile){
           if(itemImageFile.size > 2 * 1024 * 1024){
+            console.error('File too large')
             setImgError('Please select a file less than 2mb')
+            setLoading(false)
             return
           }
 
           if(!itemImageFile.type.startsWith('image/')){
+            console.error('Invalid file type')  
             setError('Please select a png, jpeg, webp file')
+            setLoading(false)
             return
           } 
         }
 
         await update_item(item_id, itemToEdit, itemImageFile)
+        console.log('here')
         setLoading(false)
-
+        success = true
+        if(success){
+          navigate('/home')
+        }
       }else{
         if(!itemImageFile){
           console.error('No image file selected')
@@ -164,12 +188,13 @@ function SellItem(){
         
         await post_item(itemToPost, itemImageFile)
         setLoading(false)
+        success = true
+        if(success){
+          navigate('/home')
+        }
       }
-      
     }catch(error){
       console.error('error in posting item', error);
-    }finally{
-      navigate('/home')
     }
   }
 
@@ -182,18 +207,18 @@ function SellItem(){
   }
 
   const displayAddress = [
-    user.address?.building,
-    user.address?.street,
-    user.address?.road,
-    user.address?.neighbourhood,
-    user.address?.suburb,
-    user.address?.quarter,
-    user.address?.village,
-    user.address?.city,
-    user.address?.city_district,
-    user.address?.municipality,
-    user.address?.state_district,
-    user.address?.state,
+    user?.address?.building,
+    user?.address?.street,
+    user?.address?.road,
+    user?.address?.neighbourhood,
+    user?.address?.suburb,
+    user?.address?.quarter,
+    user?.address?.village,
+    user?.address?.city,
+    user?.address?.city_district,
+    user?.address?.municipality,
+    user?.address?.state_district,
+    user?.address?.state,
   ].filter(Boolean)
   
   const imageInputTrigger = () => {

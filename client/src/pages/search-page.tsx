@@ -11,6 +11,7 @@ import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 
 
 
+
 function ItemCard({item_id, image, title, price, seller_name, likes}: {
   item_id: string,
   image: string,
@@ -64,7 +65,7 @@ function ItemCard({item_id, image, title, price, seller_name, likes}: {
 
 function UserCard({userId, avatar_url, firstname, lastname, username }: {
   userId: string, 
-  avatar_url: string, 
+  avatar_url: string | null, 
   firstname: string,
   lastname: string,
   username: string
@@ -98,7 +99,7 @@ export default function SearchPage(){
   const navigate = useNavigate()
   const {items, getUsername, users} = useAppContext()
 
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<(typeof items[0] | typeof users[0])[]>([])
   const [searchInput, setSearchInput] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   
@@ -217,7 +218,7 @@ export default function SearchPage(){
               <ItemCard 
                 key={item._id} 
                 image={item.image}
-                item_id={item._id} 
+                item_id={item._id!} 
                 title={item.title} 
                 price={item.price} 
                 seller_name={getUsername(item.seller_id)} 
@@ -237,7 +238,7 @@ export default function SearchPage(){
                 username={user.username}
                 firstname={user.firstname} 
                 lastname={user.lastname} 
-                avatar_url={user.avatar_url}
+                avatar_url={user.avatar_url ?? null}
               />
               
             ))
@@ -251,12 +252,11 @@ export default function SearchPage(){
             </div>
           ) : (    
           category === 'Items' ? (
-            searchResults.map(item => (
-             
+            (searchResults as typeof items).map(item => (       
               <ItemCard 
                 key={item._id} 
                 image={item.image}
-                item_id={item._id} 
+                item_id={item._id!} 
                 title={item.title} 
                 price={item.price} 
                 seller_name={getUsername(item.seller_id)} 
@@ -265,20 +265,19 @@ export default function SearchPage(){
               
             ))
           ) : (
-            searchResults.map(user => (
+            (searchResults as typeof users).map(user => (
               <UserCard 
                 key={user._id} 
                 userId={user._id} 
                 username={user.username}
                 firstname={user.firstname} 
                 lastname={user.lastname} 
-                avatar_url={user.avatar_url}
+                avatar_url={user.avatar_url ?? null}
               />
             ))
           )
         )
-        
-      }
+        }
       </div>
      
 

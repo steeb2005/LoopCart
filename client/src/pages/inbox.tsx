@@ -82,7 +82,7 @@ function InboxEntry({itemId, otherId, unreadCount, lastMessage, lastSender, read
           </div>
         </div>
         <div className='last-message items-center'>
-          <p className={`text-secondary-text text-sm line-clamp-1 ${lastSender ===  user._id ? 'font-light' : read ? 'font-light ' : 'font-bold'}`}>
+          <p className={`text-secondary-text text-sm line-clamp-1 ${lastSender ===  user?._id ? 'font-light' : read ? 'font-light ' : 'font-bold'}`}>
             {unreadCount > 2 ? `${unreadCount} new messages` : `${lastSenderUsername}: ${lastMessage}`} 
           </p>
         </div>
@@ -127,6 +127,11 @@ function Inbox(){
   const {inbox, items, user, dataLoading} = useAppContext()
   const [clickedFilter, setClickedFilter] = useState(searchParams.get('tab') ||'all')
   
+  if(!user){
+    console.error('no user id found');
+    return
+  }
+  
   useEffect(() => {
     const tab = searchParams.get('tab')
     if(tab){
@@ -156,15 +161,15 @@ function Inbox(){
     })
 
     sellerFilter.forEach(entry => {
-      sellingUnreadCount += entry.unread_count
+      sellingUnreadCount += entry.unread_count!
     })
 
     buyerFilter.forEach(entry => {
-      buyingUnreadCount += entry.unread_count
+      buyingUnreadCount += entry.unread_count!
     })
 
     inbox?.forEach(entry => {
-      allUnreadCount += entry.unread_count
+      allUnreadCount += entry.unread_count!
     })
 
   }
@@ -206,7 +211,7 @@ function Inbox(){
 
   // Sorts from most to least unread
   const sortedInbox = [...filteredInbox].sort((a, b) =>   
-    b.unread_count - a.unread_count 
+    b.unread_count! - a.unread_count! 
   )
 
 

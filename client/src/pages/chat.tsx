@@ -11,11 +11,7 @@ import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
 /*
   TODO
-  - Test: delete the conversation when there is no conversation yet, and check results
-  - Make the conversation no longer accessible in the backend if deleted
-  - Finish the category 
-  - Make a sort filter
-  - create a dropdown for category (and maybe for condition) in sell-item page
+  - Fix Typescript errors (or ignore them and force deploy)
 */
 
 type AddressDetails = { 
@@ -49,28 +45,28 @@ type Item = {
   description: string;
   created_at: string;
   status: string;
-  sold_at: string;
+  sold_at?: string;
   seller_id: string;
-  buyer_id: string;
+  buyer_id?: string;
   image: string;
   likes: number;
-  deleted: boolean;
+  deleted?: boolean;
 }
 
 
 
 type User = {
-  _id?: string;
+  _id: string;
   username: string;
   firstname: string;
   lastname: string;
   email: string;
   join_date: string;
-  avatar_url?: string 
-  address?: AddressDetails | null
+  avatar_url?: string | null;
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
-  birthdate?: string 
+  birthdate?: string
 }
 
 
@@ -79,7 +75,12 @@ type ChatMessage = {
   text: string;
 }
 
-
+type MessageData = {
+  sender_id: string,
+  receiver_id: string,
+  item_id: string,
+  text: string
+}
 
 
 function Message({isOwn, message}: {
@@ -133,7 +134,7 @@ function Chat(){
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const dropDownRef = useRef<HTMLDivElement>(null)
   
-  
+  const WS_URL = import.meta.env.VITE_WS_URL
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if(dropDownRef.current && !dropDownRef.current.contains(e.target as Node)){
@@ -182,16 +183,17 @@ function Chat(){
 
   useEffect(() => {
     const otheruser = users?.find(user => user._id === userId)
-    setOtherUser(otheruser) 
-    setOtherUsername(getUsername(userId || 'Unkown User'))   // Gets the username of the other person
+    setOtherUser(otheruser ?? null) 
+    setOtherUsername(getUsername(userId ?? 'Unkown User'))   // Gets the username of the other person
 
     const findItem = async () => {
-      const res = await get_item(itemId)
+      const res = await get_item(itemId ?? '')
       if(res){
         setItem(res)
       }
     }
     
+
     const loadMessages = async () => {
       if(!user?._id || !itemId) return
 
@@ -213,7 +215,7 @@ function Chat(){
       const msg = await load_messages(conv_id)
       setMessageList(msg?.messages || [])
       
-      const hasUnreadMessages = inbox.some(entry => entry._id === conv_id && entry.unread_count > 0)
+      const hasUnreadMessages = inbox.some(entry => entry._id === conv_id && (entry?.unread_count ?? 0)  > 0)
       if(hasUnreadMessages){
         await read_messages(conv_id, user._id)
         await load_inbox(user._id)        
@@ -243,7 +245,7 @@ function Chat(){
 
     chatWsIntentionalClose.current = false
 
-    const ws = new WebSocket(`ws://localhost:8000/ws/chat/${conv_id}`) // Change the URL in production
+    const ws = new WebSocket(`${WS_URL}/ws/chat/${conv_id}`) // Change the URL in production
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -310,7 +312,7 @@ function Chat(){
 
   
     try{
-      const res = await send_message(messageData) 
+      const res = await send_message(messageData as MessageData) 
       if(res.success){
         if(res.conversation_id && !conversationId){
           setConversationId(res.conversation_id)
@@ -351,15 +353,23 @@ function Chat(){
 
 
   const handleSetToSold = async () => {
+    if (!itemId || !userId || !item) {
+      console.error("Missing required item data or route parameters.");
+      return; 
+    }
     const prev = item
     setSoldConfirmation(false)
     setRevertSold(false)
     try{
-      if(isSold){
-        setItem({...prev, status: 'available'})
-      }else{
-        setItem({...prev, status: 'sold'})
-      }
+      setItem((prevItem) => {
+
+        if(!prevItem) return null
+        return {
+          ...prevItem,
+          status: isSold ? 'available' : 'sold'
+        }
+      })
+
       await update_item_sold(itemId, userId, item?.status, conversationId)
       await load_items()
     }catch{
@@ -367,7 +377,6 @@ function Chat(){
       console.error('error in updating item status');
     }
   }
-
 
   const preventKeyboardDismiss = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault()
@@ -395,6 +404,15 @@ function Chat(){
       console.error('error in deleting conversation');
     }
   }
+
+  if(!item){
+    return (
+      <div className="text-secondary-text h-dvh flex justify-center items-center">
+        Loading Chat...
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="flex flex-col h-dvh ">
@@ -406,8 +424,15 @@ function Chat(){
               <div className="flex flex-row items-center gap-5">
                 <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
                 <div className="flex flex-row gap-2 items-center">
-                  <div className="h-7 w-7 rounded-full bg-bg-inverse flex justify-center items-center overflow-hidden">
-                    {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                  <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
+                    {
+                      otherUser?.avatar_url ? (
+                      <img src={otherUser.avatar_url} alt="avatar"/>
+                      ) : (
+                      <span className='text-primary-text text-sm justify-center items-center font-bold'>
+                        {otherUser?.username.charAt(0).toUpperCase()}</span>
+                      ) 
+                    }
                   </div>
                   <h1>{otherUsername}</h1>
                 </div>
@@ -439,26 +464,35 @@ function Chat(){
                   <h1>₱{item?.price.toLocaleString('en-US')}</h1>
                   <h1 className="font-light line-clamp-1">{item?.title}</h1>
                   <div className="flex flex-row gap-2">
-                    <div className="font-light  bg-bg-surface rounded-md justify-center items-center py-2 px-3 text-xs">Status: {item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</div>                  
-                    {item?.deleted ? (
-                      <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
-                    ) : (
-                      role === 'seller' ? (
+                    <div className="font-light  bg-bg-surface rounded-md justify-center items-center py-2 px-3 text-xs">Status: {(item?.status.charAt(0).toUpperCase() + item?.status.slice(1)) || 'Unavailable'}</div>                  
+                    {
+                      !otherUser?._id ? (
                         <div 
-                          className={`${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
-                          onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
+                          className={`bg-bg-surface text-secondary-text rounded-md py-2 px-3 text-xs `}          
                         >
                           {isSold ? 'Item Sold' : 'Mark as Sold'}
                         </div>
-                      ): (
-                        <Link to={`/item/${itemId}`}>
-                          <div className={`flex flex-row gap-1 items-center ml-2 border border-border-color  cursor-pointer rounded-full py-2 px-3 text-xs `}>
-                            <p>View item</p>
-                            <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
-                          </div>
-                        </Link>
+                      ) : (
+                        item?.deleted ? (
+                          <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+                        ) : (
+                          role === 'seller' ? (
+                            <div 
+                              className={`${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
+                              onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
+                            >
+                              {isSold ? 'Item Sold' : 'Mark as Sold'}
+                            </div>
+                          ): (
+                            <Link to={`/item/${itemId}`}>
+                              <div className={`flex flex-row gap-1 items-center ml-2 border border-border-color  cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                                <p>View item</p>
+                                <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                              </div>
+                            </Link>
+                          )
+                        )
                       )
-                    )
                     }
                   </div>
                 </div>
@@ -494,15 +528,21 @@ function Chat(){
           )}
 
           {
-            item?.deleted ? (
+            !otherUser?._id ? (
               <div className="mt-auto">
-                <div className="text-primary-text mt-5 text-center text-sm ">This item has been deleted. <br />conversation is closed.</div>
+                <div className="text-primary-text mt-5 text-center text-sm ">User has been deleted</div>
               </div>
             ) : (
-              isSold && 
-              <div className="mt-auto">
-                <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
-              </div>
+              item?.deleted ? (
+                <div className="mt-auto">
+                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been deleted. <br />conversation is closed.</div>
+                </div>
+              ) : (
+                isSold && 
+                <div className="mt-auto">
+                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
+                </div>
+              )
             )
           }
 
@@ -527,7 +567,7 @@ function Chat(){
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold || item?.deleted}
+            disabled={isSold || item?.deleted || !otherUser?._id}
           />
           <button 
             type="submit"

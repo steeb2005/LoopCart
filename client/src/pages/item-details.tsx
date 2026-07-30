@@ -58,17 +58,17 @@ type AddressDetails = {
 }
 
 type User = {
-  _id?: string;
+  _id: string;
   username: string;
   firstname: string;
   lastname: string;
   email: string;
   join_date: string;
-  avatar_url?: string 
-  address?: AddressDetails 
+  avatar_url?: string | null;
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
-  birthdate?: string 
+  birthdate?: string
 }
 
 
@@ -88,11 +88,27 @@ function ItemDetails(){
   
   useEffect(() => {
     const foundItem = items?.find(item => item._id === id)
-    const founduser = users?.find(user => user._id === foundItem?.seller_id)
-    setOtherUser(founduser)
-    setItem(foundItem)
-    setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
-    setPageLoading(false)
+    
+    if(foundItem){
+      setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
+      setItem(foundItem)
+
+      const founduser = users?.find(user => user._id === foundItem?.seller_id)
+      if(founduser){
+        setOtherUser(founduser)
+      }else{
+        setOtherUser(null)
+        console.error('User not found')
+      }
+      setPageLoading(false)
+
+    }else{
+      setItem(null)
+      setOtherUser(null)
+      setSellerUsername('Unknown Seller')
+      console.error('Item not found')
+    }
+    
   }, [items, id, getUsername, users])
 
 
@@ -114,12 +130,13 @@ function ItemDetails(){
 
   const isUserItem = item?.seller_id === user?._id
 
-  const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id, item?.likes || 0)
+  const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id!, item?.likes || 0)
 
   const handleBackClick = () => {
     naviagte(-1)
   }
   
+
   const handleEditListing = () => {
     naviagte(`/sell-item`, {
       state: {
@@ -218,18 +235,18 @@ function ItemDetails(){
   }
 
   const displayAddress = [
-    otherUser.address?.building,
-    otherUser.address?.street,
-    otherUser.address?.road,
-    otherUser.address?.neighbourhood,
-    otherUser.address?.suburb,
-    otherUser.address?.quarter,
-    otherUser.address?.village,
-    otherUser.address?.city,
-    otherUser.address?.city_district,
-    otherUser.address?.municipality,
-    otherUser.address?.state_district,
-    otherUser.address?.state,
+    otherUser?.address?.building,
+    otherUser?.address?.street,
+    otherUser?.address?.road,
+    otherUser?.address?.neighbourhood,
+    otherUser?.address?.suburb,
+    otherUser?.address?.quarter,
+    otherUser?.address?.village,
+    otherUser?.address?.city,
+    otherUser?.address?.city_district,
+    otherUser?.address?.municipality,
+    otherUser?.address?.state_district,
+    otherUser?.address?.state,
   ].filter(Boolean)
 
   return(
@@ -287,7 +304,7 @@ function ItemDetails(){
 
               <div className='flex flex-row items-center gap-2'>
                 <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
-                <p className='text-secondary-text'>{otherUser.address ? displayAddress.join(' ') : 'N/A' }</p>
+                <p className='text-secondary-text'>{otherUser?.address ? displayAddress.join(' ') : 'N/A' }</p>
               </div>
 
               <div className='flex flex-row gap-4 items-center'>

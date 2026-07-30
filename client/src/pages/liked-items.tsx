@@ -27,7 +27,7 @@ function ItemCard({item_id, image, title, price, status, seller_name, likes, del
 
       <div className='image-entry h-20 overflow-hidden w-20 bg-bg-canvas rounded-md shrink-0'>
         {image ? (
-          <img src={image} alt="image" className="object-contain" />
+          <img src={image} alt="image" className="object-contain h-full w-full" />
         ) : (
           <div className="h-full text-xs flex justify-center items-center">No image</div>
         )}
@@ -85,7 +85,7 @@ function EntrySkeleton(){
 
 function LikedItems() {
   const {likedItems, getUsername, dataLoading} = useAppContext()
-  const [copyItems, setCopyItems] = useState([])
+  const [copyItems, setCopyItems] = useState<typeof likedItems>([])
 
   useEffect(() => { // NOTE: TEMP might remove until a better solution
     if(copyItems.length === 0 && likedItems.length > 0){

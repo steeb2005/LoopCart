@@ -30,6 +30,7 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": true,
     "alwaysStrict": true
+    
   },
   "include": ["src"]
 }

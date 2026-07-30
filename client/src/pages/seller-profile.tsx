@@ -133,10 +133,10 @@ export default function SellerProfile(){
   useEffect(() => {
     const findUser = () => {
     
-      const user = users.find(user => user._id === userId)
+      const foundUser = users.find(user => user._id === userId)
       const filteredItems = items?.filter(item => item.seller_id === userId)
       setSellerItems(filteredItems)
-      setUser(user)
+      setUser(foundUser ?? null)
     }    
     findUser()
     setSellerLoading(false)
@@ -146,7 +146,7 @@ export default function SellerProfile(){
     navigate(-1)
   }
 
-  const date = new Date(user?.join_date)
+  const date = new Date(user?.join_date!) // sure there is a date
   const formattedDate = date.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -158,12 +158,22 @@ export default function SellerProfile(){
       <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-30 flex items-center justify-center'>
-          <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+          {
+            user?.avatar_url ? (
+              <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+            ) : (
+              <span>No Image</span>
+            )
+          } 
         </div>
       </div>
     )
   }
 
+  const capitalizeName = (name?: string) => {
+    if(!name) return 'Unknown'
+    return name.charAt(0).toUpperCase() + name.slice(1)
+  }
   
   if(sellerLoading || dataLoading){
     return(
@@ -220,18 +230,18 @@ export default function SellerProfile(){
 
  
   const displayAddress = [
-    user.address?.building,
-    user.address?.street,
-    user.address?.road,
-    user.address?.neighbourhood,
-    user.address?.suburb,
-    user.address?.quarter,
-    user.address?.village,
-    user.address?.city,
-    user.address?.city_district,
-    user.address?.municipality,
-    user.address?.state_district,
-    user.address?.state,
+    user?.address?.building,
+    user?.address?.street,
+    user?.address?.road,
+    user?.address?.neighbourhood,
+    user?.address?.suburb,
+    user?.address?.quarter,
+    user?.address?.village,
+    user?.address?.city,
+    user?.address?.city_district,
+    user?.address?.municipality,
+    user?.address?.state_district,
+    user?.address?.state,
   ].filter(Boolean)
   
   return(
@@ -248,7 +258,7 @@ export default function SellerProfile(){
           </div>
           <div className="flex flex-col justify-center">
             <h1 className="font-bold text-2xl">
-              {user?.firstname.charAt(0).toUpperCase() + user?.firstname.slice(1)} {user?.lastname.charAt(0).toUpperCase() + user?.lastname.slice(1)}
+              {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
             </h1>
             <h1 className="text-secondary-text">@{user?.username}</h1>
           </div>
@@ -300,7 +310,7 @@ export default function SellerProfile(){
             {sellerItems.length === 0 ? <div className="mb-2 text-center text-empty-state font-light mt-auto">No items yet</div> : sellerItems?.map(i => (
               <ItemCard
                 key={i._id}
-                item_id={i._id}
+                item_id={i?._id!}
                 image={i.image}
                 title={i.title}
                 price={i.price}

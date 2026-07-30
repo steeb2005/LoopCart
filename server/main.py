@@ -287,7 +287,7 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
         samesite="lax",
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
@@ -367,7 +367,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24*30
         )
@@ -376,7 +376,7 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
             samesite="lax",
             max_age=60*60*24
         )
@@ -637,15 +637,15 @@ async def get_single_item(item_id: str):
     return {
         "_id": str(item["_id"]),
         "title": item["title"],
-        "price": item["price"],
+        "price": item.get("price", 0),
         "category": item["category"],
         "condition": item["condition"],
         "description": item["description"],
         "created_at": item["created_at"],
         "status": item["status"],
-        "sold_at": item["sold_at"],
+        "sold_at": item.get("sold_at"),
         "seller_id": item["seller_id"],
-        "buyer_id": item["buyer_id"],
+        "buyer_id": item.get("buyer_id"),
         "image": item["image"],
         "likes": item.get("likes", 0),
         "deleted": item.get("deleted", False)
@@ -829,6 +829,9 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
     
     participants = sorted([message.sender_id, message.receiver_id])
 
+    if message.sender_id == message.receiver_id:
+        raise HTTPException(status_code=400, detail="Cannot send message to yourself")
+
     new_message = {
         "sender_id": message.sender_id, 
         "text": message.text,
@@ -844,6 +847,12 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
 
     # If Found
     if conversation:
+        other_participant = [p for p in conversation.get("participants", []) if p != current_user["sub"]][0]
+
+        other_participant_exists = await users.find_one({"_id": ObjectId(other_participant)})
+        if not other_participant_exists:
+            raise HTTPException(status_code=404, detail="Other participant not found")
+
         deleted_by_users = conversation.get("deleted_by", [])
         if current_user["sub"] in deleted_by_users: 
             await restore_conversation(str(conversation["_id"]), current_user["sub"])
@@ -971,8 +980,18 @@ async def mark_message_as_read(conversation_id: str, user_id: str):
 async def update_item_sold(item_id: str, user_id: str, status: str, conversation_id: str | None = None, current_user: dict = Depends(get_current_user)):
     try:
         item = await items.find_one({"_id": ObjectId(item_id)})
+        conversation = await conversations.find_one({"_id": ObjectId(conversation_id)})
+        user_exists = await users.find_one({"_id": ObjectId(user_id)})
+        
+        if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+
+        if not user_exists:
+            raise HTTPException(status_code=404, detail="User not found")
+        
         if not item:
             raise HTTPException(status_code=404, detail="Item not found")
+        
         if item["seller_id"] != current_user["sub"]: 
             raise HTTPException(status_code=403, detail="Unauthorized")
 
