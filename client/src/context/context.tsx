@@ -617,7 +617,9 @@ export function AppContext({children}: {children: React.ReactNode}) {
   const unlike_item = async (userId: string, itemId: string) => {
     try{
       const res = await fetch(`${API_URL}/likes?user_id=${userId}&item_id=${itemId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: authHeaders(),
+        credentials: 'include'
       }) 
       
       if(res.ok){

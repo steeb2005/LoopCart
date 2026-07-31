@@ -1,12 +1,13 @@
 import { useAppContext } from "../context/context";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function useItemLike(item_id: string, initialLikes: number){
     
   const { like_item, unlike_item, user, likedItems } = useAppContext()
   const [isLiked, setIsLiked] = useState(false)
   const [likesCount, setLikesCount] = useState(initialLikes) // count locally
-  
+  const isPending = useRef(false)
+
   useEffect(() => {
     const isAlreadyLiked = likedItems.some(item => item._id === item_id)
     setIsLiked(isAlreadyLiked)
@@ -24,6 +25,14 @@ export function useItemLike(item_id: string, initialLikes: number){
       console.error('User must be logged in to like items');
       return
     }
+
+    if(isPending.current){
+      console.error('Already liking or unliking item');
+      return
+    }
+
+    isPending.current = true
+
     
     const newIsLiked = !isLiked
     const prev = likesCount
@@ -42,6 +51,8 @@ export function useItemLike(item_id: string, initialLikes: number){
       setIsLiked(!newIsLiked) 
       setLikesCount(prev)
       console.error('network error in liking item');
+    }finally{
+      isPending.current = false
     }
   }
 

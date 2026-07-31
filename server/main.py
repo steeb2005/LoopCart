@@ -291,8 +291,8 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="none", # Set to lax if in development none if in production
+        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="lax", # Set to lax if in development none if in production
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
 
@@ -371,8 +371,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none",
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
             max_age=60*60*24*30
         )
     else:
@@ -380,8 +380,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none",
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
             max_age=60*60*24
         )
 
@@ -409,8 +409,8 @@ async def login(login_data: LoginRequest, response: Response):
 async def logout(response: Response):
     response.delete_cookie(
         "access_token",
-        secure=True,
-        samesite="none"
+        secure=False,
+        samesite="lax"
         )
     return{"success": True}
 
@@ -748,12 +748,18 @@ async def like_item(like: LikeRequest, current_user: dict = Depends(get_current_
 
 
 @app.delete('/likes')
-async def unlike_item(user_id: str, item_id: str):
+async def unlike_item(user_id: str, item_id: str, current_user: dict = Depends(get_current_user)):
+    if current_user["sub"] != user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    
     try:
-        await likes.delete_one({
+        deleted_like = await likes.delete_one({
             "user_id": user_id,
             "item_id": item_id
         })
+
+        if deleted_like.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Like not found")
 
         await items.update_one(
             {"_id": ObjectId(item_id)},
@@ -761,7 +767,8 @@ async def unlike_item(user_id: str, item_id: str):
         )
 
         return {"message": "Item unliked successfully"}
-
+    except HTTPException:
+        raise
     except:
         raise HTTPException(status_code=404, detail="Like not found")
         
