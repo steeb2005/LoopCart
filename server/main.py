@@ -11,8 +11,6 @@ import httpx
 from typing import Optional
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
-from google.oauth2 import id_token as google_id_token
-from google.auth.transport import requests as google_requests
 from config import settings
 
 # # PUT IN EVIRONEMNT VARIABLES
