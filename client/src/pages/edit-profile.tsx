@@ -11,6 +11,7 @@ import { NativeSelect, NativeSelectOption } from "../components/ui/native-select
 import Erase from '../assets/close.svg'
 import BackArrow from '../assets/arrow_back.svg'
 import Camera from '../assets/camera.svg'
+import { toast } from "sonner"
 /*
   TODO
   - Make toasts that show if the profile is updated or not (from shadcn). 
@@ -145,7 +146,25 @@ export default function EditProfile() {
       if(avatarFile && user?._id){
         await upload_avatar(user._id, avatarFile)
       } 
+      toast.success('Avatar updated', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
     }catch{
+      toast.error('Failed to update avatar', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       console.error('something went wrong in uploading file');
     }finally{
       setLoadingAvatar(false)
@@ -186,7 +205,6 @@ export default function EditProfile() {
   const handleEditGender = () => {
     setEditGender(!editGender)
   }
-
 
 
   const handleEditLocation = () => {
@@ -278,7 +296,25 @@ export default function EditProfile() {
       try{
         user.address = address
         await update_address(user._id, address)
+        toast.success('Successfully updated address', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }catch{
+        toast.error('Failed to update address', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         user.address = prev
       }finally{
         setOpenLocationMenu(false)
@@ -305,13 +341,32 @@ export default function EditProfile() {
     try{
       user.username = username
       await update_username(user._id, username)
+      toast.success('Successfully updated username', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       
     }catch{
+      toast.error('Failed to update username', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       user.username = prev
     }finally{
       setEditUsername(false)
     }
   }
+
   const displayAddress = [
     user.address?.building,
     user.address?.street,
@@ -346,7 +401,25 @@ export default function EditProfile() {
       try{
         user.gender = gender
         await update_gender(user._id, gender)
+        toast.success('Successfully updated gender', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }catch{
+        toast.error('Failed to update gender', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         user.gender = prev
       }
       setEditGender(false)
@@ -423,7 +496,25 @@ export default function EditProfile() {
       try{
         user.birthdate = birthdate
         await update_birthdate(user._id, birthdate)
+        toast.success('Successfully updated birthdate', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }catch{
+        toast.error('Failed to update birthdate', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         user.birthdate = prev
       }
       setEditBirthdate(false)
@@ -465,7 +556,25 @@ export default function EditProfile() {
       user.bio = bio
       try{
         await update_bio(user._id, bio)
+        toast.success('Successfully updated bio', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }catch{
+        toast.success('Failed to update bio', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         user.bio = prev
       }
       setEditBio(false)
@@ -519,8 +628,6 @@ export default function EditProfile() {
       </div>
     )
   }
-
-
 
   return(
     <>

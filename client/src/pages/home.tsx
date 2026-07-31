@@ -9,7 +9,6 @@ import { useItemLike } from "../hooks/handle-like.tsx"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
-
 function ItemCard({item_id, image, title, price, seller_name, likes}: {
   item_id: string,
   image: string,
@@ -106,6 +105,8 @@ function Home(){
     {id: 'price_high', label: 'Price: High to Low'},
   ]
   
+  
+  
   const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
   const activeSort = SORT.find(sort => sort.id === currentSort)
 
@@ -143,6 +144,7 @@ function Home(){
 
 
   useEffect(() => {
+    
     const loadItems = async() =>{
       setPageLoading(true)
       await load_items()
@@ -177,7 +179,6 @@ function Home(){
         </div> */}
 
       <div className="top-section flex flex-col mx-5">
-        
         <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
           <div className="relative">
             <button

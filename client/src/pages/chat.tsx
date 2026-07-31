@@ -9,6 +9,7 @@ import CheckCircle from '../assets/check_circle.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
 import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
+import { toast } from "sonner";
 /*
   TODO
   - Fix Typescript errors (or ignore them and force deploy)
@@ -134,6 +135,7 @@ function Chat(){
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const dropDownRef = useRef<HTMLDivElement>(null)
   
+  const isSendingRef = useRef(false)
   const WS_URL = import.meta.env.VITE_WS_URL
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -200,7 +202,11 @@ function Chat(){
       let conv_id = conversationId
 
       if(!conv_id){
-        const result = await fetch_conversation_id(user._id, itemId)
+        if(!userId){
+          console.error('Sellers user id not found');
+          return
+        }
+        const result = await fetch_conversation_id(userId, itemId)
         if(result?.conversation_id){
           conv_id = result.conversation_id
           setConversationId(conv_id)          
@@ -214,7 +220,6 @@ function Chat(){
       
       const msg = await load_messages(conv_id)
       setMessageList(msg?.messages || [])
-      
       const hasUnreadMessages = inbox.some(entry => entry._id === conv_id && (entry?.unread_count ?? 0)  > 0)
       if(hasUnreadMessages){
         await read_messages(conv_id, user._id)
@@ -226,7 +231,7 @@ function Chat(){
     loadMessages() // loads messages
     findItem()
     setIsLoading(false)  
-  }, [items, itemId, getUsername, get_item, users])
+  }, [itemId, users])
 
 
   const connectChatSocket = (conv_id: string) => {
@@ -246,10 +251,11 @@ function Chat(){
     chatWsIntentionalClose.current = false
 
     const ws = new WebSocket(`${WS_URL}/ws/chat/${conv_id}`) // Change the URL in production
-
+    //6a6cae39f10f71b124388778
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
       if(data.type === 'new_message'){
+        if(isSendingRef.current) return
         setMessageList(prev => [...prev, data.message])
       }
       if(data.type === "update_status"){
@@ -285,10 +291,14 @@ function Chat(){
     return id === user?._id
   }
 
-
   const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     messageInputRef.current?.focus();
+    if(isSendingRef.current){
+      console.error('messge still sending')
+      return
+    } 
+    isSendingRef.current = true
 
     if(isSold) return // if the item is sold, do not allow sending messages
     
@@ -328,6 +338,8 @@ function Chat(){
     }catch{
       console.error('error in sending message: client')
       setMessageList(prev)
+    }finally{
+      isSendingRef.current = false
     }
 
 
@@ -371,8 +383,26 @@ function Chat(){
       })
 
       await update_item_sold(itemId, userId, item?.status, conversationId)
+      toast.success('Updated item status', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       await load_items()
     }catch{
+      toast.error('Failed to update status', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       setItem(prev)
       console.error('error in updating item status');
     }
@@ -398,9 +428,25 @@ function Chat(){
       } 
         
       await delete_conversation(conversationId)
+      toast.success('Successfully deleted conversation', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        }
+      })
       await load_items()
       navigate('/inbox')
     }catch{
+      toast.error('Failed to deleted conversation', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        }
+      })
       console.error('error in deleting conversation');
     }
   }

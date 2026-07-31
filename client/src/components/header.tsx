@@ -69,6 +69,8 @@ export function Header({openSidebar, isDesktop}: {
   }
 
   const getStructuredName = (firstname?: string, lastname?: string) => {
+    if(firstname && !lastname) return (firstname.charAt(0).toUpperCase() + firstname.slice(1))
+    if(!firstname && lastname) return (lastname.charAt(0).toUpperCase() + lastname.slice(1))
     if (!firstname || !lastname) return 'Unknown'
     return (firstname.charAt(0).toUpperCase() + firstname.slice(1)) + " " + (lastname.charAt(0).toUpperCase()) + "."
   }

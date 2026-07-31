@@ -283,7 +283,7 @@ function ItemDetails(){
           
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
-            <div className='border border-border-color max-h-120  overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+            <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
               {item?.image ? (
                 <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
               ) : (

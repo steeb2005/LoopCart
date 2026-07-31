@@ -291,8 +291,8 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="none", # Set to lax if in development none if in production
+        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="lax", # Set to lax if in development none if in production
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
 
@@ -371,8 +371,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none",
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
             max_age=60*60*24*30
         )
     else:
@@ -380,8 +380,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none",
+            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="lax",
             max_age=60*60*24
         )
 
@@ -409,8 +409,8 @@ async def login(login_data: LoginRequest, response: Response):
 async def logout(response: Response):
     response.delete_cookie(
         "access_token",
-        secure=True,
-        samesite="none"
+        secure=False,
+        samesite="lax"
         )
     return{"success": True}
 
@@ -848,7 +848,7 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=400, detail="Cannot send message to yourself")
 
     new_message = {
-        "sender_id": message.sender_id, 
+        "sender_id": message.sender_id,     
         "text": message.text,
         "read": False,
         "sent_at": datetime.now(tz=timezone.utc).isoformat()
@@ -862,6 +862,8 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
 
     # If Found
     if conversation:
+
+
         other_participant = [p for p in conversation.get("participants", []) if p != current_user["sub"]][0]
 
         other_participant_exists = await users.find_one({"_id": ObjectId(other_participant)})
@@ -947,17 +949,15 @@ async def load_messages(conversation_id: str, current_user: dict = Depends(get_c
 async def fetch_conversation_id(user_id: str, item_id: str, current_user: dict = Depends(get_current_user)):
     try:
         conversation = await conversations.find_one({
-            "participants": user_id,
+            "participants":{"$all": [current_user["sub"],  user_id]},
             "item_id": item_id})
     except:
         raise HTTPException(status_code=400, detail="Invalid user ID or item ID")
 
-    if current_user["sub"] != user_id:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
     if not conversation:
         #raise HTTPException(status_code=404, detail="Conversation not found")
         return {"conversation_id": None}    # Returns None if there is no conversation_id for that entry
+
     return {"conversation_id": str(conversation["_id"])}
 
 

@@ -11,6 +11,8 @@ import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from '../compo
 import AddPhoto from '../assets/add_photo.svg'
 import Close from '../assets/close.svg'
 import { Spinner } from '../components/ui/spinner'
+import { toast } from 'sonner'
+
 
 type ItemFormData = {
   title: string;
@@ -173,7 +175,6 @@ function SellItem(){
         }
 
         await update_item(item_id, itemToEdit, itemImageFile)
-        console.log('here')
         setLoading(false)
         success = true
         if(success){
@@ -190,10 +191,28 @@ function SellItem(){
         setLoading(false)
         success = true
         if(success){
+          toast.success('Successfully posted item', {
+            action: {
+              label: '✕',
+              onClick: () => {
+                toast.dismiss
+              }
+            },
+            position: 'top-center'
+          })
           navigate('/home')
         }
       }
     }catch(error){
+      toast.error('Hello from Toastify!', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
       console.error('error in posting item', error);
     }
   }
@@ -227,6 +246,18 @@ function SellItem(){
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    if(!file?.type.startsWith('image/')){
+      setImgError('Please select a png, jpeg, webp file')     
+      return 
+    } 
+
+    if(file.size > 2 * 1024 * 1024){
+      console.error('file size is greater than 2mb');
+      setImgError('Please select a file less than 2mb')
+      
+      return 
+    }
+
     if(file){
       setImgError('')
       setItemImageFile(file)

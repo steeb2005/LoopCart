@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react'
 import Light from '../assets/light_mode.svg'
 import Dark from '../assets/dark_mode.svg'
 import Inbox from '../assets/inbox.svg'
-
+import { Spinner } from './ui/spinner'
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
   isOpenSidebar: boolean
@@ -47,12 +47,18 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     unreadMessages += conversation.unread_count || 0
   })
 
+  const getStructuredName = (firstname?: string, lastname?: string) => {
+    if(firstname && !lastname) return (firstname.charAt(0).toUpperCase() + firstname.slice(1))
+    if(!firstname && lastname) return (lastname.charAt(0).toUpperCase() + lastname.slice(1))
+    if (!firstname || !lastname) return 'Unknown'
+    return (firstname.charAt(0).toUpperCase() + firstname.slice(1)) + " " + (lastname.charAt(0).toUpperCase()) + "."
+  }
 
   if(isLoading){
     return (
       <div className="text-xl text-primary-text fixed w-full inset-0 overflow-hidden z-100 flex items-center justify-center">
         <div className='flex flex-col justify-center items-center bg-bg-canvas px-10 py-8 rounded-xl'>
-          <p className="text-xl">Logging out...</p>
+          <Spinner />  
         </div>
       </div>
     )
@@ -78,8 +84,8 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 <img onClick={closeSidebar} src={Close} alt="close_svg" className='cursor-pointer filter-(--icon-filter)'/>
               </div>
               <div className="head mb-3 text-primary-text font-semibold border-b border-b-border-color">
-                <div className="py-3 flex flex-col gap-1 justify-center">
-                  <div className="bg-bg-inverse ring ring-border-color rounded-full h-16 w-16 flex items-center justify-center overflow-hidden">
+                <div className="py-3 flex flex-col justify-center">
+                  <div className="bg-bg-inverse ring mb-3 ring-border-color rounded-full h-16 w-16 flex items-center justify-center overflow-hidden">
                     {
                       user?.avatar_url ? (
                         <img src={user.avatar_url} alt="avatar"/>
@@ -96,8 +102,8 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                       ) 
                     }
                   </div>
-                  <h1 className="text-3xl font-semibold">{user?.username}</h1>
-                  <p className="font-light text-md">{user?.email}</p>
+                  <h1 className="text-3xl font-semibold">{getStructuredName(user?.firstname, user?.lastname)}</h1>
+                  <p className="font-light text-md text-secondary-text">{user?.username}</p>
                 </div>
               </div>
 

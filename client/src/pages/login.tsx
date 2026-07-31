@@ -8,6 +8,7 @@ import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
 import GoogleIcon from '../assets/google_icon.svg'
 import { useGoogleLogin } from "@react-oauth/google";
+import { Spinner } from '../components/ui/spinner'
 
 function Login(){
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ function Login(){
   if(loading){
     return(
       <div className="flex items-center justify-center min-h-screen">
-        AUTOLOGIN
+        <Spinner/>
       </div>
     )
   }

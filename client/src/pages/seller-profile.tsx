@@ -171,9 +171,10 @@ export default function SellerProfile(){
   }
 
   const capitalizeName = (name?: string) => {
-    if(!name) return 'Unknown'
+    if(!name) return ' '
     return name.charAt(0).toUpperCase() + name.slice(1)
   }
+  
   
   if(sellerLoading || dataLoading){
     return(
@@ -253,7 +254,7 @@ export default function SellerProfile(){
       <div className="flex flex-col">
         <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
           <div className="w-25 h-25 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
-            {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+            {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
 
           </div>
           <div className="flex flex-col justify-center">

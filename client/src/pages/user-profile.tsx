@@ -114,7 +114,7 @@ export default function UserProfile() {
   });
 
   const capitalizeName = (name?: string) => {
-    if(!name) return 'Unknown'
+    if(!name) return ' '
     return name.charAt(0).toUpperCase() + name.slice(1)
   }
 
