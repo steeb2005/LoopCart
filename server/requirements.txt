@@ -4,3 +4,4 @@ motor==3.7.1
 pydantic==2.13.4
 PyJWT==2.13.0
 pymongo==4.17.0
+uvicorn[standard]==0.24.0 
