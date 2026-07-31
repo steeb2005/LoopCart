@@ -22,6 +22,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 * 30
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 MAX_FILE_SIZE = 2 * 1024 * 1024
 API_URL = settings.API_URL # Change this depending on where the backend is hosted
+PORT = settings.PORT
 
 GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
@@ -293,7 +294,7 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         value=token,
         httponly=True,
         secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax",
+        samesite="none", # Set to lax if in development none if in production
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
 
@@ -373,7 +374,7 @@ async def login(login_data: LoginRequest, response: Response):
             value=token,
             httponly=True,
             secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="lax",
+            samesite="none",
             max_age=60*60*24*30
         )
     else:
@@ -382,7 +383,7 @@ async def login(login_data: LoginRequest, response: Response):
             value=token,
             httponly=True,
             secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="lax",
+            samesite="none",
             max_age=60*60*24
         )
 
@@ -408,7 +409,11 @@ async def login(login_data: LoginRequest, response: Response):
 # Logout
 @app.post('/logout')
 async def logout(response: Response):
-    response.delete_cookie("access_token")
+    response.delete_cookie(
+        "access_token",
+        secure=True,
+        samesite="none"
+        )
     return{"success": True}
 
 

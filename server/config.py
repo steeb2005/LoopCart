@@ -4,7 +4,8 @@ class Settings(BaseSettings):
     MONGODB_URL : str = ""
     SECRET_KEY : str = ""
     ALGORITHM : str = ""
-
+    PORT : int = 8000
+    
     CLOUDINARY_CLOUDNAME : str = ""
     CLOUDINARY_API_KEY : str = ""
     CLOUDINARY_API_SECRET : str = ""
