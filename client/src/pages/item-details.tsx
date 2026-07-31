@@ -87,6 +87,19 @@ function ItemDetails(){
   const dropDownRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
+    if(dataLoading){
+      setPageLoading(true)
+      return
+    }
+
+    if(items.length === 0 && !dataLoading){
+      setItem(null)
+      setOtherUser(null)
+      setPageLoading(false)
+      setSellerUsername('Unknown Seller')
+      return
+    }
+
     const foundItem = items?.find(item => item._id === id)
     
     if(foundItem){
@@ -192,8 +205,6 @@ function ItemDetails(){
     )
   }
 
-
-  
   
   if(!item){
     return(
