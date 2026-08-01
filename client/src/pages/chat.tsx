@@ -113,7 +113,7 @@ function Chat(){
   const navigate = useNavigate()
 
   const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {items, getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, delete_conversation} = useAppContext()
+  const {getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, delete_conversation} = useAppContext()
    
   const [item, setItem] = useState<Item | null>(null)
   const [otherUsername, setOtherUsername] = useState('')
