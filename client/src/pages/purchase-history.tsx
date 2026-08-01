@@ -54,7 +54,7 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
       </div>
       <div className='flex flex-row gap-4 items-center text-sm'>
         <h1 className='text-secondary-text'>@{entryUsername}</h1>
-        <div className='font-light bg-bg-gray-surface py-1 px-3 rounded-xl text-secondary-text'>
+        <div className='font-light bg-bg-gray-surface py-1 px-3 text-sm rounded-xl text-secondary-text'>
           {isUserTheBuyer ? 'Purchased' : 'Sold'}
         </div>
       </div>

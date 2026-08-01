@@ -179,6 +179,7 @@ function Home(){
         </div> */}
 
       <div className="top-section flex flex-col mx-5">
+        
         <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
           <div className="relative">
             <button

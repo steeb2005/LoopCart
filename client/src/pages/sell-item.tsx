@@ -178,7 +178,26 @@ function SellItem(){
         setLoading(false)
         success = true
         if(success){
+          toast.success('Successfully updated item', {
+            action: {
+              label: '✕',
+              onClick: () => {
+                toast.dismiss
+              }
+            },
+            position: 'top-center'
+          })
           navigate('/home')
+        }else{
+          toast.error('Failed to update item', {
+            action: {
+              label: '✕',
+              onClick: () => {
+                toast.dismiss
+              }
+            },
+            position: 'top-center'
+          })
         }
       }else{
         if(!itemImageFile){

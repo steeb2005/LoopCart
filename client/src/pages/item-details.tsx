@@ -16,6 +16,7 @@ import Tag from '../assets/Tag.svg'
 import Time from '../assets/clock.svg'
 import { format } from 'date-fns'
 import Close from '../assets/close.svg'
+import { toast } from 'sonner'
 
 
 type Item = {
@@ -165,43 +166,62 @@ function ItemDetails(){
   }
 
   const handleDeleteItem = async () => {
-    await delete_item(item?._id || '')
-    naviagte(-1)
+    try{
+      await delete_item(item?._id || '')
+      toast.success('Successfully deleted item', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: "top-center"
+      })
+    }catch{
+      toast.error('Failed to delete item', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: "top-center"
+      })
+    }finally{
+      naviagte(-1)
+    }
   }
 
   
   if(dataLoading || pageLoading){
     return(
-      <div className="mx-5 p-0 m-0 pb-5 min-h-screen flex flex-col lg:mx-30"> 
+      <div className="mx-5 p-0 m-0 pb-5 h-dvh flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
             <img src={Back} alt="back" className='cursor-pointer'/>
             Item details
           </div>
-          <div className='text-primary-text flex flex-col px-2 py-3 border-border-color border rounded-md mt-7'>
-            <Skeleton className='bg-bg-surface w-full h-50'/>
-            <div className='flex flex-col space-y-1'>
-              <Skeleton className='bg-bg-surface w-3/4 h-4 mt-2'/>
-              <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
-              <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
-              <Skeleton className='bg-bg-surface w-2/4 h-4 mt-2'/>
-              <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
-              <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
-            </div>            
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 h-full'>
+            
+            <Skeleton className='bg-bg-surface w-full h-full min-h-90'/>
+            
+            <div className='flex flex-col flex-1 h-full space-y-2'>
+              <Skeleton className='bg-bg-surface w-3/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/6 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-3/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/3 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/3 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/6 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/6 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/4 h-5 mt-2'/>
+              <Skeleton className='bg-bg-surface w-2/3 h-10  mt-auto'/>
+            </div>
+            
           </div>
-          <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
-            <Skeleton className='bg-bg-surface w-2/3 h-4 mt-2'/>
-          </div>
-          <div  
-            className='flex flex-row gap-2 mt-2 text-primary-text items-center cursor-pointer'>
-            <Skeleton className='h-8 w-8 rounded-full bg-bg-surface'/>
-            <Skeleton className='h-4 w-2/8 rounded-full bg-bg-surface'/>
-          </div>
-          <div className='text-primary-text mt-5 mb-5'>
-            <Skeleton className='bg-bg-surface w-2/6 h-4 mt-2'/>
-            <Skeleton className='bg-bg-surface w-2/4 h-4 mt-2'/>
-          </div>  
-          <Skeleton className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-bg-surface rounded-sm p-2 text-primary-text font-semibold h-10 w-full'/>       
-        </div> 
+        </div>
     )
   }
 
@@ -298,6 +318,11 @@ function ItemDetails(){
 
               <h1 className='font-semibold text-xl'>{item.title}</h1>
 
+              <div className='flex flex-row'>
+                <div className='bg-bg-surface rounded-md text-primary-text px-3 py-1 text-sm'>
+                  {item?.status ?? 'N/A'}
+                </div>
+              </div>
               <div className='flex flex-row items-center gap-2'>
                 <img src={Tag} alt="tag_svg" className='filter-(--icon-filter) h-5'/>
                 <h1 className='font-semibold text-xl'>₱{item.price.toLocaleString('en-US')}</h1>
@@ -323,18 +348,20 @@ function ItemDetails(){
                 <p className=''>{item.condition}</p>
               </div>
 
+ 
               <div className='flex flex-col'>
                 <h1 className='font-semibold text-xl gap-2'>Description</h1>
                 <p className=''>{item.description}</p>
               </div>
+
 
               <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
                 <div className='flex items-center'>
                   <h1>Seller</h1>
                   <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
                 </div>
-                
               </div>
+                
 
               <Link  
                 to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
