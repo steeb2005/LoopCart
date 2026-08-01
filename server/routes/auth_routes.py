@@ -60,8 +60,8 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax", # Set to lax if in development none if in production
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none", # Set to lax if in development none if in production
         max_age=60*60*24*30 # Set cookie to expire in 30 days
     )
 
@@ -140,8 +140,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="lax",
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="none",
             max_age=60*60*24*30
         )
     else:
@@ -149,8 +149,8 @@ async def login(login_data: LoginRequest, response: Response):
             key="access_token",
             value=token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="lax",
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="none",
             max_age=60*60*24
         )
 
@@ -178,7 +178,7 @@ async def login(login_data: LoginRequest, response: Response):
 async def logout(response: Response):
     response.delete_cookie(
         "access_token",
-        secure=False,
-        samesite="lax"
+        secure=True,
+        samesite="none"
         )
     return{"success": True}
