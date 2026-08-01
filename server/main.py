@@ -12,6 +12,8 @@ from typing import Optional
 from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 from config import settings
+from contextlib import asynccontextmanager
+
 
 # # PUT IN EVIRONEMNT VARIABLES
 SECRET_KEY = settings.SECRET_KEY
@@ -27,10 +29,24 @@ GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Starting LoopCart")
+    await conversations.create_index(
+        [("item_id", 1), ("participants", 1)],
+        unique=True
+    )
 
-app = FastAPI()
-security = HTTPBearer()
+    yield
 
+    client.close()
+    print("LoopCart stopped")
+
+app = FastAPI(lifespan=lifespan)
+
+security = HTTPBearer() # Unused
+
+# Origins should be in the .env
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
