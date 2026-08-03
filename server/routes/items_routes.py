@@ -157,6 +157,8 @@ async def update_item(
 # Get specific item
 @router.get('/items/{item_id}')
 async def get_single_item(item_id: str):
+    if not ObjectId.is_valid(item_id):
+        raise HTTPException(status_code=400, detail="Invalid item ID")
     item = await items.find_one({"_id": ObjectId(item_id)})
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
