@@ -8,8 +8,6 @@ import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
 import Layout from './pages/layout'
 import LikedItems from './pages/liked-items'
-import Inbox from './pages/inbox'
-import Chat from './pages/chat'
 import SellerProfile from './pages/seller-profile'
 import UserProfile from './pages/user-profile'
 import EditProfile from './pages/edit-profile'
@@ -17,6 +15,9 @@ import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
 import NotFound from './pages/not-found'
 import { Spinner } from './components/ui/spinner'
+import MessagesInterface from './pages/messages-interface'
+
+
 function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend protection for login bypass  
   const { user, authLoading } = useAppContext();
   
@@ -78,13 +79,6 @@ function AppRoute(){
           </ProtectedRoute>
         }/>
 
-
-        <Route path='/inbox' element={
-          <ProtectedRoute>
-            <Inbox/>
-          </ProtectedRoute>
-        }/>
-
         <Route path='/users/:userId' element={
           <ProtectedRoute>
             <SellerProfile/>
@@ -108,6 +102,20 @@ function AppRoute(){
             <PurchaseHistory/>
           </ProtectedRoute>
         }/>
+
+        {/* TEST FEATURE ONLY */}
+
+        {/* For bare path no itemId and userId yet */}
+        <Route path='/messages' element={
+          <ProtectedRoute>
+            <MessagesInterface/>
+          </ProtectedRoute>
+        }/>
+        <Route path='/messages/:itemId/:userId' element={
+          <ProtectedRoute>
+            <MessagesInterface/>
+          </ProtectedRoute>
+        }/>
       
       </Route>
 
@@ -117,11 +125,7 @@ function AppRoute(){
         </ProtectedRoute> 
       }/>  
       
-      <Route path='/chat/:itemId/:userId' element={
-        <ProtectedRoute>
-          <Chat/>
-        </ProtectedRoute>
-      }/>
+      
 
       <Route path='*' element={
         <NotFound/>   // 404 Error page

@@ -19,7 +19,7 @@ export default function Layout() {
 
       <Sidebar closeSidebar={closeSidebar} isOpenSidebar={isOpenSidebar}/>
 
-      <div className="pt-15 p-0 m-0 h-dvh flex flex-col scrollbar-thin ">  
+      <div className="pt-15 p-0 m-0 h-dvh flex flex-col scrollbar-thin">  
         <Outlet/>
       </div>
     </>

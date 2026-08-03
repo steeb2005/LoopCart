@@ -282,7 +282,7 @@ function ItemDetails(){
 
   return(
     <>
-        <div className='mx-5 py-2 lg:mx-30'> 
+        <div className='p-5 lg:mx-30 bg-bg-canvas lg:p-5 rounded-lg shadow-md'> 
           <div className='head items-center flex flex-row justify-between text-primary-text font-semibold'>
             <div className='flex flex-row gap-8'>
               <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
@@ -302,7 +302,7 @@ function ItemDetails(){
           </div>
           
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-10 items-center mt-5'>
             <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
               {item?.image ? (
                 <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
@@ -314,13 +314,13 @@ function ItemDetails(){
             </div>
 
               
-            <div className='flex flex-col gap-3 '>   
 
+            <div className='flex flex-col gap-3 '>   
               <h1 className='font-semibold text-xl'>{item.title}</h1>
 
               <div className='flex flex-row'>
-                <div className='bg-bg-surface rounded-md text-primary-text px-3 py-1 text-sm'>
-                  {item?.status ?? 'N/A'}
+                <div className='bg-bg-gray-surface rounded-md text-primary-text px-3 py-1 text-sm'>
+                  {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'N/A'}
                 </div>
               </div>
               <div className='flex flex-row items-center gap-2'>
@@ -382,7 +382,7 @@ function ItemDetails(){
                 </button>
               ) : (
                 <Link
-                  to={`/chat/${item?._id}/${item?.seller_id}`}  
+                  to={`/messages/${item?._id}/${item?.seller_id}`}  
                 >
                   <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'> 
                     Make an Offer

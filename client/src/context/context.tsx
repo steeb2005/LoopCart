@@ -733,7 +733,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
         const data = await res.json()
         return data
       }else{
-        console.log('No conversation yet');
+        console.error('No conversation yet: context');
         return 
       }
     }catch{

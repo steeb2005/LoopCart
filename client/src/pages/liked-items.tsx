@@ -23,9 +23,9 @@ function ItemCard({item_id, image, title, price, status, seller_name, likes, del
   return(
     <Link 
       to={`/item/${item_id}`}
-      className='item-entry bg-bg-surface p-2 gap-2 rounded-md flex flex-row m-0'>
+      className='item-entry p-2 gap-2 rounded-md hover:bg-bg-surface duration-100 flex flex-row m-0'>
 
-      <div className='image-entry h-20 overflow-hidden w-20 bg-bg-canvas rounded-md shrink-0'>
+      <div className='image-entry h-20 overflow-hidden border border-border-color w-20 bg-bg-canvas rounded-md shrink-0'>
         {image ? (
           <img src={image} alt="image" className="object-contain h-full w-full" />
         ) : (
@@ -98,13 +98,13 @@ function LikedItems() {
   return(
 
 
-    <div className='mx-5 lg:mx-30 py-2'> 
-      <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold'>
+    <div className='lg:mx-30 lg:mb-5 bg-bg-canvas h-full p-3 rounded-xl shadow-md min-h-0  flex flex-col'> 
+      <div className='mx-5 head flex flex-row gap-5 pt-3 text-primary-text font-semibold'>
         <img src={HeartDefault} alt="heart_svg" className='filter-(--icon-filter)'/>
         Favorites
       </div>
 
-      <div className='items-section mt-5 flex flex-col gap-3'>
+      <div className='scrollbar-thin pr-3 scrollbar-thumb-bg-gray-surface items-section grow mt-5 gap-3 overflow-y-auto overflow-hidden'>
         {dataLoading ? (
           <>
             <EntrySkeleton/>

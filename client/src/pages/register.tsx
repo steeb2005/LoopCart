@@ -72,10 +72,10 @@ function Register(){
 
 
   return(
-    <div className="lg:flex lg:items-center lg:justify-center">
+    <div className="lg:flex lg:items-center lg:justify-center lg:p-5">
 
 
-      <div className="mx-10 py-5 lg:border lg:border-border-color rounded-2xl lg:px-10 lg:w-[50%]">
+      <div className="lg:mx-10 py-5 lg:border lg:border-border-color px-10 bg-bg-canvas rounded-2xl  lg:w-[50%]">
         <div>
           <Link to={'/'}>
             <img src={BackArrow} alt="backarrow" className="w-10 h-10 filter-(--icon-filter)"/>

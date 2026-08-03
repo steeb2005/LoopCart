@@ -89,7 +89,7 @@ export function Header({openSidebar, isDesktop}: {
     <div className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out
       ${isDesktop ? 'translate-y-0' : isHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
-      <div className="justify-between bg-bg-canvas border-b text-xl text-primary-text border-border-color items-center flex flex-row py-2 px-3 mb-2">
+      <div className="justify-between bg-bg-canvas text-xl text-primary-text shadow-md  items-center flex flex-row py-2 px-3 mb-2">
         
         <Link to={'/home'} className='flex flex-row items-center gap-2 font-bold'>
           <h1>LoopCart</h1>   
@@ -97,13 +97,14 @@ export function Header({openSidebar, isDesktop}: {
         </Link>
       
         <div className='flex flex-row items-center gap-3'>
+          
 
           <Link to={'/sell-item'}>
             <div className='cursor-pointer'>
               <img src={AddBox} alt="addbox" className='filter-(--icon-filter)'/>
             </div>
-          
           </Link>
+          
           <Link to={'/search'}>
             <div className='cursor-pointer'>
               <img src={Search} alt="search" className='h-7 w-7 filter-(--icon-filter)'/>
@@ -120,7 +121,7 @@ export function Header({openSidebar, isDesktop}: {
           </div>
 
 
-          <Link to={'/inbox'} className='hidden lg:block'>
+          <Link to={'/messages'} className='hidden lg:block'>
             <div className='relative'>
               <img src={Inbox} alt="inbox" className='filter-(--icon-filter)'/>
               {unreadMessages > 0 && 
@@ -165,7 +166,7 @@ export function Header({openSidebar, isDesktop}: {
               <img onClick={handleDropdown} src={DropArrow} alt="arrow_down" className='cursor-pointer filter-(--icon-filter)'/>
               {openDropdown && (
         
-                <div className='absolute top-14 min-w-[15%] rounded-lg border border-border-color right-0 flex flex-col text-sm text-primary-text bg-bg-surface '>
+                <div className='absolute top-14 min-w-[15%] rounded-lg bg-bg-canvas border border-border-color right-0 flex flex-col text-sm text-primary-text '>
 
                   <div className='border-border-color border-b p-2'>
                   <Link to={'/user-profile'}>

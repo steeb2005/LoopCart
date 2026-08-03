@@ -437,8 +437,8 @@ export default function EditProfile() {
           <NativeSelect 
             value={gender}
             onChange={handleGenderSelect}
-            className="mt-5 w-full border border-border-color rounded-md bg-bg-surface px-3 py-3 text-sm text-primary-text outline-none 
-                [&_select]:bg-bg-surface 
+            className="mt-5 w-full border border-border-color rounded-md bg-bg-canvas px-3 py-3 text-sm text-primary-text outline-none 
+                [&_select]:bg-bg-canvas 
                 [&_select]:border-none 
                 [&_select]:outline-none 
                 [&_select]:focus-visible:ring-0 
@@ -613,7 +613,7 @@ export default function EditProfile() {
               value={bio} 
               onChange={handeBioTextChange}
               placeholder="Introduce yourself"
-              className={`mt-5 resize-none text-sm items-center text-primary-text border ${limitReached ? 'border-red-500' : 'border-border-color'} px-4 py-5 w-full rounded-md decoration-none outline-0`}
+              className={`mt-5 resize-none text-sm items-center text-primary-text border bg-bg-canvas ${limitReached ? 'border-red-500' : 'border-border-color'} px-4 py-5 w-full rounded-md decoration-none outline-0`}
             />
           </form>
           <h1 className="text-secondary-text text-sm">{biolength}/{MAX} words</h1>
@@ -637,7 +637,7 @@ export default function EditProfile() {
       </div>
       <div className="lg:mx-30">
         
-        <div className="lg:border lg:border-border-color rounded-md p-5 mt-5 ">
+        <div className="shadow-md bg-bg-canvas rounded-md p-5 mt-5 ">
 
           <div className=" flex flex-row gap-5 text-primary-text ">
             <div className='relative group w-25 h-25'>

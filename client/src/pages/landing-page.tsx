@@ -41,26 +41,26 @@ function LandingPage(){
 
 
       <div className='benefits flex flex-col min-h-dvh mx-7'>
-        <h1 className='text-2xl text-center text-primary-text mb-5'>Why Choose LoopCart?</h1>
-        <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
+        <h1 className='text-2xl text-center text-primary-text mb-5 font-semibold'>Why Choose LoopCart?</h1>
+        <div className='flex flex-col bg-bg-canvas shadow-md text-primary-text rounded-xl mt-5 p-7'>
           <img src={MoneyBag} alt="money" className='h-7 w-7 filter-(--icon-filter)'/>
           <h1 className='text-lg mt-2'>Turn your clutter into cash</h1>
           <p className='mt-2 text-md font-light'>Stop letting your old tech gather dust and your unused clothes crowd your closet. Turn them into extra money today.</p>
         </div>
 
-        <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
+        <div className='flex flex-col bg-bg-canvas shadow-md text-primary-text rounded-xl mt-5 p-7'>
           <img src={DollarSign} alt="dollar" className='h-7 w-7 filter-(--icon-filter)'/>
           <h1 className='text-lg mt-2'>Unbeatable Deals</h1>
           <p className='mt-2 text-md font-light'>Find gently used iPhones, vintage jackets, and everyday essentials at prices you won’t find in retail stores.</p>
         </div>
 
-        <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
+        <div className='flex flex-col bg-bg-canvas shadow-md text-primary-text rounded-xl mt-5 p-7'>
           <img src={Plant} alt="plant" className='h-7 w-7 filter-(--icon-filter)' />
           <h1 className='text-lg mt-2'>Good for Your Wallet & Planet</h1>
           <p className='mt-2 text-md font-light'>Every item you buy or sell extends its lifecycle, reducing electronic waste and fast-fashion pollution.</p>
         </div>
 
-        <div className='flex flex-col bg-bg-surface text-primary-text rounded-xl mt-5 p-7'>
+        <div className='flex flex-col bg-bg-canvas shadow-md text-primary-text rounded-xl mt-5 p-7'>
           <img src={Handshake} alt="hand" className='h-7 w-7 filter-(--icon-filter)' />
           <h1 className='text-lg mt-2'>Trustworthy Local Trading</h1>
           <p className='mt-2 text-md font-light'>Deal directly with a verified community of fashion lovers and tech enthusiasts right in your neighborhood.</p>

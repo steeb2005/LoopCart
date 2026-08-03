@@ -334,7 +334,7 @@ function SellItem(){
               <TextareaAutosize
                 value={item.title}
                 onChange={(e) => setItem({...item, title: e.target.value})}
-                className='resize-none text-sm items-center text-primary-text bg-bg-surface border border-border-color px-4 py-5 w-full rounded-md decoration-none outline-0 '
+                className='resize-none text-sm items-center text-primary-text bg-bg-canvas border border-border-color px-4 py-5 w-full rounded-md decoration-none outline-0 '
                 placeholder='Title'
                 required
               />
@@ -346,7 +346,7 @@ function SellItem(){
                 inputMode='decimal'
                 value={item.price}
                 onValueChange={handlePrice}
-                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-fances px-4 py-5 w-full rounded-md decoration-none outline-0 bg-bg-canvas'
                 placeholder='Price'
                 required
               />
@@ -354,8 +354,7 @@ function SellItem(){
 
               <NativeSelect 
                 className="
-                  mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
-                  [&_select]:bg-bg-surface 
+                  mt-5 w-full border border-border-color rounded-md bg-bg-canvas px-4 py-5 text-sm text-primary-text outline-none 
                   [&_select]:border-none 
                   [&_select]:outline-none 
                   [&_select]:focus-visible:ring-0 
@@ -401,8 +400,7 @@ function SellItem(){
 
               <NativeSelect 
                 className="
-                  mt-5 w-full border border-border-color rounded-md bg-bg-surface px-4 py-5 text-sm text-primary-text outline-none 
-                  [&_select]:bg-bg-surface 
+                  mt-5 w-full border border-border-color rounded-md bg-bg-canvas px-4 py-5 text-sm text-primary-text outline-none 
                   [&_select]:border-none 
                   [&_select]:outline-none 
                   [&_select]:focus-visible:ring-0 
@@ -438,12 +436,12 @@ function SellItem(){
               <TextareaAutosize 
                 value={item.description}
                 onChange={(e) => setItem({...item, description: e.target.value})}
-                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-surface px-4 py-5 w-full rounded-md decoration-none outline-0'
+                className='mt-5 text-sm items-center border border-border-color text-primary-text bg-bg-canvas px-4 py-5 w-full rounded-md decoration-none outline-0'
                 placeholder='Description'
                 required
               />
             </form>
-            <h1 className='text-md text-primary-text font-semibold mb-1'>Location</h1>
+            <h1 className='text-md text-primary-text font-semibold mb-1 mt-2'>Location</h1>
             <div className='flex flex-row gap-2 mb-5 items-center'>
               <img src={Location} alt="Location" className='filter-(--icon-filter) h-7'/>
               {user?.address ? (

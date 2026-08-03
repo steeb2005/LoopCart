@@ -33,7 +33,7 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
   return(
     <Link
       to={`/item/${itemId}`}
-      className='text-primary-text cursor-pointer item-entry bg-bg-surface p-2 gap-3 rounded-md flex flex-col shrink-0'
+      className='text-primary-text cursor-pointer item-entry hover:bg-bg-surface duration-100 p-2 gap-3 rounded-md flex flex-col shrink-0'
       >
       <div className='date text-sm flex items-center'>
         <h1>{format(new Date(sold_at), 'MMMM d, yyyy h:mm a')}</h1>
@@ -54,7 +54,7 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
       </div>
       <div className='flex flex-row gap-4 items-center text-sm'>
         <h1 className='text-secondary-text'>@{entryUsername}</h1>
-        <div className='font-light bg-bg-gray-surface py-1 px-3 text-sm rounded-xl text-secondary-text'>
+        <div className='font-light bg-bg-gray-surface py-1 px-3 text-xs rounded-xl text-secondary-text'>
           {isUserTheBuyer ? 'Purchased' : 'Sold'}
         </div>
       </div>
@@ -120,13 +120,13 @@ export default function PurchaseHistory(){
 
 
   return(
-    <div className='mx-5 lg:mx-30'>
-       <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold items-center'>
+    <div className='lg:mx-30 bg-bg-canvas h-dvh rounded-xl shadow-md lg:m-2'>
+      <div className='head mx-5 flex flex-row gap-5 pt-3 text-primary-text font-semibold items-center'>
         <img src={History} alt="history_svg" className="filter-(--icon-filter) h-6"/>
         History
       </div>
 
-      <div className='overflow-y-auto pr-1 grow normal-scrollbar items-section gap-2 flex flex-col mt-3'>
+      <div className='mx-5 overflow-y-auto pr-1 grow normal-scrollbar items-section gap-2 flex flex-col mt-3'>
         <div className="flex flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
           <div 
             onClick={() => {

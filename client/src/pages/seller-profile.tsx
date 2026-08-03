@@ -1,15 +1,13 @@
 import { useParams } from "react-router-dom"
 import Back from '../assets/back.svg'
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useAppContext } from "../context/context"
 import { useEffect, useState } from "react"
 import Items from '../assets/items.svg' 
-import { useItemLike } from "../hooks/handle-like"
-import HeartDefault from '../assets/Heart.svg'
-import HeartClicked from '../assets/clickedHeart.svg'
 import { format } from "date-fns"
 import { Skeleton } from "../components/ui/skeleton"
 import Close from '../assets/close.svg'
+import ItemCard from "../components/item-card"
 
 type AddressDetails = { 
   country?: string,
@@ -66,55 +64,6 @@ type Item = {
   likes: number;
 }
 
-
-
-function ItemCard({item_id, title, image, price, seller_name, likes}: {
-  item_id: string,
-  title: string,
-  image: string,
-  price: number,
-  seller_name: string,
-  likes: number
-}
-){
-  const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
-
-  return(
-    <Link  
-      to={`/item/${item_id}`}
-      className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
-    >
-      <div className="img-section bg-bg-canvas w-full min-h-50 rounded-md">
-        {image ? (
-          <img src={image} className="w-full h-full object-contain" alt="image"/>
-        ) : (
-          <div className="h-full flex justify-center items-center text-secondary-text">
-            No Image
-          </div>
-        )}
-      </div>
-      <div className="title-section text-primary-text mt-2 ">
-        <h1 className="line-clamp-2 ">{title}</h1>
-        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
-      </div>
-      <div className="flex flex-row items-center justify-between mt-auto">
-        <h1 className="text-sm font-light">@{seller_name}</h1>
-        <div className="flex flex-row gap-2">
-          <img 
-            onClick={(e) => {
-              handleLikeClick(e)
-              e.preventDefault()
-              e.stopPropagation()
-            }}  
-            src={isLiked ? HeartClicked : HeartDefault} 
-            alt="heart" className="filter-(--icon-filter) h-6"/>
-          {likesCount}
-        </div>
-        
-      </div>
-    </Link>
-  )
-}
 
 
 
@@ -251,58 +200,59 @@ export default function SellerProfile(){
         <img onClick={handleBackClick} src={Back} alt="back" className="filter-(--icon-filter)"/>
         Seller Profile
       </div>
-      <div className="flex flex-col">
-        <div className=" flex flex-row mt-5 gap-5 text-primary-text mx-5">
-          <div className="w-25 h-25 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
-            {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+      <div className="flex flex-col gap-5">
+        <div className="bg-bg-canvas flex flex-col gap-5 mt-5 mx-5 p-5 rounded-xl shadow-md">
 
+          <div className="flex flex-row gap-5 text-primary-text ">
+            <div className="w-25 h-25 lg:w-30 lg:h-30 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
+              {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+
+            </div>
+            <div className="flex flex-col justify-center">
+              <h1 className="font-bold text-2xl">
+                {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
+              </h1>
+              <h1 className="text-secondary-text">@{user?.username}</h1>
+            </div>
           </div>
-          <div className="flex flex-col justify-center">
-            <h1 className="font-bold text-2xl">
-              {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
-            </h1>
-            <h1 className="text-secondary-text">@{user?.username}</h1>
+
+          <div className="flex flex-col text-primary-text mt-5">
+            <h1 className="text-xl font-bold mb-2">About</h1>
+            <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col text-primary-text bg-bg-canvas p-5 rounded-xl shadow-md mx-5">
+          <h1 className="text-xl font-bold">Personal Details</h1>
+      
+          <div className="flex flex-col">
+            <h1 className="font-semibold mt-5">Join Date</h1>
+            <p className="text-secondary-text">{formattedDate}</p>
+          </div>
+
+          {user?.birthdate && (  
+            <div className="flex flex-col">
+              <h1 className="font-semibold mt-5">Birthdate</h1>
+              <p className="text-secondary-text">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
+            </div>
+          )}
+
+          {user?.gender && (
+          <div className="flex flex-col">
+            <h1 className="font-semibold mt-5">Gender</h1>
+            <p className="text-secondary-text">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
+          </div>
+          )}
+
+          <div className="flex flex-col">
+            <h1 className="font-semibold mt-5">Address</h1>
+            <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address yet'}</p>
           </div>
         </div>
 
-        <div className="flex flex-col text-primary-text px-5 mt-5">
-          <h1 className="text-xl font-bold mb-2">About</h1>
-          <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
-        </div>
-
-        <div className="flex flex-col text-primary-text mt-5 border-b border-border-color pb-3">
-          <div className="mx-5">
-
-            <h1 className="text-xl font-bold">Personal Details</h1>
-        
-            <div className="flex flex-col">
-              <h1 className="font-semibold mt-5">Join Date</h1>
-              <p className="text-secondary-text">{formattedDate}</p>
-            </div>
-
-            {user?.birthdate && (  
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Birthdate</h1>
-                <p className="text-secondary-text">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
-              </div>
-            )}
-
-            {user?.gender && (
-            <div className="flex flex-col">
-              <h1 className="font-semibold mt-5">Gender</h1>
-              <p className="text-secondary-text">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
-            </div>
-            )}
-
-            <div className="flex flex-col">
-              <h1 className="font-semibold mt-5">Address</h1>
-              <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address yet'}</p>
-            </div>
-          </div>
-        </div>
         <div className="text-primary-text mx-5 mt-5">
           <div className="flex flex-row gap-3 mb-5">
-            <img src={Items} alt="items-svg" />
+            <img src={Items} alt="items-svg" className="filter-(--icon-filter)" />
             <h1 className="font-bold text-xl">{user?.username}'s Items</h1>
           </div>
 

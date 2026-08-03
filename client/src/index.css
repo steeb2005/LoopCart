@@ -7,8 +7,10 @@
 
 :root {
      /* LIGHT*/ 
-    --color-bg-canvas: #F0F2F5;
-    --color-bg-surface: #e5e5e5;
+    /* --color-bg-canvas: #F0F2F5; */
+    --color-bg-root: #f0f0f0;
+    --color-bg-canvas: #fbfbfe; 
+    --color-bg-surface: #ebebeb;
     --color-bg-inverse: #808080;
     --color-bg-gray-surface: color-mix(var(--color-gray-600) 20%, transparent);
 
@@ -111,6 +113,7 @@
 
 
 .dark {
+    --color-bg-root: #1b1b1b;
     --color-bg-canvas: #222222;
     --color-bg-surface: #353434;
     --color-bg-inverse: #F5F5F5;
@@ -192,6 +195,7 @@
 
 
 @theme {
+    --color-bg-root: var(--bg-root);
     --color-bg-canvas: var(--bg-canvas);
     --color-bg-surface: var(--bg-surface);
     --color-bg-inverse: var(--bg-inverse);
@@ -248,13 +252,13 @@
 
 
 html, body{
-    background-color: var(--color-bg-canvas);
+    background-color: var(--color-bg-root);
     width: 100%;
     transition: background-color 0.2s ease;
 }
 
 #root {
-    background-color: var(--color-bg-canvas);
+    background-color: var(--color-bg-root);
     transition: background-color 0.2s ease;
 }
 

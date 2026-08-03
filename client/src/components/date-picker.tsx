@@ -23,7 +23,7 @@ export function DatePicker({ onSelect, error }: { onSelect: (date: string) => vo
       <PopoverTrigger asChild>
         <Button 
             
-          className={`bg-bg-surface hover:bg-bg-gray-surface  w-full cursor-pointer py-8 border ${error ? "border-red-500" : "border-border-color"}  text-secondary-text font-light justify-start`}
+          className={`bg-bg-canvas hover:bg-bg-gray-surface  w-full cursor-pointer py-8 border ${error ? "border-red-500" : "border-border-color"}  text-secondary-text font-light justify-start`}
         >
           <div className='flex flex-col text-primary-text text-left'>
             <p className='text-secondary-text'>Month day year</p>
@@ -35,7 +35,7 @@ export function DatePicker({ onSelect, error }: { onSelect: (date: string) => vo
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className='bg-bg-surface text-primary-text '
+        className='bg-bg-canvas text-primary-text '
         >
         <Calendar
           mode="single"

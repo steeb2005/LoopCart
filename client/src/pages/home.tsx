@@ -2,60 +2,12 @@ import { useEffect, useMemo, useState } from "react"
 import { useAppContext } from "../context/context"
 import Category from "../assets/category.svg"
 import ArrowDown from "../assets/arrow_down.svg"
-import Heart from "../assets/Heart.svg"
-import HeartClicked from "../assets/clickedHeart.svg"
-import { Link } from "react-router-dom"
-import { useItemLike } from "../hooks/handle-like.tsx" 
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
-function ItemCard({item_id, image, title, price, seller_name, likes}: {
-  item_id: string,
-  image: string,
-  title: string,
-  price: number,
-  seller_name: string,
-  likes: number
-}
-){
-  const {isLiked, likesCount, handleLikeClick} = useItemLike(item_id, likes)
- 
-  return(
-    <Link  
-      to={`/item/${item_id}`}
-      className="border border-border-color rounded-md p-3 cursor-pointer max-h-100 flex flex-col space-y-1"
-    >
-      <div className="img-section bg-bg-canvas overflow-hidden w-full min-h-50 max-h-70 rounded-md">
-        {image ? (
-          <img src={image} className="w-full h-full object-contain" alt="image"/>
-        ) : (
-          <div className="h-full flex justify-center items-center text-secondary-text">
-            No Image
-          </div>
-        )}
-      </div>
-      <div className="title-section text-primary-text mt-2 ">
-        <h1 className="line-clamp-2 ">{title}</h1>
-        <h1 className=" font-bold text-lg">₱{price.toLocaleString('en-US')}</h1>
-      </div>
-      <div className="flex flex-row items-center justify-between mt-auto">
-        <h1 className="text-sm font-light">@{seller_name}</h1>
-        <div className="flex flex-row gap-2">
-          <img 
-            onClick={(e) => {
-              handleLikeClick(e)
-              e.preventDefault()
-              e.stopPropagation()
-            }}  
-            src={isLiked ? HeartClicked : Heart} 
-            alt="heart" className="filter-(--icon-filter) h-6"/>
-          {likesCount}
-        </div>
-        
-      </div>
-    </Link>
-  )
-}
+import ItemCard from "../components/item-card.tsx"
+
+
 
 
 function SkeletonCard(){
@@ -184,13 +136,13 @@ function Home(){
           <div className="relative">
             <button
               onClick={handleCategoryMenu}
-              className="cursor-pointer border border-border-color px-2 py-1 rounded-md flex flex-row items-center gap-2">
+              className="cursor-pointer border border-border-color bg-bg-canvas px-2 py-1 rounded-md flex flex-row items-center gap-2">
               <img src={Category} alt="category" className="filter-(--icon-filter)"/>
               {activeCategory?.label}
               <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
             </button>
             {categoryMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-surface border border-border-color rounded-md flex flex-col">        
+              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
                 {CATEGORIES.map((category) => (
                   <div
                     onClick={() => handleCategoryChange(category.id)} 
@@ -203,13 +155,13 @@ function Home(){
           </div>
 
           <div className="relative">
-            <button onClick={handleSortMenu} className="cursor-pointer border border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
+            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
               <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
               {activeSort?.label}
               <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
             </button>
             {sortMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-surface border border-border-color rounded-md flex flex-col">        
+              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
                 {SORT.map((sort) => (
                   <div
                     onClick={() => handleSortChange(sort.id)} 

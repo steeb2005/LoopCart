@@ -132,14 +132,9 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     Favorites
                   </div>
                 </Link>
-                <Link to={'/inbox'}>
-                  <div className={`${currentLocation === 'inbox' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
-                    
+                <Link to={'/messages'}>
+                  <div className={`${currentLocation === 'messages' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={Inbox} alt="inbox" className='h-6 filter-(--icon-filter)'/>
-                      
-                      
-                        
-                   
                     Inbox
                     {unreadMessages > 0 && 
                       <div className=' font-bold flex justify-center bg-bg-gray-surface rounded-full items-center text-xs h-5 w-5.5 text-primary-text'>
