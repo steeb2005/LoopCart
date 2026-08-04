@@ -110,20 +110,27 @@ function InboxEntry({currentItemId, currentOtherUserId, unreadCount, lastMessage
   read: boolean,
   onSelectChat: (newItemId: string, newUserId: string) => void
 }){
+  // TODO:
+  // - Add avatar url and make it more minimalistic
+  // - Left avatar, right item image
 
   const {itemId, userId} = useParams()
 
-  const {items, getUsername, user} = useAppContext()
+  const {items, getUsername, user, users} = useAppContext()
   const [item, setItem] = useState<Item | null>(null)
+  const [otherUser, setOtherUser] = useState<User | null>(null) // Use this instead of using the get username fucntion
   const [otherUsername, setOtherUsername] = useState('')
   const [lastSenderUsername, setLastSenderUsername] = useState('')
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === currentItemId)
+    const foundUser = users.find(user => user._id === currentOtherUserId)
+    setOtherUser(foundUser || null)
     setItem(foundItem || null) // If the item is not found, set the item to null
+
     setOtherUsername(getUsername(currentOtherUserId))
     setLastSenderUsername(getUsername(lastSender))
-  }, [items, currentItemId, currentOtherUserId, getUsername, lastSender])
+  }, [items, currentItemId, currentOtherUserId, getUsername, lastSender, users])
 
   if(!item){
     return(
@@ -161,8 +168,8 @@ function InboxEntry({currentItemId, currentOtherUserId, unreadCount, lastMessage
         </div>
         <div className='flex flex-row justify-between'>
           <h1 className="font-light text-sm">@{otherUsername}</h1>
-          <div className="px-2 rounded-full bg-bg-gray-surface flex items-center">
-            <p className='font-light text-sm'>{item?.deleted ? 'Deleted' : item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
+          <div className="px-2 rounded-full border border-border-color flex items-center">
+            <p className='font-light text-xs'>{item?.deleted ? 'Deleted' : item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
           </div>
         </div>
         <div className='last-message items-center'>
@@ -292,13 +299,13 @@ function Inbox({onSelectChat}:{
 
 
   return(
-    <div className="bg-bg-canvas rounded-xl lg:p-3 px-5 col-span-1 h-full flex flex-col min-h-0 lg:shadow-xl"> 
-      <div className='head flex flex-row gap-5 pt-3 text-primary-text font-semibold '>
+    <div className="bg-bg-canvas rounded-xl lg:p-3 col-span-1 h-full flex flex-col min-h-0 lg:shadow-xl"> 
+      <div className='head px-5 flex flex-row gap-5 pt-3 text-primary-text font-semibold '>
         <img src={InboxIcon} alt="inbox_svg" className="filter-(--icon-filter)" />
         Inbox
       </div>
 
-      <div className='overflow-y-auto pr-5 grow scrollbar-thin scrollbar-thumb-bg-surface scrollbar-track-bg-canvas items-section gap-2 flex flex-col mt-3'>
+      <div className='overflow-y-auto px-5 grow scrollbar-thin scrollbar-thumb-bg-surface scrollbar-track-bg-canvas items-section gap-2 flex flex-col mt-3'>
         <div className="flex flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
 
           <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 

@@ -316,11 +316,13 @@ export function AppContext({children}: {children: React.ReactNode}) {
     const map = new Map()
     users.forEach(user => {
     if (user._id && user.username) {
-        map.set(user._id, user.username);
+      map.set(user._id, user.username);
     }
     })
     setUsersMap(map)
   }, [users])
+
+  
 
 
   const getUsername = (user_id: string) => {      // Gets the sellerName user the sellerid

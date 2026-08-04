@@ -15,7 +15,7 @@ import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
 import NotFound from './pages/not-found'
 import { Spinner } from './components/ui/spinner'
-import MessagesInterface from './pages/messages-interface'
+import MessagesInterface from './pages/messages'
 
 
 function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend protection for login bypass  
