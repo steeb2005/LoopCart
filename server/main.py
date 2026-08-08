@@ -15,8 +15,9 @@ PORT = settings.PORT
 async def lifespan(app: FastAPI):
     print(f"Starting main.py, LoopCart Port:{PORT}")
     await conversations.create_index(
-        [("item_id", 1), ("participants", 1)],
-        unique=True
+        "conversation_key", 
+        unique=True,
+        sparse=True
     )
 
     yield

@@ -14,10 +14,9 @@ import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
 import Tag from '../assets/Tag.svg'
 import Time from '../assets/clock.svg'
-import { format } from 'date-fns'
 import Close from '../assets/close.svg'
 import { toast } from 'sonner'
-
+import { RelativeTime } from '../hooks/handle-relative-time'
 
 type Item = {
   _id?: string;
@@ -330,7 +329,7 @@ function ItemDetails(){
 
               <div className='flex flex-row items-center gap-2'>
                 <img src={Time} alt="time_svg" className='filter-(--icon-filter) h-6'/>
-                <h1 className='text-secondary-text'>{format(item.created_at, 'MMMM, d, yyyy')}</h1> {/* Replace with actual time */}
+                <h1 className='text-secondary-text'>{RelativeTime(item.created_at)}</h1> {/* Replace with actual time */}
               </div>
 
               <div className='flex flex-row gap-2'>

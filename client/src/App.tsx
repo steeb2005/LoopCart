@@ -103,7 +103,6 @@ function AppRoute(){
           </ProtectedRoute>
         }/>
 
-        {/* TEST FEATURE ONLY */}
 
         {/* For bare path no itemId and userId yet */}
         <Route path='/messages' element={

@@ -57,7 +57,11 @@ async def get_inbox(user_id: str, current_user: dict = Depends(get_current_user)
 @router.post('/messages/send')
 async def send_message(message: MessageSend, current_user: dict = Depends(get_current_user)):
     item = await items.find_one({"_id": ObjectId(message.item_id)})
-
+    
+    receiver = await users.find_one({"_id": ObjectId(message.receiver_id)})
+    if not receiver:
+        raise HTTPException(status_code=404, detail="Receiver not found")
+    
     if current_user["sub"] != message.sender_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
@@ -71,6 +75,7 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
         raise HTTPException(status_code=400, detail="Item has been sold")
     
     participants = sorted([message.sender_id, message.receiver_id])
+    conversation_key = f"{message.item_id}:{participants[0]}:{participants[1]}"
 
     if message.sender_id == message.receiver_id:
         raise HTTPException(status_code=400, detail="Cannot send message to yourself")
@@ -115,6 +120,7 @@ async def send_message(message: MessageSend, current_user: dict = Depends(get_cu
         new_conversation = { # this inserted into the db
             "participants": participants,
             "item_id": message.item_id,
+            "conversation_key": conversation_key,
             "messages" : [new_message],
             "last_updated": datetime.now(tz=timezone.utc).isoformat()
         }

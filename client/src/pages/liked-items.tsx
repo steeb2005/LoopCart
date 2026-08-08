@@ -23,11 +23,11 @@ function ItemCard({item_id, image, title, price, status, seller_name, likes, del
   return(
     <Link 
       to={`/item/${item_id}`}
-      className='item-entry p-2 gap-2 rounded-md hover:bg-bg-surface duration-100 flex flex-row m-0'>
+      className='item-entry p-2 gap-2 rounded-md hover:bg-bg-surface duration-100 flex flex-row m-0 items-center'>
 
-      <div className='image-entry h-20 overflow-hidden border border-border-color w-20 bg-bg-canvas rounded-md shrink-0'>
+      <div className='image-entry max-w-17 max-h-17 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
         {image ? (
-          <img src={image} alt="image" className="object-contain h-full w-full" />
+          <img src={image} alt="image" className="max-h-full max-w-full h-auto w-auto object-contain"/>
         ) : (
           <div className="h-full text-xs flex justify-center items-center">No image</div>
         )}
@@ -44,7 +44,7 @@ function ItemCard({item_id, image, title, price, status, seller_name, likes, del
         </div>
           
         <div className='last-message items-center flex flex-row justify-between'>
-          <div className='px-2 rounded-full bg-bg-gray-surface flex items-center'>
+          <div className='px-2 rounded-full border border-border-color text-xs flex items-center'>
             <p className='font-light text-sm'>{deleted ? 'Deleted' : status.charAt(0).toUpperCase() + status.slice(1)}</p>
           </div>
           <div className='flex flex-row gap-2'>
