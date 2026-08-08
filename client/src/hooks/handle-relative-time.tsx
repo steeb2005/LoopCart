@@ -12,7 +12,6 @@ export function RelativeTime(date: string){
   if(Math.abs(diffInHrs) < 24){
     return rtf.format(diffInHrs, 'hour')
   }
-  console.log(diffInDays)
   if(Math.abs(diffInDays) <= 7){
     return rtf.format(diffInDays, 'day')
   }

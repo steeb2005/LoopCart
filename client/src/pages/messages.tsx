@@ -17,6 +17,7 @@ import Location from '../assets/location.svg'
 import { useItemLike } from "../hooks/handle-like";
 import HeartClicked from '../assets/clickedHeart.svg'
 
+
 // TODO 
 // - Make a view item in mobile view and desktop view
 // - Make the view item trigger the item details section in desktop
@@ -97,7 +98,6 @@ function InboxEntry({conversationId, currentItemId, currentOtherUserId, unreadCo
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null) // Use this instead of using the get username fucntion
   const [otherUsername, setOtherUsername] = useState('')
-  const [lastSenderUsername, setLastSenderUsername] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const navigate = useNavigate()
@@ -109,7 +109,6 @@ function InboxEntry({conversationId, currentItemId, currentOtherUserId, unreadCo
     setItem(foundItem || null) // If the item is not found, set the item to null
 
     setOtherUsername(getUsername(currentOtherUserId))
-    setLastSenderUsername(getUsername(lastSender))
   }, [items, currentItemId, currentOtherUserId, getUsername, lastSender, users])
 
   const handleConfirmDelete = () => {
@@ -454,11 +453,12 @@ function Inbox({onSelectChat}:{
 
 
 
-function ItemDetails({itemId, userId, item, otherUser}: {
+function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
   itemId: string,
-  userId: string,
   item: Item | null,
-  otherUser: User | null
+  otherUser: User | null,
+  openItemDetails: boolean,
+  setOpenItemDetails: React.Dispatch<React.SetStateAction<boolean>>
 }){
 
   const {user, dataLoading} = useAppContext()
@@ -491,11 +491,14 @@ function ItemDetails({itemId, userId, item, otherUser}: {
   ].filter(Boolean)
 
   return(
-    <div className="bg-bg-canvas rounded-xl col-span-1 h-dvh overflow-y-auto flex flex-col min-h-0 lg:shadow-xl">
+    <div className={`bg-bg-canvas rounded-xl col-span-1 h-dvh overflow-y-auto flex flex-col min-h-0 lg:shadow-xl`}>
       <div className='head mb-5 flex flex-row pt-3 text-primary-text font-semibold px-5'>
         <div className="flex flex-row justify-between w-full">
           <h1>Details</h1>
-          <div className="bg-bg-surface p-1 rounded-full">
+          <div 
+            className="bg-bg-surface p-1 rounded-full"
+            onClick={() => setOpenItemDetails(false)}
+            >
             <img src={Close} alt="close_svg" className="cursor-pointer h-4 w-4 filter-(--icon-filter)"/>
           </div>
         </div>
@@ -594,10 +597,31 @@ export default function MessagesInterface(){
   const { itemId, userId } = useParams()
 
   const selectedItem = items.find(i => i._id === itemId) ?? null
-  const selectedOtherUser = users.find(u => u._id === userId) ?? null
+  const selectedOtherUser = users.find(u => u._id === userId) ?? null  
 
   const [status, setStatus] = useState(selectedItem?.status || 'unavailable')
-  
+
+  // Default to true if the screen is wider than 1024px
+  const [openItemDetails, setOpenItemDetails] = useState(() => {
+    if(window.innerWidth >= 1024){
+      return true
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if(selectedItem){
+      setStatus(selectedItem.status)
+    }
+  }, [selectedItem])
+
+  useEffect(() => {
+    if(itemId && userId){
+      setOpenItemDetails(window.innerWidth >= 1024)
+    }
+  }, [itemId, userId])
+
+
   useEffect(() => {
     if(itemId && userId) {
       return 
@@ -623,33 +647,51 @@ export default function MessagesInterface(){
   }
 
   const hasSelection = itemId && userId
+  
+  const inboxClass = hasSelection ? 'hidden lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'
+  
+  const chatVisibleOnMobile = hasSelection && !openItemDetails
+  const chatClass = `
+    ${chatVisibleOnMobile ? 'flex flex-col min-h-0' : 'hidden'}
+    ${hasSelection ? 'lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'}
+    ${openItemDetails ? 'lg:col-span-2' : 'lg:col-span-3'} col-span-1
+  `
+
+  const itemDetailsVisible = hasSelection && openItemDetails
+  const itemDetailsClass = itemDetailsVisible ? 'flex flex-col min-h-0 lg:flex lg:flex-col lg:min-h-0' : 'hidden'
 
   return(
     <div className="flex flex-col flex-1 min-h-0 lg:p-2">
-      <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 lg:mx-5 flex-1 min-h-0">
-        <div className={hasSelection ? 'hidden lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'}>
+      <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 flex-1 min-h-0">
+
+        <div className={inboxClass}>
           <Inbox
             onSelectChat={handleSelectChat}
           />
         </div>
 
-        <div className={hasSelection ? 'col-span-1 lg:col-span-2 flex flex-col min-h-0' : 'hidden lg:flex lg:col-span-2 lg:flex-col lg:min-h-0'}>
+        <div className={chatClass}>
+
           <Chat
             itemId={itemId ?? '' }
             userId={userId ?? ''}
+            status={status}
             setStatus={setStatus}
             otherUser={selectedOtherUser}
-            status={status}
             item={selectedItem}
             dataLoading={dataLoading}
+            openItemDetails={openItemDetails}
+            setOpenItemDetails={setOpenItemDetails}
           />
         </div>
-        <div className={hasSelection ? 'hidden lg:flex lg:flex-col lg:min-h-0' : 'hidden lg:flex flex-col min-h-0'}>
+        <div className={itemDetailsClass}>
+
           <ItemDetails
             itemId={itemId ?? ''}
-            userId={userId ?? ''}
             item={selectedItem}
             otherUser={selectedOtherUser}
+            openItemDetails={openItemDetails}
+            setOpenItemDetails={setOpenItemDetails}
           />
         </div>
       </div>

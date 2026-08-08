@@ -6,7 +6,7 @@ import Send from '../assets/send.svg'
 import TextareaAutosize from "react-textarea-autosize";
 import CheckCircle from '../assets/check_circle.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 import { useAppContext } from '../context/context'
 import { Spinner } from './ui/spinner'
@@ -97,14 +97,16 @@ function Message({isOwn, message}: {
 
 
 
-export default function Chat({userId, itemId, item, otherUser, dataLoading, status, setStatus}: {
+export default function Chat({userId, itemId, item, otherUser, dataLoading, status, setStatus, openItemDetails, setOpenItemDetails}: {
   userId: string, 
   itemId: string,
   item: Item | null,
   otherUser: User | null,
   dataLoading: boolean,
   status: string,
-  setStatus: React.Dispatch<React.SetStateAction<string>>
+  setStatus: React.Dispatch<React.SetStateAction<string>>,
+  openItemDetails: boolean,
+  setOpenItemDetails: React.Dispatch<React.SetStateAction<boolean>>
 }){
 
   const navigate = useNavigate()
@@ -367,7 +369,12 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
   const handleSetToSold = async () => {
     if (!itemId || !userId || !item) {
       console.error("Missing required item data or route parameters.");
-      return; 
+      return 
+    }
+
+    if(status === 'unavailable'){
+      console.error('item status is unavailable')
+      return
     }
     const prev = item?.status
     setSoldConfirmation(false)
@@ -449,6 +456,7 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
     }
   }
 
+
   if(dataLoading){
     return(
       <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
@@ -498,7 +506,7 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                 </div>
                 <h1>{otherUser?.username}</h1>
               </div>
-              <div className='lg:flex flex-row gap-5 items-center hidden '>
+              <div className='lg:flex flex-row gap-3 items-center hidden '>
                 {
                   !otherUser?._id ? (
                     <div 
@@ -521,6 +529,11 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                     )
                   )
                 }  
+
+                <div onClick={() => setOpenItemDetails(true)} className={`${openItemDetails ? 'hidden' : 'flex'} flex-row gap-1 items-center bg-bg-surface  cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                  <p>View item</p>
+                  <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                </div>
                 <div className='relative' ref={dropDownRef}>
                   <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
                   {openDropdown && (
@@ -544,9 +557,9 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                   )}
                 </div>
 
-                <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
+                <div className='data-entry flex flex-col gap-1 w-full text-primary-text'>
                   
-                  <div className="flex flex-row justify-between">
+                  <div className="flex flex-row justify-between items-center">
                     <h1>₱{item?.price?.toLocaleString('en-US') ?? 'Unavailable'}</h1>
                     <div className="font-light flex border rounded-md justify-center items-center grow-0 text-xs px-2 py-1">
                       {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'Unavailable'}
@@ -566,24 +579,21 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                         item?.deleted ? (
                           <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
                         ) : (
-                          role === 'seller' ? (
+                          role === 'seller' && (
                             <div 
                               className={`${isSold ? 'border border-border-color text-primary-text' : 'bg-button-color text-primary-text-inverse'} cursor-pointer rounded-xl py-2 px-3 text-xs `}
                               onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
                             >
                               {isSold ? 'Item Sold' : 'Mark as Sold'}
                             </div>
-                          ): (
-                            <Link to={`/item/${itemId}`}>
-                              <div className={`flex flex-row gap-1 items-center ml-2 bg-bg-surface  cursor-pointer rounded-full py-2 px-3 text-xs `}>
-                                <p>View item</p>
-                                <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
-                              </div>
-                            </Link>
                           )
                         )
                       )
                     }
+                    <div onClick={() => setOpenItemDetails(true)} className={`flex flex-row gap-1 items-center  bg-bg-surface  cursor-pointer rounded-full py-1.5 px-3 text-xs `}>
+                      <p>View item</p>
+                      <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                    </div>
                   </div>
                 </div>
               </div> 
@@ -614,7 +624,13 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
               </div>
             </div>
           )}
-
+          {
+            status === 'unavailable' && (
+              <div className="mt-auto">
+                <div className="text-primary-text mt-5 text-center text-sm ">Item is no longer available</div>
+              </div>
+            )
+          }
           {
             !otherUser?._id ? (
               <div className="mt-auto">
@@ -651,7 +667,7 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold || item?.deleted || !otherUser?._id || !item?._id}
+            disabled={isSold || item?.deleted || !otherUser?._id || !item?._id || status === 'unavailable'}
           />
           <button 
             type="submit"

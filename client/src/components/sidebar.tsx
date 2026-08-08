@@ -11,6 +11,9 @@ import Light from '../assets/light_mode.svg'
 import Dark from '../assets/dark_mode.svg'
 import Inbox from '../assets/inbox.svg'
 import { Spinner } from './ui/spinner'
+
+
+
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
   isOpenSidebar: boolean

@@ -14,7 +14,6 @@ export function InboxRelativeTime(date: string){
     return format(timestamp, 'h:m aa')
   }
 
-  console.log(diffInDays)
   if(Math.abs(diffInDays) <= 7){
     return format(timestamp, 'eee')
   }

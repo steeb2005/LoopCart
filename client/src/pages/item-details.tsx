@@ -318,7 +318,7 @@ function ItemDetails(){
               <h1 className='font-semibold text-xl'>{item.title}</h1>
 
               <div className='flex flex-row'>
-                <div className='bg-bg-gray-surface rounded-md text-primary-text px-3 py-1 text-sm'>
+                <div className='border border-border-color rounded-md text-primary-text px-3 py-1 text-sm'>
                   {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'N/A'}
                 </div>
               </div>
