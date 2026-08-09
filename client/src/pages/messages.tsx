@@ -17,11 +17,13 @@ import Location from '../assets/location.svg'
 import { useItemLike } from "../hooks/handle-like";
 import HeartClicked from '../assets/clickedHeart.svg'
 
+// TODO
+// - Add a delete message option
+// - Decide to move the login to the landing page (get inspo from claude)
+// - Make the landing page be the homepage and make the login and register dynamic
+// - Move the Burger icon to the left and make the user profile icon to the right 
+// - If the user is not logged in replace right icons with login/register (get inspo from depop)
 
-// TODO 
-// - Make a view item in mobile view and desktop view
-// - Make the view item trigger the item details section in desktop
-// - Decide if in mobile the view item should just redirect to the item details page or convert the section to a modal
 
 type AddressDetails = { 
   country?: string,
@@ -647,22 +649,22 @@ export default function MessagesInterface(){
   }
 
   const hasSelection = itemId && userId
-  
-  const inboxClass = hasSelection ? 'hidden lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'
-  
   const chatVisibleOnMobile = hasSelection && !openItemDetails
-  const chatClass = `
-    ${chatVisibleOnMobile ? 'flex flex-col min-h-0' : 'hidden'}
-    ${hasSelection ? 'lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'}
-    ${openItemDetails ? 'lg:col-span-2' : 'lg:col-span-3'} col-span-1
-  `
-
   const itemDetailsVisible = hasSelection && openItemDetails
-  const itemDetailsClass = itemDetailsVisible ? 'flex flex-col min-h-0 lg:flex lg:flex-col lg:min-h-0' : 'hidden'
+  
+  
+  const inboxClass = hasSelection 
+  ? 'hidden lg:flex lg:flex-col lg:min-h-0 lg:w-75 lg:shrink-0' 
+  : 'flex flex-col min-h-0 flex-1'
 
+  const chatClass = `
+    ${chatVisibleOnMobile ? 'flex flex-col min-h-0' : 'hidden'} 
+    ${hasSelection ? 'lg:flex lg:flex-col lg:min-h-0' : 'lg:hidden'}
+    flex-1 min-w-0
+  `
   return(
     <div className="flex flex-col flex-1 min-h-0 lg:p-2">
-      <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
 
         <div className={inboxClass}>
           <Inbox
@@ -684,18 +686,41 @@ export default function MessagesInterface(){
             setOpenItemDetails={setOpenItemDetails}
           />
         </div>
-        <div className={itemDetailsClass}>
+        <div 
+          className={`
+            ${hasSelection ? 'hidden lg:block' : 'hidden'} 
+            overflow-hidden transition-all duration-300 ease-in-out shrink-0
+            ${itemDetailsVisible ? 'lg:w-80 lg:opacity-100' : 'lg:w-0 lg:opacity-0'}
+          `}
+        >
+          <div className={`w-80 h-full flex flex-col min-h-0`}>
 
+            <ItemDetails
+              itemId={itemId ?? ''}
+              item={selectedItem}
+              otherUser={selectedOtherUser}
+              openItemDetails={openItemDetails}
+              setOpenItemDetails={setOpenItemDetails}
+            />
+          </div>
+        </div>
+
+        {/* Mobile only */}
+        <div className={itemDetailsVisible ? 'flex flex-col min-h-0 lg:hidden' : 'hidden'}>
           <ItemDetails
-            itemId={itemId ?? ''}
-            item={selectedItem}
-            otherUser={selectedOtherUser}
-            openItemDetails={openItemDetails}
-            setOpenItemDetails={setOpenItemDetails}
-          />
+              itemId={itemId ?? ''}
+              item={selectedItem}
+              otherUser={selectedOtherUser}
+              openItemDetails={openItemDetails}
+              setOpenItemDetails={setOpenItemDetails}
+            />
         </div>
       </div>
     </div>
   )
 
 }
+
+
+// <div className="flex flex-col flex-1 min-h-0 lg:p-2">
+//       <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 flex-1 min-h-0">
