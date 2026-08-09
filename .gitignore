@@ -29,6 +29,7 @@ dist-ssr
 .env.*.local
 
 
-__pycache__
+__pycache__/
+*.pyc
 
 temp.py
