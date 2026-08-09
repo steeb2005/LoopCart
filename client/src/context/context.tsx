@@ -842,14 +842,13 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
 
 
-
   const update_item_sold = async (itemId: string, userId: string, status: string, conversationId?: string) => {
     try{
       const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
         method: 'PATCH',
         headers: authHeaders(),
         credentials: 'include'
-      })
+      })  
 
       if(res.ok){
         await load_items()

@@ -1,18 +1,28 @@
-import { useEffect, useState, useRef } from "react";
-import { Link, useSearchParams, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams, useParams } from "react-router-dom";
 import { useAppContext } from "../context/context";
 import InboxIcon from "../assets/inbox.svg"
-import Send from '../assets/send.svg'
-import TextareaAutosize from "react-textarea-autosize";
-import CheckCircle from '../assets/check_circle.svg'
-import ArrowRight from '../assets/ArrowRight.svg'
-import { useNavigate } from 'react-router-dom'
+import Chat from '../components/chat'
+import { useNavigate, Link } from 'react-router-dom'
 import { Skeleton } from '../components/ui/skeleton'
-import More from '../assets/more_horiz.svg'
 import Trash from '../assets/trash.svg'
-import { toast } from 'sonner'
-import Back from '../assets/back.svg'
+import { MoreVerticalIcon } from "lucide-react"; 
+import { toast } from "sonner";
+import Close from '../assets/close.svg'
+import { Spinner } from "../components/ui/spinner";
+import { RelativeTime } from "../hooks/handle-relative-time";
+import { InboxRelativeTime } from "../hooks/relative-time-inbox";
+import Heart from '../assets/Heart.svg'
+import Location from '../assets/location.svg'
+import { useItemLike } from "../hooks/handle-like";
+import HeartClicked from '../assets/clickedHeart.svg'
 
+// TODO
+// - Add a delete message option
+// - Decide to move the login to the landing page (get inspo from claude)
+// - Make the landing page be the homepage and make the login and register dynamic
+// - Move the Burger icon to the left and make the user profile icon to the right 
+// - If the user is not logged in replace right icons with login/register (get inspo from depop)
 
 
 type AddressDetails = { 
@@ -69,58 +79,30 @@ type User = {
   birthdate?: string
 }
 
-type ChatMessage = {
-  sender_id: string;
-  text: string;
-}
-
-type MessageData = {
-  sender_id: string,
-  receiver_id: string,
-  item_id: string,
-  text: string
-}
-
-      
-
-
-function Message({isOwn, message}: {
-  isOwn: boolean,
-  message: string
-}){
-  return(
-    <div className={`message-box flex flex-row ${isOwn ? 'justify-end' : 'justify-start'} text-primary-text`}>
-      <div className={`flex flex-row gap-2 break-all items-center w-fit max-w-[70%] bg-bg-surface p-3 rounded-md ${isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
-        {message}
-      </div>
-    </div>
-  )
-}
 
 
 
 
-function InboxEntry({currentItemId, currentOtherUserId, unreadCount, lastMessage, lastSender, read, onSelectChat} : {
-  key: string, 
+function InboxEntry({conversationId, currentItemId, currentOtherUserId, unreadCount, lastMessage, lastSender, read, onSelectChat, lastUpdated} : { 
+  conversationId: string,
   currentItemId: string, 
   currentOtherUserId: string, 
   unreadCount: number, 
   lastMessage: string, 
   lastSender: string, 
   read: boolean,
-  onSelectChat: (newItemId: string, newUserId: string) => void
+  onSelectChat: (newItemId: string, newUserId: string) => void,
+  lastUpdated: string
 }){
-  // TODO:
-  // - Add avatar url and make it more minimalistic
-  // - Left avatar, right item image
 
   const {itemId, userId} = useParams()
-
-  const {items, getUsername, user, users} = useAppContext()
+  const {items, getUsername, user, users, load_items, delete_conversation} = useAppContext()
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null) // Use this instead of using the get username fucntion
   const [otherUsername, setOtherUsername] = useState('')
-  const [lastSenderUsername, setLastSenderUsername] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const foundItem = items?.find(item => item._id === currentItemId)
@@ -129,21 +111,107 @@ function InboxEntry({currentItemId, currentOtherUserId, unreadCount, lastMessage
     setItem(foundItem || null) // If the item is not found, set the item to null
 
     setOtherUsername(getUsername(currentOtherUserId))
-    setLastSenderUsername(getUsername(lastSender))
   }, [items, currentItemId, currentOtherUserId, getUsername, lastSender, users])
+
+  const handleConfirmDelete = () => {
+    setConfirmDelete(!confirmDelete);
+  }
+
+
+  
+  const handleDeleteConversation = async () => {
+    try{
+      if(!conversationId){
+        setConfirmDelete(false)
+        return
+      } 
+        
+      await delete_conversation(conversationId)
+      toast.success('Successfully deleted conversation', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
+      await load_items()
+      setConfirmDelete(false)
+      navigate('/messages')
+    }catch{
+      toast.error('Failed to deleted conversation', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
+      setConfirmDelete(false)
+      console.error('error in deleting conversation');
+    }
+  }
 
   if(!item){
     return(
-      <div className='item-entry  p-2 gap-2 rounded-md flex flex-row shrink-0 opacity-50'>
-        <div className='image-entry min-h-20 min-w-20 bg-bg-inverse rounded-md' />
-        <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
-          <h1 className="font-bold text-secondary-text">Item no longer available</h1>
-          <h1 className="font-light text-sm text-secondary-text">@{otherUsername}</h1>
-          <p className="text-secondary-text text-sm line-clamp-1 font-light">
-            This item has been removed
-          </p>
+      <div className='item-entry  p-2  rounded-md flex flex-row shrink-0 items-center '>
+        <div className="opacity-50 flex flex-row gap-2 items-center">
+
+          <div className='image-entry h-15 w-15 bg-bg-inverse rounded-full '/>
+          <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
+            <h1 className="font-bold text-secondary-text text-sm">Item no longer available</h1>
+            <p className="text-secondary-text text-sm line-clamp-1 font-light">
+              This item has been removed
+            </p>
+          </div>
+          <MoreVerticalIcon 
+            className="cursor-pointer h-5" 
+            onClick={handleConfirmDelete}
+          />
         </div>
-    </div>
+        {confirmDelete && (
+          <div  className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm opacity-100">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
+
+              {/* Header with accent */}
+              <div className="relative">
+                <div className="px-6 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <img src={Trash} alt="trash_svg" className="filter-(--icon-filter)"/>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-text">Delete Conversation</h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4">
+                <h1 className="text-primary-text">Are you sure you want to delete this conversation?</h1>
+              </div>
+
+              <div className="flex flex-row justify-end p-4  border-t border-border-color">
+                <button 
+                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
+                  onClick={handleConfirmDelete}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
+                  onClick={handleDeleteConversation}
+                >
+                  Delete
+                </button>
+              </div>
+              
+            </div>
+          </div>
+        )}
+      </div>
     )
   }
   const handleSetChat = () => {
@@ -153,31 +221,46 @@ function InboxEntry({currentItemId, currentOtherUserId, unreadCount, lastMessage
   return(
     <div
       onClick={handleSetChat}
-      className={`${currentItemId === itemId && currentOtherUserId === userId ? 'bg-bg-surface' : ''} cursor-pointer hover:bg-bg-surface duration-100 item-entry p-2 gap-2 rounded-md flex flex-row shrink-0 text-sm`}>
-      <div className='image-entry w-20 h-20 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
-        {item?.image ? (
-          <img src={item?.image} alt="image" className="max-h-full max-w-full h-auto w-auto object-fill"/>
+      className={`${currentItemId === itemId && currentOtherUserId === userId ? 'bg-bg-surface' : ''} cursor-pointer hover:bg-bg-surface duration-100 item-entry px-3 py-2  gap-2 rounded-md flex flex-row shrink-0 text-sm items-center`}>
+      <div className="w-12 h-12 items-center justify-center overflow-hidden border border-border-color bg-bg-canvas rounded-full flex">
+        {otherUser?.avatar_url ? (
+          <img src={otherUser?.avatar_url} alt="avatar" className=" h-auto w-auto object-contain"/>
         ) : (
-          <div className="h-full text-xs flex justify-center items-center">No image</div>
-        )}
-      </div>
+          <span className='text-primary-text text-xl font-bold justify-center flex items-center'>
+            {otherUsername?.charAt(0).toUpperCase()}
+          </span>
+        )
+        }
+      </div>  
+      
       <div className='data-entry w-full min-w-0 space-y-1 flex flex-col flex-1 justify-center text-primary-text'>
         <div className='flex flex-row justify-between items-center'>
-          <h1 className="font-bold line-clamp-1">{item?.title}</h1>
-          <h1 className="font-semibold">₱{item?.price.toLocaleString('en-US')}</h1>
+          <h1 className="font-bold line-clamp-1 text-ellipsis">{otherUsername}</h1>
         </div>
-        <div className='flex flex-row justify-between'>
-          <h1 className="font-light text-sm">@{otherUsername}</h1>
+        <div className={`${lastSender ===  user?._id ? 'font-light' : read ? 'font-light ' : 'font-bold'} last-message items-center flex flex-row justify-between`}>
+          <p className={`text-secondary-text text-xs line-clamp-1 text-ellipsis `}>
+            {unreadCount > 2 ? `${unreadCount} new messages` : `${lastMessage}`} 
+          </p>
+          <p className="text-secondary-text text-xs whitespace-nowrap">
+            {InboxRelativeTime(lastUpdated)}
+          </p>
+        </div>
+        <div className='flex flex-row'>
           <div className="px-2 rounded-full border border-border-color flex items-center">
             <p className='font-light text-xs'>{item?.deleted ? 'Deleted' : item?.status.charAt(0).toUpperCase() + item?.status.slice(1)}</p>
           </div>
         </div>
-        <div className='last-message items-center'>
-          <p className={`text-secondary-text text-sm line-clamp-1 ${lastSender ===  user?._id ? 'font-light' : read ? 'font-light ' : 'font-bold'}`}>
-            {unreadCount > 2 ? `${unreadCount} new messages` : `${lastSenderUsername}: ${lastMessage}`} 
-          </p>
-        </div>
       </div>
+
+      <div className='image-entry max-w-15 max-h-15 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
+        {item?.image ? (
+          <img src={item?.image} alt="image" className="max-h-full max-w-full h-auto w-auto object-contain"/>
+        ) : (
+          <div className="h-full text-xs flex justify-center items-center">No image</div>
+        )}
+      </div>
+
+      
     </div>
   )
 }
@@ -213,7 +296,8 @@ function Inbox({onSelectChat}:{
   const [searchParams, setSearchParams] = useSearchParams()
   const {inbox, items, user, dataLoading} = useAppContext()
   const [clickedFilter, setClickedFilter] = useState(searchParams.get('tab') ||'all')
-  
+
+
   if(!user){
     console.error('no user id found');
     return null
@@ -290,6 +374,8 @@ function Inbox({onSelectChat}:{
     setSearchParams({tab: id})
   }
 
+
+  
   const filteredInbox = getFilteredInbox()
 
   // Sorts from most to least unread
@@ -299,14 +385,14 @@ function Inbox({onSelectChat}:{
 
 
   return(
-    <div className="bg-bg-canvas rounded-xl lg:p-3 col-span-1 h-full flex flex-col min-h-0 lg:shadow-xl"> 
+    <div className="bg-bg-canvas lg:rounded-xl col-span-1 h-full lg:py-2 flex flex-col min-h-0 lg:shadow-xl"> 
       <div className='head px-5 flex flex-row gap-5 pt-3 text-primary-text font-semibold '>
         <img src={InboxIcon} alt="inbox_svg" className="filter-(--icon-filter)" />
         Inbox
       </div>
 
-      <div className='overflow-y-auto px-5 grow scrollbar-thin scrollbar-thumb-bg-surface scrollbar-track-bg-canvas items-section gap-2 flex flex-col mt-3'>
-        <div className="flex flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
+      <div className='overflow-y-auto grow scrollbar-thin scrollbar-thumb-bg-surface scrollbar-track-bg-canvas items-section gap-2 flex flex-col mt-3'>
+        <div className="flex px-3 flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
 
           <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 
             All
@@ -348,6 +434,7 @@ function Inbox({onSelectChat}:{
                 sortedInbox?.map((entry: any) => (
                 <InboxEntry 
                   key={entry._id} 
+                  conversationId={entry._id}
                   currentItemId={entry.item_id} 
                   currentOtherUserId={entry.other_user} 
                   unreadCount={entry.unread_count} 
@@ -355,10 +442,12 @@ function Inbox({onSelectChat}:{
                   lastSender={entry.last_message.sender_id}
                   read={entry.last_message.read}
                   onSelectChat={onSelectChat}
+                  lastUpdated={entry.last_updated}
                 />
             )))
           )
         }
+
       </div>
     </div>
   )
@@ -366,745 +455,175 @@ function Inbox({onSelectChat}:{
 
 
 
+function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
+  itemId: string,
+  item: Item | null,
+  otherUser: User | null,
+  openItemDetails: boolean,
+  setOpenItemDetails: React.Dispatch<React.SetStateAction<boolean>>
+}){
 
+  const {user, dataLoading} = useAppContext()
+  const {isLiked, likesCount, handleLikeClick} = useItemLike(itemId, item?.likes || 0)
 
-function Chat({userId, itemId}: {userId: string, itemId: string}){
+  const isSeller = item?.seller_id === user?._id
 
-  const navigate = useNavigate()
-
-  const {getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, delete_conversation} = useAppContext()
-   
-  const [item, setItem] = useState<Item | null>(null)
-  const [otherUsername, setOtherUsername] = useState('')
-  const [lineCount, setLineCount] = useState(1);
-  const [message, setMessage] = useState('')
-  const [messageList, setMessageList] = useState<ChatMessage[]>([])
-  const [conversationId, setConversationId] = useState('')
-  const [soldConfirmation, setSoldConfirmation] = useState(false)
-  const [revertSold, setRevertSold] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [otherUser, setOtherUser] = useState<User | null>(null)
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const chatWsRef = useRef<WebSocket | null>(null)
-  const chatWsIntentionalClose = useRef(false)
-
-
-  const messageEndRef = useRef<HTMLDivElement>(null);
-  const messageInputRef = useRef<HTMLTextAreaElement>(null);
-  const dropDownRef = useRef<HTMLDivElement>(null)
-  
-  const isSendingRef = useRef(false)
-  const WS_URL = import.meta.env.VITE_WS_URL
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if(dropDownRef.current && !dropDownRef.current.contains(e.target as Node)){
-        setOpenDropdown(false)
-      }
-    }
-
-    if(openDropdown){
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [openDropdown])
-
-
-  const isMobile = () => navigator.maxTouchPoints > 0 // checks if its mobile
-
-  const scrollToBottom = () => {
-    if(isMobile()){
-       
-      setTimeout(() => {        
-        messageEndRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'nearest' 
-        });
-      }, 50);
-    }else{
-      messageEndRef.current?.scrollIntoView({behavior: 'smooth', block: 'end'});
-      setTimeout(() => {
-        messageEndRef.current?.scrollIntoView({block: 'end'});
-      }, 300)
-    }
-  }
-
-  useEffect(() => { // Scrolls to bottom upon opening
-    const read_upon_bottom = async () => {
-      if(!conversationId || !user?._id) return
-      await read_messages(conversationId, user?._id)
-      await load_inbox(user?._id)
-    }
-    
-    scrollToBottom()
-    read_upon_bottom()
-  }, [messageList])
-
-  
-  useEffect(() => {
-    setConversationId('')
-    setMessageList([])
-    setItem(null)
-    const otheruser = users?.find(user => user._id === userId)
-    setOtherUser(otheruser ?? null) 
-    setOtherUsername(getUsername(userId ?? 'Unkown User'))   // Gets the username of the other person
-   
-
-    const findItem = async () => {
-      if(!itemId) return
-
-      const res = await get_item(itemId)
-      if(res){
-        setItem(res)
-      }
-    }
-    
-
-    const loadMessages = async () => {
-      if(!user?._id || !itemId) return
-      
-      if(!userId){
-        console.error('Sellers user id not found');
-        return
-      }
-     
-      if(!userId){
-        console.error('Sellers user id not found');
-        return
-      }
-
-      let conv_id = ''
-      const result = await fetch_conversation_id(userId, itemId)
-      if(result?.conversation_id){
-        conv_id = result.conversation_id
-        setConversationId(conv_id)          
-        connectChatSocket(conv_id) // connects to chat socket
-      }else{
-        console.log('no conversation yet');
-        setMessageList([])
-        return
-      }
-      
-      
-      const msg = await load_messages(conv_id)
-      setMessageList(msg?.messages || [])
-      const hasUnreadMessages = inbox.some(entry => entry._id === conv_id && (entry?.unread_count ?? 0)  > 0)
-      if(hasUnreadMessages){
-        await read_messages(conv_id, user._id)
-        await load_inbox(user._id)        
-      }
-    }
-
-    const load = async () => {
-      setIsLoading(true)
-      try{
-        await Promise.all([loadMessages(), findItem()])
-      }finally{
-        setIsLoading(false)
-      }
-    }
-    
-    load()
-  }, [itemId, users, userId])
-
-
-  const connectChatSocket = (conv_id: string) => {
-
-    // Dont reconnect if already connected
-    if(
-      chatWsRef.current && chatWsRef.current.url.endsWith(conv_id) && (
-      chatWsRef.current.readyState === WebSocket.OPEN ||
-      chatWsRef.current.readyState === WebSocket.CONNECTING)
-    ) return 
-    
-    // Close existing socket if open
-    if(chatWsRef.current && chatWsRef.current.readyState !== WebSocket.CLOSED){
-      chatWsRef.current.close()
-    }  
-
-    chatWsIntentionalClose.current = false
-
-    const ws = new WebSocket(`${WS_URL}/ws/chat/${conv_id}`) // Change the URL in production
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if(data.type === 'new_message'){
-        if(isSendingRef.current) return
-        setMessageList(prev => [...prev, data.message])
-      }
-      if(data.type === "update_status"){
-        setItem(prev => prev ? {...prev, status: data.status} : prev)
-      }
-    }
-    console.log('connected to chat socket')
-    ws.onclose = () => {
-      if(chatWsIntentionalClose.current) return
-      if(chatWsRef.current !== ws) return
-      setTimeout(() => connectChatSocket(conv_id), 3000)
-    }
-    
-    
-    chatWsRef.current = ws
-  }
-
-  // Closes the websocket when leaving the chatroom
-  useEffect(() => {
-    return () => {
-      console.log('closing chat socket')
-      chatWsIntentionalClose.current = true
-      
-      if(chatWsRef.current){
-        chatWsRef.current?.close()
-        chatWsRef.current = null
-      }
-    }
-  }, [itemId])
-  
-  
-  const isOwn = (id: string) => {
-    return id === user?._id
-  }
-
-  const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    messageInputRef.current?.focus();
-    if(isSendingRef.current){
-      console.error('messge still sending')
-      return
-    } 
-    isSendingRef.current = true
-
-    if(isSold) return // if the item is sold, do not allow sending messages
-    
-    setMessage('')
-
-    const messageData = {
-      sender_id: user?._id,
-      receiver_id: userId,
-      item_id: itemId,
-      text: message.trim(),
-    }
-
-    
-    const prev = messageList // rollback
-    const optimisticMessage: ChatMessage = {
-      sender_id: user!._id!,
-      text: message.trim()
-    }
-
-    setMessageList((prev) => [...prev, optimisticMessage])
-
-  
-    try{
-      const res = await send_message(messageData as MessageData) 
-      if(res.success){
-        if(res.conversation_id && !conversationId){
-          setConversationId(res.conversation_id)
-          connectChatSocket(res.conversation_id)
-        }
-        
-        // NOTE: this is for updating the message list
-        //const reset_msg = await load_messages(res.conversation_id || conversationId)
-        //setMessageList(reset_msg.messages)
-      }else{
-        setMessageList(prev)
-      }
-    }catch{
-      console.error('error in sending message: client')
-      setMessageList(prev)
-    }finally{
-      isSendingRef.current = false
-    }
-
-
-  }
-
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      if(isMobile()) return
-
-      e.preventDefault(); 
-      
-      if (message.trim().length > 0) {  
-        handleSendMessage(e as any); 
-      }
-    }
-  }
-  
-  
-  const isSold = item?.status === 'sold'
-  const role = userId === item?.seller_id ? 'buyer' : 'seller' 
-
-  const handleBackClick = () => {
-    navigate(-1)
-  }
-
-  const handleSetToSold = async () => {
-    if (!itemId || !userId || !item) {
-      console.error("Missing required item data or route parameters.");
-      return; 
-    }
-    const prev = item
-    setSoldConfirmation(false)
-    setRevertSold(false)
-    try{
-      setItem((prevItem) => {
-
-        if(!prevItem) return null
-        return {
-          ...prevItem,
-          status: isSold ? 'available' : 'sold'
-        }
-      })
-
-      await update_item_sold(itemId, userId, item?.status, conversationId)
-      toast.success('Updated item status', {
-        action: {
-          label: '✕',
-          onClick: () => {
-            toast.dismiss
-          }
-        },
-        position: 'top-center'
-      })
-      await load_items()
-    }catch{
-      toast.error('Failed to update status', {
-        action: {
-          label: '✕',
-          onClick: () => {
-            toast.dismiss
-          }
-        },
-        position: 'top-center'
-      })
-      setItem(prev)
-      console.error('error in updating item status');
-    }
-  }
-
-  const preventKeyboardDismiss = (e: React.MouseEvent | React.KeyboardEvent) => {
-    e.preventDefault()
-  }
-
-  const handleDropdown = () => {
-    setOpenDropdown(!openDropdown)
-  }
-
-  const handleConfirmDelete = () => {
-    setConfirmDelete(!confirmDelete)
-  }
-
-  const handleDeleteConversation = async () => {
-    try{
-      if(!conversationId){
-        setConfirmDelete(false)
-        return
-      } 
-        
-      await delete_conversation(conversationId)
-      toast.success('Successfully deleted conversation', {
-        action: {
-          label: '✕',
-          onClick: () => {
-            toast.dismiss
-          }
-        }
-      })
-      await load_items()
-      navigate('/inbox')
-    }catch{
-      toast.error('Failed to deleted conversation', {
-        action: {
-          label: '✕',
-
-          onClick: () => {
-            toast.dismiss
-          }
-        }
-      })
-      console.error('error in deleting conversation');
-    }
-  }
-
-
-  if(inbox.length === 0 && !isLoading){
+  if(dataLoading){
     return(
       <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
-        <h1 className="text-secondary-text text-sm">No Conversations</h1>
-      </div>
-    )
-  }
-    
-  if(!item){
-    return (
-      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
-        Loading Chat...
+        <Spinner/>
       </div>
     )
   }
 
- 
 
-  return (
-    <>
-      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl lg:p-3 bg-bg-canvas min-h-0 lg:shadow-xl">
-        
-        <div className={`top-0 sticky bg-bg-canvas m-0 `}>
-          <div className='head flex flex-col text-primary-text font-semibold'>
-            
-            <div className="mx-5 pt-2 flex flex-row justify-between mb-3">
-              <div className="flex flex-row gap-3 items-center">
-                <img onClick={handleBackClick} src={Back} alt="back" className="lg:hidden cursor-pointer h-5 filter-(--icon-filter)"/>
-                
-                <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
-                  {
-                    otherUser?.avatar_url ? (
-                    <img src={otherUser.avatar_url} alt="avatar"/>
-                    ) : (
-                    <span className='text-primary-text text-sm justify-center items-center font-bold'>
-                      {otherUser?.username.charAt(0).toUpperCase()}</span>
-                    ) 
-                  }
-                </div>
-                <h1>{otherUsername}</h1>
-              </div>
-              <div className='relative' ref={dropDownRef}>
-                <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
-                {openDropdown && (
-                  <div className='absolute w-40 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
-                    <p className='cursor-pointer' onClick={handleConfirmDelete}>Delete Conversation</p>
-                  </div>
-                )}
-              </div>
-              
-            </div>
-            
-            {/**/}
-            <div className='item-entry border-border-color border-b border-t pt-2 pb-2 '>
-               <div className="flex flex-row px-5 gap-2 items-center">
-                <div className='image-entry flex justify-center items-center overflow-hidden border border-border-color h-20 w-20 shrink-0 bg-bg-canvas rounded-md'>
-                  {item?.image ? (
-                    <img src={item?.image} alt="image" className="object-contain" />
-                  ) : (
-                    <div className="h-full text-xs flex justify-center items-center">No image</div>
-                  )}
-                </div>
+  const displayAddress = [
+    otherUser?.address?.building,
+    otherUser?.address?.street,
+    otherUser?.address?.road,
+    otherUser?.address?.neighbourhood,
+    otherUser?.address?.suburb,
+    otherUser?.address?.quarter,
+    otherUser?.address?.village,
+    otherUser?.address?.city,
+    otherUser?.address?.city_district,
+    otherUser?.address?.municipality,
+    otherUser?.address?.state_district,
+    otherUser?.address?.state,
+  ].filter(Boolean)
 
-                <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
-                  
-                  <h1>₱{item?.price?.toLocaleString('en-US') ?? 'Unavailable'}</h1>
-                  <h1 className="font-light line-clamp-1 text-sm">{item?.title}</h1>
-                  <div className="flex flex-row gap-2">
-                    <div className="font-light  bg-bg-surface rounded-md justify-center items-center py-2 px-3 text-xs">Status: {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'Unavailable'}</div>                  
-                    {
-                      !otherUser?._id ? (
-                        <div 
-                          className={`bg-bg-surface text-secondary-text rounded-md py-2 px-3 text-xs `}          
-                        >
-                          {isSold ? 'Item Sold' : 'Mark as Sold'}
-                        </div>
-                      ) : (
-                        item?.deleted ? (
-                          <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
-                        ) : (
-                          role === 'seller' ? (
-                            <div 
-                              className={`${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
-                              onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
-                            >
-                              {isSold ? 'Item Sold' : 'Mark as Sold'}
-                            </div>
-                          ): (
-                            <Link to={`/item/${itemId}`}>
-                              <div className={`flex flex-row gap-1 items-center ml-2 border border-border-color  cursor-pointer rounded-full py-2 px-3 text-xs `}>
-                                <p>View item</p>
-                                <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
-                              </div>
-                            </Link>
-                          )
-                        )
-                      )
-                    }
-                  </div>
-                </div>
-              </div> 
-            </div> {/**/}
-          </div>
-        </div>
-
-        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">
-          
-              
-          {!isLoading && messageList.length > 0 ? (
-            
-            messageList.map((message) => (
-            <Message  
-              isOwn={isOwn(message.sender_id)} // Flips the message if its not the users
-              message={message.text} 
-            />
-            ))
-          ) : (
-            <div className="flex flex-row justify-center items-center h-full">
-              <h1 className="text-secondary-text">Start a conversation</h1>
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
-              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse "></div>
-              <div className="text-secondary-text">
-                Loading messages...
-              </div>
-            </div>
-          )}
-
-          {
-            !otherUser?._id ? (
-              <div className="mt-auto">
-                <div className="text-primary-text mt-5 text-center text-sm ">User has been deleted</div>
-              </div>
-            ) : (
-              item?.deleted ? (
-                <div className="mt-auto">
-                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been deleted. <br />conversation is closed.</div>
-                </div>
-              ) : (
-                isSold && 
-                <div className="mt-auto">
-                  <div className="text-primary-text mt-5 text-center text-sm ">This item has been sold. <br />conversation is closed.</div>
-                </div>
-              )
-            )
-          }
-
-
-          
-
-          <div ref={messageEndRef}/>
-        </div>
-
-        <form
-          onSubmit={handleSendMessage} 
-          className="shrink-0 flex flex-row gap-2 items-center py-2 px-5 bg-bg-canvas"
-        >
-          <TextareaAutosize 
-            ref={messageInputRef}
-            rows={1}
-            maxRows={5}
-            value={message}
-            placeholder="message"
-            className={`scrollbar-none resize-none flex-1 bg-bg-surface text-primary-text px-4 py-2 ${lineCount > 1 ? 'rounded-2xl' : 'rounded-4xl'} duration-200 transition-all outline-0`}
-            enterKeyHint="send"
-            onChange={(e) => setMessage(e.target.value)}
-            onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
-            onKeyDown={handleKeyDown}
-            disabled={isSold || item?.deleted || !otherUser?._id || !item?._id}
-          />
-          <button 
-            type="submit"
-            onClick={(e) => handleSendMessage(e as any)}
-            className={`
-              p-1 transition-all duration-200 ease-in-out
-              ${message.length > 0 
-                ? 'w-10' 
-                : 'w-0 -ml-3'
-              }
-              overflow-hidden shrink-0
-              cursor-pointer z-100
-            `}  
-            disabled={message.length === 0}
-          >
-            <img src={Send} alt="send" className="filter-(--icon-filter)"/> 
-          </button>
-        </form>
-
-  
-        {revertSold && (
-          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
-
-              {/* Header with accent */}
-              <div className="relative">
-                <div className="px-6 pt-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <img src={CheckCircle} alt="check" className="filter-(--icon-filter)"/>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-primary-text">Revert Sale</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 py-4">
-                <h1 className="text-primary-text">Are you sure you want to revert this sale?</h1>
-              </div>
-
-              <div className="flex flex-row justify-end p-4 border-t border-border-color">
-                <button 
-                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
-                  onClick={() => setRevertSold(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
-                  onClick={handleSetToSold}
-                >
-                  Revert
-                </button>
-              </div>
-              
-            </div>
-          </div>
-        )}
-
-        {soldConfirmation && (
-          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div 
-              className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color/50 overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
+  return(
+    <div className={`bg-bg-canvas rounded-xl col-span-1 h-dvh overflow-y-auto flex flex-col min-h-0 lg:shadow-xl`}>
+      <div className='head mb-5 flex flex-row pt-3 text-primary-text font-semibold px-5'>
+        <div className="flex flex-row justify-between w-full">
+          <h1>Details</h1>
+          <div 
+            className="bg-bg-surface p-1 rounded-full"
+            onClick={() => setOpenItemDetails(false)}
             >
-              {/* Header with accent */}
-              <div className="relative">
-                  <div className="p-6 pb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                        <img src={CheckCircle} alt="check" className="filter-(--icon-filter)"/>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-primary-text">Confirm Sale</h3>
-                      </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Body */}
-              <div className="px-6 pb-4">
-                <p className="text-primary-text text-sm mb-4">
-                  Are you sure you want to mark this item as sold?
-                </p>
-                
-                {/* Buyer info card */}
-                <div className="p-4 bg-bg-canvas/50 rounded-xl border border-border-color/50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-15 h-15 rounded-full flex items-center justify-center overflow-hidden shrink-0 bg-bg-inverse">
-                      {otherUser?.avatar_url ? (
-                        <img src={otherUser?.avatar_url} alt="avatar" className="object-contain"/>
-                      ) : (
-                      <span className="text-accent font-semibold text-sm">
-                        {otherUsername?.charAt(0).toUpperCase() || '?'}
-                      </span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-primary-text">Buyer</p>
-                      <p className="text-primary-text font-medium">{otherUsername}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Item preview */}
-                {item && (
-                  <div className="mt-3 flex items-center gap-3 p-3 bg-bg-surface rounded-xl border border-border-color/30">
-
-                    <div className="w-15 h-15 bg-bg-canvas border border-border-color justify-centeritems-center rounded-lg shrink-0 overflow-hidden">
-                      {item?.image ? (
-                        <img src={item?.image} alt="item" className="object-contain"/>
-                      ) : (
-                        <div className="h-full flex justify-center items-center text-xs text-secondary-text">
-                          No image
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-light text-primary-text">{item.title}</p>
-                      <p className="text-primary-text font-semibold text-sm">₱{item.price?.toLocaleString()}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-4  flex flex-row gap-3 border-t border-border-color/50">
-                <button
-                  onClick={() => setSoldConfirmation(false)}
-                  className="cursor-pointer flex-1 py-2.5 px-4 rounded-xl border border-border-color text-primary-text "
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSetToSold}
-                  className="cursor-pointer flex-1 py-2.5 px-4 rounded-xl border border-border-color bg-button-color text-primary-text-inverse font-medium flex items-center justify-center gap-2"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
+            <img src={Close} alt="close_svg" className="cursor-pointer h-4 w-4 filter-(--icon-filter)"/>
           </div>
-        )}
-
-        {confirmDelete && (
-          <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
-
-              {/* Header with accent */}
-              <div className="relative">
-                <div className="px-6 pt-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
-                      <img src={Trash} alt="trash_svg" className="filter-(--icon-filter)"/>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-primary-text">Delete Conversation</h3>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="px-6 py-4">
-                <h1 className="text-primary-text">Are you sure you want to delete this conversation?</h1>
-              </div>
-
-              <div className="flex flex-row justify-end p-4  border-t border-border-color">
-                <button 
-                  className="text-primary-text mr-3 border border-border-color px-4 py-2 rounded-xl cursor-pointer"
-                  onClick={handleConfirmDelete}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="cursor-pointer text-primary-text-inverse px-4 py-2 rounded-xl bg-button-color border border-border-color"
-                  onClick={handleDeleteConversation}
-                >
-                  Delete
-                </button>
-              </div>
-              
-            </div>
-          </div>
-        )}
+        </div>
       </div>
-    </>
+      <div className="body overflow-y-auto scrollbar-thin scrollbar-thumb-bg-gray-surface px-5">
+
+        <div className="flex flex-row justify-between w-full items-center mb-2">
+          <div className="text-xs text-secondary-text font-light">
+            {item?.created_at ? (
+              RelativeTime(item?.created_at)
+              ) : (
+                'N/A'
+              )
+            }
+          </div>
+          <div className="border border-border-color px-2 rounded-2xl text-xs">
+            {item?.status ? (
+              item.status.charAt(0).toUpperCase() + item.status.slice(1)
+            ) : ('N/A')}
+          </div>
+        </div>
+        <div className="flex flex-row justify-between w-full items-center mb-2">
+          <h1 
+            className="font-semibold text-primary-text line-clamp-2 text-ellipsis"  
+            >
+            {item?.title}
+            
+          </h1>
+          <h1 className='whitespace-nowrap font-semibold'>₱{item?.price.toLocaleString('en-US')}</h1>
+        </div>
+        <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+          {item?.image ? (
+              <img src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
+          ) : (
+            <div className=" h-60 w-full text-sm flex-col text-center flex justify-center text-secondary-text">
+              No Image
+            </div>
+          )}
+        </div>
+        <div className="text-sm flex flex-col gap-2 mt-5 max-h-full"> 
+
+          <div className='flex flex-row items-center gap-2'>
+            <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
+            <p className='text-secondary-text'>{otherUser?.address ? displayAddress.join(' ') : 'N/A' }</p>
+          </div>
+
+          <div className='flex flex-row gap-2 items-center'>
+            <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer h-6'/>
+            <h1 className='text-secondary-text'>{likesCount} Likes</h1>
+          </div>
+
+          <div className='flex flex-row gap-4 items-center'>
+            <h1 className='text-secondary-text'>Condition</h1>
+            <p className=''>{item?.condition}</p>
+          </div>
+
+          <div className='flex flex-col'>
+            <h1 className='font-semibold text-lg gap-2'>Description</h1>
+            <p>{item?.description}</p>
+          </div>
+          
+          <div className="flex flex-col">
+            <h1 className="text-xl font-semibold mb-3">Seller</h1>
+
+            <Link  
+              to={`${isSeller ? `/user-profile` : `/users/${item?.seller_id}`} `}
+              className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
+              <div className='bg-bg-canvas rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
+                {otherUser?.avatar_url ? (
+                  <img src={isSeller ? user?.avatar_url! : otherUser?.avatar_url} alt="avatar"/>
+                  ) : (
+                    <span className='text-primary-text text-xl font-bold'>
+                      {isSeller ? user?.username!.charAt(0).toUpperCase() : otherUser?.username.charAt(0).toUpperCase()}</span>
+                  ) 
+                }
+              </div>
+              <h1>{otherUser?.username}</h1>
+            </Link>
+          </div>
+        </div>
+      </div>
+     
+    </div>
   )
+
 }
 
 
 
 
-export default function MessagesInterface(){
-  const {inbox, dataLoading} = useAppContext()
-  const navigate = useNavigate()
 
+
+export default function MessagesInterface(){
+  const {inbox, dataLoading, items, users} = useAppContext()
+  const navigate = useNavigate()
   const { itemId, userId } = useParams()
 
-  
+  const selectedItem = items.find(i => i._id === itemId) ?? null
+  const selectedOtherUser = users.find(u => u._id === userId) ?? null  
+
+  const [status, setStatus] = useState(selectedItem?.status || 'unavailable')
+
+  // Default to true if the screen is wider than 1024px
+  const [openItemDetails, setOpenItemDetails] = useState(() => {
+    if(window.innerWidth >= 1024){
+      return true
+    }
+    return false
+  })
+
+  useEffect(() => {
+    if(selectedItem){
+      setStatus(selectedItem.status)
+    }
+  }, [selectedItem])
+
+  useEffect(() => {
+    if(itemId && userId){
+      setOpenItemDetails(window.innerWidth >= 1024)
+    }
+  }, [itemId, userId])
+
+
   useEffect(() => {
     if(itemId && userId) {
       return 
@@ -1119,36 +638,89 @@ export default function MessagesInterface(){
     
     const mostRecent = [...inbox].sort((a, b) => new Date(b.last_updated!).getTime() - new Date(a.last_updated!).getTime())[0]
     if(mostRecent && window.innerWidth > 1024){
-      console.log('redirecting to most recent');
       navigate(`/messages/${mostRecent.item_id}/${mostRecent.other_user}`, {replace: true})
     }
 
   },[dataLoading, inbox, itemId, userId])
 
+  
   const handleSelectChat = (newItemId: string, newUserId: string) => {
     navigate(`/messages/${newItemId}/${newUserId}`)
   }
 
   const hasSelection = itemId && userId
+  const chatVisibleOnMobile = hasSelection && !openItemDetails
+  const itemDetailsVisible = hasSelection && openItemDetails
+  
+  
+  const inboxClass = hasSelection 
+  ? 'hidden lg:flex lg:flex-col lg:min-h-0 lg:w-75 lg:shrink-0' 
+  : 'flex flex-col min-h-0 flex-1'
 
+  const chatClass = `
+    ${chatVisibleOnMobile ? 'flex flex-col min-h-0' : 'hidden'} 
+    ${hasSelection ? 'lg:flex lg:flex-col lg:min-h-0' : 'lg:hidden'}
+    flex-1 min-w-0
+  `
   return(
     <div className="flex flex-col flex-1 min-h-0 lg:p-2">
-      <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-5 lg:mx-10 flex-1 min-h-0">
-        <div className={hasSelection ? 'hidden lg:flex lg:flex-col lg:min-h-0' : 'flex flex-col min-h-0'}>
+      <div className="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
+
+        <div className={inboxClass}>
           <Inbox
             onSelectChat={handleSelectChat}
           />
         </div>
 
-        <div className={hasSelection ? 'col-span-1 lg:col-span-2 flex flex-col min-h-0' : 'hidden lg:flex lg:col-span-2 lg:flex-col lg:min-h-0'}>
+        <div className={chatClass}>
 
           <Chat
             itemId={itemId ?? '' }
             userId={userId ?? ''}
+            status={status}
+            setStatus={setStatus}
+            otherUser={selectedOtherUser}
+            item={selectedItem}
+            dataLoading={dataLoading}
+            openItemDetails={openItemDetails}
+            setOpenItemDetails={setOpenItemDetails}
           />
+        </div>
+        <div 
+          className={`
+            ${hasSelection ? 'hidden lg:block' : 'hidden'} 
+            overflow-hidden transition-all duration-300 ease-in-out shrink-0
+            ${itemDetailsVisible ? 'lg:w-80 lg:opacity-100' : 'lg:w-0 lg:opacity-0'}
+          `}
+        >
+          <div className={`w-80 h-full flex flex-col min-h-0`}>
+
+            <ItemDetails
+              itemId={itemId ?? ''}
+              item={selectedItem}
+              otherUser={selectedOtherUser}
+              openItemDetails={openItemDetails}
+              setOpenItemDetails={setOpenItemDetails}
+            />
+          </div>
+        </div>
+
+        {/* Mobile only */}
+        <div className={itemDetailsVisible ? 'flex flex-col min-h-0 lg:hidden' : 'hidden'}>
+          <ItemDetails
+              itemId={itemId ?? ''}
+              item={selectedItem}
+              otherUser={selectedOtherUser}
+              openItemDetails={openItemDetails}
+              setOpenItemDetails={setOpenItemDetails}
+            />
         </div>
       </div>
     </div>
   )
 
 }
+
+
+// <div className="flex flex-col flex-1 min-h-0 lg:p-2">
+//       <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 flex-1 min-h-0">

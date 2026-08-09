@@ -27,24 +27,7 @@
     --icon-filter: invert(100%);
     
 
-    /* DARK 
-    --color-bg-canvas: #222222;
-    --color-bg-surface: #353434;
-    --color-bg-inverse: #F5F5F5;
-    --color-bg-gray-surface: color-mix(var(--color-gray-300) 20%, transparent);
-
-    --color-border-color: #595959;
-    --color-border-color-inverse: #F5F5F5;
-    --color-bg-theme-color: #1A1A1A;
-    --color-button-color: #f5f5f5;
-
-    --color-primary-text: #F5F5F5;
-    --color-secondary-text: #d1d5db;
-    --color-primary-text-inverse: #1A1A1A;
-    --color-tertiary-text: #9E9E9E;
-    --color-empty-state: #808080;
-    --icon-filter: invert(0)
-    */
+    
 
     --background: oklch(1 0 0);
 
@@ -255,6 +238,8 @@ html, body{
     background-color: var(--color-bg-root);
     width: 100%;
     transition: background-color 0.2s ease;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-bg-surface) var(--color-bg-root);
 }
 
 #root {

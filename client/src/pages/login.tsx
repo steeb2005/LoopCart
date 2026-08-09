@@ -2,7 +2,6 @@ import Logo from '../assets/Logo.svg'
 import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import { Link } from 'react-router-dom'
-import BackArrow from '../assets/arrow_back.svg'
 import { useEffect, useState } from 'react'
 import { useAppContext } from '../context/context'
 import { useNavigate } from 'react-router-dom'
@@ -80,11 +79,7 @@ function Login(){
     <div className="flex items-center justify-center h-dvh">
 
       <div className="lg:w-[40%] flex justify-center flex-col px-10 py-6 lg:border lg:border-border-color rounded-2xl bg-bg-canvas">
-        <div>
-          <Link to={'/'}>
-            <img src={BackArrow} alt="arrow" className='h-10 w-10 filter-(--icon-filter)'/>
-          </Link>
-        </div>
+       
         <div className="text-primary-text flex flex-col mt-10">
           <h1 className="font-semibold text-3xl lg:text-2xl">Login to</h1>
           <div className='flex flex-row gap-2'>

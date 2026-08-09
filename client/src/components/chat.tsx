@@ -1,19 +1,46 @@
-import { Link, useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import React, { useEffect, useState, useRef } from "react";
+import More from '../assets/more_horiz.svg'
+import Trash from '../assets/trash.svg'
+import { toast } from 'sonner'
 import Back from '../assets/back.svg'
-import { useAppContext } from "../context/context";
 import Send from '../assets/send.svg'
 import TextareaAutosize from "react-textarea-autosize";
 import CheckCircle from '../assets/check_circle.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
-import More from '../assets/more_horiz.svg'
-import Trash from '../assets/trash.svg'
-import { toast } from "sonner";
-/*
-  TODO
-  - Fix Typescript errors (or ignore them and force deploy)
-*/
+import { useNavigate } from 'react-router-dom'
+import { useRef, useState, useEffect } from 'react'
+import { useAppContext } from '../context/context'
+import { Spinner } from './ui/spinner'
+import { MoreVerticalIcon } from 'lucide-react'
+
+type Item = {
+  _id?: string;
+  title: string;
+  price: number;
+  category: string;
+  condition: string;
+  description: string;
+  created_at: string;
+  status: string;
+  sold_at?: string;
+  seller_id: string;
+  buyer_id?: string;
+  image: string;
+  likes: number;
+  deleted?: boolean;
+}
+
+type ChatMessage = {
+  sender_id: string;
+  text: string;
+}
+
+type MessageData = {
+  sender_id: string,
+  receiver_id: string,
+  item_id: string,
+  text: string
+}
+
 
 type AddressDetails = { 
   country?: string,
@@ -37,25 +64,7 @@ type AddressDetails = {
   quarter?: string
 }
 
-type Item = {
-  _id?: string;
-  title: string;
-  price: number;
-  category: string;
-  condition: string;
-  description: string;
-  created_at: string;
-  status: string;
-  sold_at?: string;
-  seller_id: string;
-  buyer_id?: string;
-  image: string;
-  likes: number;
-  deleted?: boolean;
-}
-
-
-
+      
 type User = {
   _id: string;
   username: string;
@@ -71,28 +80,37 @@ type User = {
 }
 
 
-type ChatMessage = {
-  sender_id: string;
-  text: string;
-}
-
-type MessageData = {
-  sender_id: string,
-  receiver_id: string,
-  item_id: string,
-  text: string
-}
-
 
 function Message({isOwn, message}: {
   isOwn: boolean,
   message: string
 }){
+
+  const [onHover, setOnHover] = useState(false)
+  const handleOnHover = () => {
+    setOnHover(!onHover)
+  }
+
+
+  
   return(
-    <div className={`message-box flex flex-row ${isOwn ? 'justify-end' : 'justify-start'} text-primary-text`}>
-      <div className={`flex flex-row gap-2 break-all items-center w-fit max-w-[70%] bg-bg-surface p-3 rounded-md ${isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
+    <div
+      onMouseEnter={handleOnHover}
+      onMouseLeave={handleOnHover} 
+      className={`message-box flex flex-row ${isOwn ? 'justify-end' : 'justify-start'} items-center text-primary-text gap-3`}>
+      {isOwn && (
+        <MoreVerticalIcon            
+          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
+      )}
+      <div    
+        className={`flex cursor-pointer flex-row gap-2 break-all items-center w-fit max-w-[70%] bg-bg-surface p-3 rounded-md ${isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
         {message}
       </div>
+      {!isOwn && (
+        <MoreVerticalIcon 
+          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
+      )}
+      
     </div>
   )
 }
@@ -101,22 +119,22 @@ function Message({isOwn, message}: {
 
 
 
-
-
-
-
-
-
-
-function Chat(){
+export default function Chat({userId, itemId, item, otherUser, dataLoading, status, setStatus, openItemDetails, setOpenItemDetails}: {
+  userId: string, 
+  itemId: string,
+  item: Item | null,
+  otherUser: User | null,
+  dataLoading: boolean,
+  status: string,
+  setStatus: React.Dispatch<React.SetStateAction<string>>,
+  openItemDetails: boolean,
+  setOpenItemDetails: React.Dispatch<React.SetStateAction<boolean>>
+}){
 
   const navigate = useNavigate()
 
-  const {itemId, userId} = useParams(); // The item id and user id of the person you are chatting with
-  const {getUsername, user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, get_item, delete_conversation} = useAppContext()
+  const {user, users, load_messages, send_message, fetch_conversation_id, read_messages, inbox, load_inbox, update_item_sold, load_items, delete_conversation} = useAppContext()
    
-  const [item, setItem] = useState<Item | null>(null)
-  const [otherUsername, setOtherUsername] = useState('')
   const [lineCount, setLineCount] = useState(1);
   const [message, setMessage] = useState('')
   const [messageList, setMessageList] = useState<ChatMessage[]>([])
@@ -124,7 +142,6 @@ function Chat(){
   const [soldConfirmation, setSoldConfirmation] = useState(false)
   const [revertSold, setRevertSold] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [otherUser, setOtherUser] = useState<User | null>(null)
   const [openDropdown, setOpenDropdown] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const chatWsRef = useRef<WebSocket | null>(null)
@@ -137,6 +154,7 @@ function Chat(){
   
   const isSendingRef = useRef(false)
   const WS_URL = import.meta.env.VITE_WS_URL
+
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if(dropDownRef.current && !dropDownRef.current.contains(e.target as Node)){
@@ -174,49 +192,48 @@ function Chat(){
   }
 
   useEffect(() => { // Scrolls to bottom upon opening
+    const read_upon_bottom = async () => {
+      if(!conversationId || !user?._id) return
+      await read_messages(conversationId, user?._id)
+      await load_inbox(user?._id)
+    }
+    
     scrollToBottom()
+    read_upon_bottom()
   }, [messageList])
 
   
-  const handleBackClick = () => { 
-    navigate(-1)
-  }
-
-
   useEffect(() => {
-    const otheruser = users?.find(user => user._id === userId)
-    setOtherUser(otheruser ?? null) 
-    setOtherUsername(getUsername(userId ?? 'Unkown User'))   // Gets the username of the other person
+    setConversationId('')
+    setMessageList([])
+   
 
-    const findItem = async () => {
-      const res = await get_item(itemId ?? '')
-      if(res){
-        setItem(res)
-      }
-    }
-    
 
     const loadMessages = async () => {
       if(!user?._id || !itemId) return
-
-      let conv_id = conversationId
-
-      if(!conv_id){
-        if(!userId){
-          console.error('Sellers user id not found');
-          return
-        }
-        const result = await fetch_conversation_id(userId, itemId)
-        if(result?.conversation_id){
-          conv_id = result.conversation_id
-          setConversationId(conv_id)          
-          connectChatSocket(conv_id) // connects to chat socket
-        }else{
-          console.log('no conversation yet');
-          setMessageList([])
-          return
-        }
+      
+      if(!userId){
+        console.error('Sellers user id not found');
+        return
       }
+     
+      if(!userId){
+        console.error('Sellers user id not found');
+        return
+      }
+
+      let conv_id = ''
+      const result = await fetch_conversation_id(userId, itemId)
+      if(result?.conversation_id){
+        conv_id = result.conversation_id
+        setConversationId(conv_id)          
+        connectChatSocket(conv_id) // connects to chat socket
+      }else{
+        console.log('no conversation yet');
+        setMessageList([])
+        return
+      }
+      
       
       const msg = await load_messages(conv_id)
       setMessageList(msg?.messages || [])
@@ -226,12 +243,18 @@ function Chat(){
         await load_inbox(user._id)        
       }
     }
+
+    const load = async () => {
+      setIsLoading(true)
+      try{
+        await Promise.all([loadMessages()])
+      }finally{
+        setIsLoading(false)
+      }
+    }
     
-    setIsLoading(true)
-    loadMessages() // loads messages
-    findItem()
-    setIsLoading(false)  
-  }, [itemId, users])
+    load()
+  }, [itemId, users, userId])
 
 
   const connectChatSocket = (conv_id: string) => {
@@ -251,7 +274,6 @@ function Chat(){
     chatWsIntentionalClose.current = false
 
     const ws = new WebSocket(`${WS_URL}/ws/chat/${conv_id}`) // Change the URL in production
-    //6a6cae39f10f71b124388778
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
       if(data.type === 'new_message'){
@@ -259,7 +281,7 @@ function Chat(){
         setMessageList(prev => [...prev, data.message])
       }
       if(data.type === "update_status"){
-        setItem(prev => prev ? {...prev, status: data.status} : prev)
+        setStatus(data.status)
       }
     }
     console.log('connected to chat socket')
@@ -346,7 +368,6 @@ function Chat(){
   }
 
 
-  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       if(isMobile()) return
@@ -358,29 +379,30 @@ function Chat(){
       }
     }
   }
-  
-  
-  const role = userId === item?.seller_id ? 'buyer' : 'seller' 
-  const isSold = item?.status === 'sold'
 
+  
+  const isSold = status === 'sold'
+  const role = userId === item?.seller_id ? 'buyer' : 'seller' 
+
+  const handleBackClick = () => {
+    navigate(-1)
+  }
 
   const handleSetToSold = async () => {
     if (!itemId || !userId || !item) {
       console.error("Missing required item data or route parameters.");
-      return; 
+      return 
     }
-    const prev = item
+
+    if(status === 'unavailable'){
+      console.error('item status is unavailable')
+      return
+    }
+    const prev = item?.status
     setSoldConfirmation(false)
     setRevertSold(false)
     try{
-      setItem((prevItem) => {
-
-        if(!prevItem) return null
-        return {
-          ...prevItem,
-          status: isSold ? 'available' : 'sold'
-        }
-      })
+      setStatus(isSold ? 'available' : 'sold')
 
       await update_item_sold(itemId, userId, item?.status, conversationId)
       toast.success('Updated item status', {
@@ -403,7 +425,7 @@ function Chat(){
         },
         position: 'top-center'
       })
-      setItem(prev)
+      setStatus(prev)
       console.error('error in updating item status');
     }
   }
@@ -420,6 +442,7 @@ function Chat(){
     setConfirmDelete(!confirmDelete)
   }
 
+
   const handleDeleteConversation = async () => {
     try{
       if(!conversationId){
@@ -434,10 +457,12 @@ function Chat(){
           onClick: () => {
             toast.dismiss
           }
-        }
+        },
+        position: 'top-center'
       })
       await load_items()
-      navigate('/inbox')
+      setConfirmDelete(false)
+      navigate('/messages')
     }catch{
       toast.error('Failed to deleted conversation', {
         action: {
@@ -445,72 +470,126 @@ function Chat(){
           onClick: () => {
             toast.dismiss
           }
-        }
+        },
+        position: 'top-center'
       })
+      setConfirmDelete(false)
       console.error('error in deleting conversation');
     }
   }
 
-  if(!item){
-    return (
-      <div className="text-secondary-text h-dvh flex justify-center items-center">
-        Loading Chat...
+
+  if(dataLoading){
+    return(
+      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
+        <Spinner/>
       </div>
     )
   }
 
+  if(!userId && !itemId && inbox.length === 0 && !isLoading ){
+    return(
+      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
+        <h1 className="text-secondary-text text-sm">No Conversations</h1>
+      </div>
+    )
+  }
+    
+  if(!item){
+    return (
+      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl p-3 bg-bg-canvas min-h-0 items-center justify-center">
+        Item not found
+      </div>
+    )
+  }
+
+ 
+
   return (
     <>
-      <div className="flex flex-col h-dvh ">
+      <div className="flex flex-col h-full flex-1 col-span-2 rounded-xl lg:p-3 bg-bg-canvas min-h-0 lg:shadow-xl">
         
-        <div className={`top-0 pt-5 sticky bg-bg-canvas m-0 `}>
+        <div className={`top-0 sticky bg-bg-canvas m-0 `}>
           <div className='head flex flex-col text-primary-text font-semibold'>
             
-            <div className="mx-5 flex flex-row justify-between mb-3">
-              <div className="flex flex-row items-center gap-5">
-                <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
-                <div className="flex flex-row gap-2 items-center">
-                  <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
-                    {
-                      otherUser?.avatar_url ? (
-                      <img src={otherUser.avatar_url} alt="avatar"/>
-                      ) : (
-                      <span className='text-primary-text text-sm justify-center items-center font-bold'>
-                        {otherUser?.username.charAt(0).toUpperCase()}</span>
-                      ) 
-                    }
-                  </div>
-                  <h1>{otherUsername}</h1>
+            <div className="mx-5 pt-2 flex flex-row justify-between mb-3">
+              <div className="flex flex-row gap-3 items-center">
+                <img onClick={handleBackClick} src={Back} alt="back" className="lg:hidden cursor-pointer h-5 filter-(--icon-filter)"/>
+                
+                <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
+                  {
+                    otherUser?.avatar_url ? (
+                    <img src={otherUser.avatar_url} alt="avatar"/>
+                    ) : (
+                    <span className='text-primary-text text-sm justify-center items-center font-bold'>
+                      {otherUser?.username.charAt(0).toUpperCase()}</span>
+                    ) 
+                  }
                 </div>
+                <h1>{otherUser?.username}</h1>
               </div>
-              <div className='relative' ref={dropDownRef}>
-                <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
-                {openDropdown && (
-                  <div className='absolute w-40 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
-                    <p className='cursor-pointer' onClick={handleConfirmDelete}>Delete Conversation</p>
-                  </div>
-                )}
+              <div className='lg:flex flex-row gap-3 items-center hidden '>
+                {
+                  !otherUser?._id ? (
+                    <div 
+                      className={`bg-bg-surface text-secondary-text rounded-md py-2 px-3 text-xs `}          
+                    >
+                      {isSold ? 'Item Sold' : 'Mark as Sold'}
+                    </div>
+                  ) : (
+                    item?.deleted ? (
+                      <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+                    ) : (
+                      role === 'seller' && (
+                        <div 
+                          className={`${isSold ? 'border border-border-color text-primary-text' : 'bg-button-color text-primary-text-inverse'} cursor-pointer rounded-xl py-2 px-3 text-xs `}
+                          onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
+                        >
+                          {isSold ? 'Item Sold' : 'Mark as Sold'}
+                        </div>
+                      )
+                    )
+                  )
+                }  
+
+                <div onClick={() => setOpenItemDetails(true)} className={`${openItemDetails ? 'hidden' : 'flex'} flex-row gap-1 items-center bg-bg-surface  cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                  <p>View item</p>
+                  <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                </div>
+                <div className='relative' ref={dropDownRef}>
+                  <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
+                  {openDropdown && (
+                    <div className='absolute w-40 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                      <p className='cursor-pointer' onClick={handleConfirmDelete}>Delete Conversation</p>
+                    </div>
+                  )}
+                </div>
               </div>
               
             </div>
             
-
-            <div className='item-entry border-b border-border-color border-t pt-2 pb-2 '>
-              <div className="flex flex-row px-5 gap-2 items-center">
-                <div className='image-entry flex justify-center items-center overflow-hidden border border-border-color h-20 w-20 shrink-0 bg-bg-canvas rounded-md'>
+            {/**/}
+            <div className='lg:hidden item-entry border-border-color border-b border-t pt-2 pb-2 '>
+               <div className="flex flex-row px-5 gap-2 items-center">
+                <div className='image-entry max-w-20 max-h-20 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
                   {item?.image ? (
-                    <img src={item?.image} alt="image" className="object-contain" />
+                    <img src={item?.image} alt="image" className="max-h-full max-w-full h-auto w-auto object-contain"/>
                   ) : (
                     <div className="h-full text-xs flex justify-center items-center">No image</div>
                   )}
                 </div>
 
-                <div className='data-entry flex flex-col w-full gap-1 text-primary-text'>
+                <div className='data-entry flex flex-col gap-1 w-full text-primary-text'>
                   
-                  <h1>₱{item?.price.toLocaleString('en-US')}</h1>
-                  <h1 className="font-light line-clamp-1">{item?.title}</h1>
+                  <div className="flex flex-row justify-between items-center">
+                    <h1>₱{item?.price?.toLocaleString('en-US') ?? 'Unavailable'}</h1>
+                    <div className="font-light flex border rounded-md justify-center items-center grow-0 text-xs px-2 py-1">
+                      {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'Unavailable'}
+                    </div>  
+                  </div>
+                  <h1 className="font-light line-clamp-1 text-sm">{item?.title}</h1>
                   <div className="flex flex-row gap-2">
-                    <div className="font-light  bg-bg-surface rounded-md justify-center items-center py-2 px-3 text-xs">Status: {(item?.status.charAt(0).toUpperCase() + item?.status.slice(1)) || 'Unavailable'}</div>                  
+                                    
                     {
                       !otherUser?._id ? (
                         <div 
@@ -522,34 +601,29 @@ function Chat(){
                         item?.deleted ? (
                           <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
                         ) : (
-                          role === 'seller' ? (
+                          role === 'seller' && (
                             <div 
-                              className={`${isSold ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface text-primary-text'} cursor-pointer rounded-md py-2 px-3 text-xs `}
+                              className={`${isSold ? 'border border-border-color text-primary-text' : 'bg-button-color text-primary-text-inverse'} cursor-pointer rounded-xl py-2 px-3 text-xs `}
                               onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
                             >
                               {isSold ? 'Item Sold' : 'Mark as Sold'}
                             </div>
-                          ): (
-                            <Link to={`/item/${itemId}`}>
-                              <div className={`flex flex-row gap-1 items-center ml-2 border border-border-color  cursor-pointer rounded-full py-2 px-3 text-xs `}>
-                                <p>View item</p>
-                                <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
-                              </div>
-                            </Link>
                           )
                         )
                       )
                     }
+                    <div onClick={() => setOpenItemDetails(true)} className={`flex flex-row gap-1 items-center  bg-bg-surface  cursor-pointer rounded-full py-1.5 px-3 text-xs `}>
+                      <p>View item</p>
+                      <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </div> 
+            </div> 
           </div>
         </div>
 
-        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">
-          
-         
+        <div onMouseDown={preventKeyboardDismiss} className="px-3 scrollbar-thin scrollbar-track-bg-canvas scrollbar-thumb-bg-surface  chat-body grow overflow-y-auto overscroll-y-none items-section gap-1 pb-5 flex flex-col mt-3 ">          
           {!isLoading && messageList.length > 0 ? (
             
             messageList.map((message) => (
@@ -560,19 +634,25 @@ function Chat(){
             ))
           ) : (
             <div className="flex flex-row justify-center items-center h-full">
-              <h1 className="text-secondary-text">Start a conversation</h1>
+              <h1 className="text-secondary-text text-sm">Start a conversation</h1>
             </div>
           )}
 
           {isLoading && (
             <div className="text-primary-text text-sm mt-auto text-center flex flex-row items-center justify-center gap-3 "> 
-              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-bg-inverse "></div>
+              <Spinner/>
               <div className="text-secondary-text">
                 Loading messages...
               </div>
             </div>
           )}
-
+          {
+            status === 'unavailable' && (
+              <div className="mt-auto">
+                <div className="text-primary-text mt-5 text-center text-sm ">Item is no longer available</div>
+              </div>
+            )
+          }
           {
             !otherUser?._id ? (
               <div className="mt-auto">
@@ -591,10 +671,6 @@ function Chat(){
               )
             )
           }
-
-
-          
-
           <div ref={messageEndRef}/>
         </div>
 
@@ -613,7 +689,7 @@ function Chat(){
             onChange={(e) => setMessage(e.target.value)}
             onHeightChange={(height) => setLineCount(height > 50 ? 2 : 1)}
             onKeyDown={handleKeyDown}
-            disabled={isSold || item?.deleted || !otherUser?._id}
+            disabled={isSold || item?.deleted || !otherUser?._id || !item?._id || status === 'unavailable'}
           />
           <button 
             type="submit"
@@ -709,13 +785,13 @@ function Chat(){
                         <img src={otherUser?.avatar_url} alt="avatar" className="object-contain"/>
                       ) : (
                       <span className="text-accent font-semibold text-sm">
-                        {otherUsername?.charAt(0).toUpperCase() || '?'}
+                        {otherUser?.username?.charAt(0).toUpperCase() || '?'}
                       </span>
                       )}
                     </div>
                     <div>
                       <p className="text-xs text-primary-text">Buyer</p>
-                      <p className="text-primary-text font-medium">{otherUsername}</p>
+                      <p className="text-primary-text font-medium">{otherUser?.username}</p>
                     </div>
                   </div>
                 </div>
@@ -800,11 +876,9 @@ function Chat(){
             </div>
           </div>
         )}
-        
-
       </div>
     </>
   )
 }
 
-export default Chat
+

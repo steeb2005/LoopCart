@@ -172,7 +172,7 @@ export default function UserProfile() {
               <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
                 {
                   user?.avatar_url ? (
-                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-contain'/>
+                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-cover'/>
                   ) : (
                     <span className='text-primary-text text-3xl font-bold'>
                       {

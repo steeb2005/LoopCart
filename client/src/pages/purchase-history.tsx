@@ -39,10 +39,10 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
         <h1>{format(new Date(sold_at), 'MMMM d, yyyy h:mm a')}</h1>
       </div>
 
-      <div className='flex flex-row shrink-0 gap-2'>
-        <div className='image-entry max-w-20 max-h-20 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
+      <div className='flex flex-row shrink-0 items-center gap-2'>
+        <div className='image-entry max-w-17 max-h-17 overflow-hidden border border-border-color bg-bg-canvas rounded-md flex items-center justify-center'>
           {image ? (
-            <img src={image} alt="image" className="max-h-full max-w-full h-auto w-auto object-fill"/>
+            <img src={image} alt="image" className="max-h-full max-w-full h-auto w-auto object-contain"/>
           ) : (
             <div className="h-full text-xs flex justify-center items-center">No image</div>
           )}
@@ -54,7 +54,7 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
       </div>
       <div className='flex flex-row gap-4 items-center text-sm'>
         <h1 className='text-secondary-text'>@{entryUsername}</h1>
-        <div className='font-light bg-bg-gray-surface py-1 px-3 text-xs rounded-xl text-secondary-text'>
+        <div className='font-light border border-border-color py-1 px-3 text-xs rounded-xl text-secondary-text'>
           {isUserTheBuyer ? 'Purchased' : 'Sold'}
         </div>
       </div>

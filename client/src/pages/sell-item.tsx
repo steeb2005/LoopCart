@@ -310,7 +310,7 @@ function SellItem(){
               accept='image/png, image/jpeg, image/webp'
             />
 
-            <div className='h-120 flex justify-center bg-bg-canvas border border-border-color rounded-md overflow-hidden'>
+            <div className='h-100 flex justify-center bg-bg-canvas rounded-md overflow-hidden'>
               
               {imagePreview ? (
                 <img src={imagePreview} alt="item" className='w-full h-full object-contain '/>

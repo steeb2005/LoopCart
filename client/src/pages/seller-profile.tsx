@@ -205,7 +205,12 @@ export default function SellerProfile(){
 
           <div className="flex flex-row gap-5 text-primary-text ">
             <div className="w-25 h-25 lg:w-30 lg:h-30 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
-              {user?.avatar_url ? (<img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>) : (<span className='text-primary-text-inverse text-3xl font-bold'>{user?.username.charAt(0).toUpperCase()}</span>) }
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>
+                ) : (
+                <span className='text-primary-text-inverse text-3xl font-bold'>
+                  {user?.username.charAt(0).toUpperCase()}
+                </span>) }
 
             </div>
             <div className="flex flex-col justify-center">

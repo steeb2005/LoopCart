@@ -657,7 +657,7 @@ export default function EditProfile() {
                   <img src={previewImageUrl} alt="avatar" className="h-full w-full object-cover"/>
                   ) : (
                     user?.avatar_url ? (
-                    <img src={user.avatar_url} alt="avatar" className='w-full h-full object-contain'/>) : (
+                    <img src={user.avatar_url} alt="avatar" className='w-full h-full object-cover'/>) : (
                     <span className='text-primary-text text-3xl font-bold'>
                       {(user?.username!.charAt(0).toUpperCase()) ?? 'U'}
                     </span>)  

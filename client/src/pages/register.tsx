@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import BackArrow from '../assets/arrow_back.svg'
 import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import {useAppContext} from "../context/context"
@@ -72,15 +71,11 @@ function Register(){
 
 
   return(
-    <div className="lg:flex lg:items-center lg:justify-center lg:p-5">
+    <div className="flex flex-col items-center h-dvh justify-center lg:p-5">
 
 
       <div className="lg:mx-10 py-5 lg:border lg:border-border-color px-10 bg-bg-canvas rounded-2xl  lg:w-[50%]">
-        <div>
-          <Link to={'/'}>
-            <img src={BackArrow} alt="backarrow" className="w-10 h-10 filter-(--icon-filter)"/>
-          </Link>
-        </div>      
+            
         <div className="text-primary-text mt-10">
           <h1 className="text-3xl font-semibold">Create an account</h1>
           <p>Already have an account? <Link to={'/login'} className="underline">Login</Link> </p>
