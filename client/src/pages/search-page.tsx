@@ -36,7 +36,7 @@ export default function SearchPage(){
 
 
   const handleBackClick = () => {
-    navigate('/home')
+    navigate(-1)
   }
 
 

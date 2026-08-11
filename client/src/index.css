@@ -239,7 +239,6 @@ html, body{
     width: 100%;
     transition: background-color 0.2s ease;
     scrollbar-width: thin;
-    scrollbar-color: var(--color-bg-surface) var(--color-bg-root);
 }
 
 #root {

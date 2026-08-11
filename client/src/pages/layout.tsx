@@ -10,7 +10,6 @@ export default function Layout() {
     <>
       <div className="lg:hidden">
         <Header openSidebar={openSidebar} isDesktop={false}/>
-        
       </div>
 
       <div className="hidden lg:block">

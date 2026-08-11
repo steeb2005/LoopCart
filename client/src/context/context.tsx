@@ -184,7 +184,7 @@ export type ContextType = {
   send_message: (message: MessageSend ) => Promise<{ success: boolean; conversation_id?: string }>;
   load_inbox: (user_id: string) => Promise<void>;
   getUsername: (user_id: string) => string;
-  logout: () => void;
+  logout: () => Promise<void>;
   like_item: (userId: string, itemId: string) => Promise<boolean>;
   unlike_item: (userId: string, itemId: string) => Promise<boolean>;    
   load_liked_items: (user_id: string) => Promise<void>;
@@ -459,19 +459,24 @@ export function AppContext({children}: {children: React.ReactNode}) {
   }
 
   const logout = async () => {
-    await fetch(`${API_URL}/logout`, {
-      method: "POST",
-      credentials: "include"
-    })
-     
-    wsRef.current?.close()
-    wsRef.current = null
-    setUser(null)
-    setUsers([])
-    setItems([])
-    setLikedItems([])
-    setInbox([])
-    
+    try{
+      await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        credentials: "include"
+      })
+    }catch{
+      console.error('network error in logging out');
+
+    }finally{
+      wsRef.current?.close()
+      wsRef.current = null
+      setUser(null)
+      // setUsers([])  // These are out since we need them regardless of authentication
+      // setItems([])
+      setLikedItems([])
+      setInbox([])
+
+    }
   }
 
 

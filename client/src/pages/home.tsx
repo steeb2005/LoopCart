@@ -39,7 +39,6 @@ function Home(){
 
   const currentCategory = searchParams.get('category') || 'explore'
   const currentSort = searchParams.get('sort') || 'recent'
-
   const CATEGORIES = [
     { id: 'explore', label: 'Explore' },
     { id: 'phones', label: 'Mobile Phones' },
@@ -114,7 +113,6 @@ function Home(){
     setSortMenu(!sortMenu)
   }
   
-
   return(
     <>
       {/* Sidebar */}

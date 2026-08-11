@@ -50,15 +50,16 @@ function AppRoute(){
 
   return(
     <Routes>
-      <Route path="/" element={<LandingPage/>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
       <Route element={<Layout/>}>
+        <Route path="/" element={
+          <LandingPage/>
+        }/>
+
         <Route path='/home' element={
-          <ProtectedRoute>
-            <Home/>
-          </ProtectedRoute>
+          <Home/>
         }/>
 
         <Route path='/sell-item' element={
@@ -68,9 +69,7 @@ function AppRoute(){
         }/>
 
         <Route path='/item/:id' element={
-          <ProtectedRoute>
             <ItemDetails/>
-          </ProtectedRoute>
         }/>
 
         <Route path='/liked-items' element={
@@ -80,9 +79,7 @@ function AppRoute(){
         }/>
 
         <Route path='/users/:userId' element={
-          <ProtectedRoute>
             <SellerProfile/>
-          </ProtectedRoute>
         }/>
 
         <Route path='/user-profile' element={
@@ -119,9 +116,7 @@ function AppRoute(){
       </Route>
 
       <Route path='/search' element={
-        <ProtectedRoute>
           <SearchPage/>
-        </ProtectedRoute> 
       }/>  
       
       

@@ -12,7 +12,9 @@ import Dark from '../assets/dark_mode.svg'
 import Inbox from '../assets/inbox.svg'
 import { Spinner } from './ui/spinner'
 
-
+// TODO
+// - Make the landing page into the homepage and make the login and register dynamic
+// - Put the categories in the sidebar for mobile and below the header for desktop
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -25,10 +27,15 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
   const [isLoading, setIsLoading] = useState(false);
   
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsLoading(true);    
-    logout()
-    navigate('/login');
+    try{
+      await logout()
+      navigate('/')
+    }finally{
+      setIsLoading(false)
+      closeSidebar()
+    }
   }
 
   useEffect(() => { // Disable scroll when modal is active
@@ -59,9 +66,10 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
 
   if(isLoading){
     return (
-      <div className="text-xl text-primary-text fixed w-full inset-0 overflow-hidden z-100 flex items-center justify-center">
-        <div className='flex flex-col justify-center items-center bg-bg-canvas px-10 py-8 rounded-xl'>
-          <Spinner />  
+      <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className='flex flex-col items-center gap-3 bg-bg-canvas px-8 py-6 rounded-xl shadow-xl'>
+          <Spinner/>
+          <p className='text-primary-text text-sm font-medium'>Logging out...</p>
         </div>
       </div>
     )
@@ -73,13 +81,13 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     <>
       <AnimatePresence>
         {isOpenSidebar && (
-          <div onClick={closeSidebar} className={` fixed inset-0 z-100`}>
+          <div onClick={closeSidebar} className={`fixed inset-0 z-100`}>
             <motion.div 
-              initial={{x: "100%"}}
+              initial={{x: "-100%"}}
               animate={{x: 0}}
-              exit={{x: "100%"}}
+              exit={{x: "-100%"}}
               transition={{type: "spring", damping: 25, stiffness: 200}}
-              className={`pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 right-0 min-w-[70%] h-full z-50 flex flex-col`}
+              className={`pt-3 px-5 border-l border-l-border-color bg-bg-canvas fixed top-0 left-0 min-w-[70%] h-full z-50 flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
                 
@@ -87,42 +95,53 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 <img onClick={closeSidebar} src={Close} alt="close_svg" className='cursor-pointer filter-(--icon-filter)'/>
               </div>
               <div className="head mb-3 text-primary-text font-semibold border-b border-b-border-color">
-                <div className="py-3 flex flex-col justify-center">
-                  <div className="bg-bg-inverse ring mb-3 ring-border-color rounded-full h-16 w-16 flex items-center justify-center overflow-hidden">
-                    {
-                      user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="avatar"/>
-                      ) : (
-                        <span className='text-primary-text-inverse text-3xl font-bold'>
-                          {
-                            user?.username ? (
-                              user?.username.charAt(0).toUpperCase()
-                            ) : (
-                              '?'
-                            )
-                          }
-                        </span>
-                      ) 
-                    }
+                {!user && (
+                  <div className='flex flex-col gap-3 pb-3 pt-3'>
+                    <Link to={'/sell-item'}>
+                      <div className='bg-button-color w-full py-1 text-primary-text-inverse text-center text-lg font-bold'>
+                        Sell now
+                      </div>
+                    </Link>
+                    <Link to={'/login'}>
+                      <div className='border-2 border-button-color w-full py-1 text-primary-text text-center text-lg font-bold'>
+                        Login
+                      </div>
+                    </Link>
                   </div>
-                  <h1 className="text-3xl font-semibold">{getStructuredName(user?.firstname, user?.lastname)}</h1>
-                  <p className="font-light text-md text-secondary-text">{user?.username}</p>
-                </div>
+                )}
+                {user && (
+                  <div className="py-3 flex flex-col justify-center">
+                    <div className="bg-bg-inverse ring mb-3 ring-border-color rounded-full h-16 w-16 flex items-center justify-center overflow-hidden">
+                      {
+                        user?.avatar_url ? (
+                          <img src={user.avatar_url} alt="avatar"/>
+                        ) : (
+                          <span className='text-primary-text-inverse text-3xl font-bold'>
+                            {
+                              user?.username ? (
+                                user?.username.charAt(0).toUpperCase()
+                              ) : (
+                                '?'
+                              )
+                            }
+                          </span>
+                        ) 
+                      }
+                    </div>
+                    <h1 className="text-3xl font-semibold">{getStructuredName(user?.firstname, user?.lastname)}</h1>
+                    <p className="font-light text-md text-secondary-text">{user?.username}</p>
+                    <Link to={'/sell-item'}>
+                      <div className='mt-3 bg-button-color w-full py-1 text-primary-text-inverse text-center text-lg font-bold'>
+                        Sell now
+                      </div>
+                    </Link>
+                  </div>
+                )}
               </div>
 
               <div className={`text-primary-text navlinks flex flex-col `}>
-                <Link to={'/user-profile'}>
-                  <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
-                    <img src={Profile} alt="profile" className='h-6 filter-(--icon-filter)'/>
-                    Profile
-                  </div>
-                </Link>
-                <Link to={'/home'}>
-                  <div className={`${currentLocation === 'home' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
-                    <img src={Home} alt="home" className={`h-6 filter-(--icon-filter)`}/>
-                    Home
-                  </div>
-                </Link>
+                
+                
                 <Link to={'/purchase-history'}>
                   <div className={`${currentLocation === 'purchase-history' ? 'bg-bg-gray-surface' : ''} py-2 px-3 rounded-md flex flex-row items-center gap-3`}>
                     <img src={History} alt="history" className='h-6 filter-(--icon-filter)'/>

@@ -23,7 +23,9 @@ function Login(){
   
   useEffect(() => {
     const autoLogin = () => {
+      
       if(user){
+        // console.log('autologged')
         setLoading(true)
         navigate('/home')
       }else{
