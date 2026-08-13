@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useAppContext } from "../context/context"
 import Category from "../assets/category.svg"
+import { useLocation } from "react-router-dom"
 import ArrowDown from "../assets/arrow_down.svg"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
@@ -8,14 +9,13 @@ import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
 
 
+/* TODO 
+  - Make the landing page category selector deliver the selected category to the home page
+  - And saves that selected category in a useState which will then be loaded to a params
 
+*/
 
 function SkeletonCard(){
-
-
-
-
-
   return(
     <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
       <Skeleton className="h-48 bg-border-color" />
@@ -37,16 +37,18 @@ function Home(){
   const [categoryMenu, setCategoryMenu] = useState(false)
   const [sortMenu, setSortMenu] = useState(false)
 
+  const location = useLocation()
   const currentCategory = searchParams.get('category') || 'explore'
   const currentSort = searchParams.get('sort') || 'recent'
+
+  // Removed Explore from categories to check if its good ui
   const CATEGORIES = [
-    { id: 'explore', label: 'Explore' },
-    { id: 'phones', label: 'Mobile Phones' },
-    { id: 'electronics_computers', label: 'Electronics & Computers' },
+    { id: 'phones', label: 'Phones' },
+    { id: 'electronics_computers', label: 'Electronics' },
     { id: 'jewelry', label: 'Jewelry' },
     { id: 'bags', label: 'Bags' },
-    { id: 'mens_clothing', label: "Men's clothing & shoes" },
-    { id: 'womens_clothing', label: "Women's clothing & shoes" },
+    { id: 'mens_clothing', label: "Men" },
+    { id: 'womens_clothing', label: "Women" },
   ];
 
   const SORT = [
@@ -57,9 +59,13 @@ function Home(){
   ]
   
   
-  
+  const setCategory = location.state?.category
+  useEffect(() => {
+    if(setCategory) handleCategoryChange(setCategory)
+  } , [setCategory])
   const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
   const activeSort = SORT.find(sort => sort.id === currentSort)
+
 
   const handleCategoryChange = (newCategory: string) => {
     const newParams = new URLSearchParams(searchParams)
@@ -113,23 +119,23 @@ function Home(){
     setSortMenu(!sortMenu)
   }
   
+  
   return(
-    <>
-      {/* Sidebar */}
-   
+    <>  
+      <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-border-color bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+        {CATEGORIES.map((category) => (
+          <div 
+            className={`${currentCategory === category.id ? 'border-button-color' : 'border-bg-canvas'} cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}
+            onClick={() => handleCategoryChange(category.id)}>
+            {category.label}
+          </div>
+        ))}
         
-        {/* SEARCH BAR
-        <div className={`search-bar sticky ${isHidden ? 'top-2' : 'top-14'} z-50 transition-all duration-300 ease-in-out`}>
-          <img src={Search} alt="searchsvg" className="absolute left-5 top-3"/>
-          <input 
-            type="text" 
-            className="pl-14 text-sm items-center text-primary-text bg-bg-surface py-3 w-full rounded-md decoration-none outline-0" 
-            placeholder="search"  
-          />
-        </div> */}
-
-      <div className="top-section flex flex-col mx-5">
+      
+      </div>
         
+      <div className="top-section flex flex-col lg:mt-15 ">
+      
         <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
           <div className="relative">
             <button
@@ -142,6 +148,7 @@ function Home(){
             {categoryMenu && 
               <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
                 {CATEGORIES.map((category) => (
+                  
                   <div
                     onClick={() => handleCategoryChange(category.id)} 
                     className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`} >
@@ -177,17 +184,17 @@ function Home(){
         </div>
 
 
-        <div className=" rounded-md py-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className=" rounded-md py-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mx-5">
           
           {/* Item Entry */}
           
           {pageLoading &&
-            Array.from({ length: 8 }).map((_, index) => (
+            Array.from({ length: 15 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))
           }
 
-          {
+          {!pageLoading &&
             filteredItems.map((item: any) => (
               (item.status === 'available' && item.deleted === false) && (
                 <ItemCard 

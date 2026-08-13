@@ -73,7 +73,7 @@ type User = {
 
 
 function ItemDetails(){
-  const naviagte = useNavigate()
+  const navigate = useNavigate()
   const {id} = useParams() 
   const {items, user, getUsername, users, dataLoading, delete_item} = useAppContext()
   
@@ -146,12 +146,12 @@ function ItemDetails(){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id!, item?.likes || 0)
 
   const handleBackClick = () => {
-    naviagte(-1)
+    navigate(-1)
   }
   
 
   const handleEditListing = () => {
-    naviagte(`/sell-item`, {
+    navigate(`/sell-item`, {
       state: {
         id: item?._id,
         item: item,
@@ -187,7 +187,7 @@ function ItemDetails(){
         position: "top-center"
       })
     }finally{
-      naviagte(-1)
+      navigate(-1)
     }
   }
 

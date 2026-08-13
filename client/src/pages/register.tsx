@@ -4,16 +4,8 @@ import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import {useAppContext} from "../context/context"
 import React from "react"
+import { toast } from "sonner"
 
-
-/*
-TODO:
- - Learn FullStackOpen
- - Try to make a small sample demo using supabase
- - Learn FastAPI
- - Learn FARM Stack
- - Make the login / register backend logic and api routes (take inspo from trackr) make it using FastAPI
-*/
 
 
 
@@ -52,6 +44,15 @@ function Register(){
       
       const res = await register(trimmedForm)
       if(res.success){
+        toast.success('Successfully registered', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         navigate('/login')
       }else if(res.error === 'User already exists'){
         setError('User already exists')

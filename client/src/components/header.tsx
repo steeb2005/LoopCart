@@ -104,7 +104,7 @@ export function Header({openSidebar, isDesktop}: {
               </div>
             }
           </div>
-          <Link to={'/home'} className='flex flex-row text-xl items-center gap-2 font-bold'>
+          <Link to={'/'} className='flex flex-row text-xl items-center gap-2 font-bold'>
             <h1>LoopCart</h1>   
             <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
           </Link>
@@ -112,12 +112,12 @@ export function Header({openSidebar, isDesktop}: {
       
           
 
-        <div className='flex flex-row items-center gap-3'>
+        <div className='flex flex-row items-center gap-2 lg:gap-3'>
           <Link to={'/search'}>
             <img src={Search} alt="search" className='h-7 w-7 filter-(--icon-filter)'/>
           </Link>
 
-          <Link to={'/messages'} className='hidden lg:block'>
+          <Link to={'/messages'}>
             <div className='relative'>
               <img src={Inbox} alt="inbox" className='filter-(--icon-filter)'/>
               {unreadMessages > 0 && 
