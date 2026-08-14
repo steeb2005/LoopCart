@@ -1,15 +1,83 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
-import Category from "../assets/category.svg"
-import ArrowDown from "../assets/arrow_down.svg"
 import { Skeleton } from "../components/ui/skeleton.tsx"
-import Sort from "../assets/sort.svg"
-import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
 import HomeBuyerImage from '../assets/buyer-mobile-kinawat.webp'
+import Logo from '../assets/Logo.svg'
+import Facebook from '../assets/facebook_svg.svg'
+import Github from '../assets/github_svg.svg'
+import Instagram from '../assets/instagram_svg.svg'
+import Linkedin from '../assets/linkedin_svg.svg'
+import Xtwitter from '../assets/Xtwitter.svg'
 
 
+function Footer(){
+  return(
+    <footer className="bg-bg-canvas border-t border-border-color text-primary-text mt-10">
+      <div className="max-w-6xl mx-auto px-5 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8">
+        
+        <div className="col-span-2 lg:col-span-1 flex flex-col gap-3">
+          <div className="flex flex-row items-center gap-2 font-bold text-xl">
+            <h1>LoopCart</h1>
+            <img src={Logo} alt="logo" className="h-6 filter-(--icon-filter)"/>
+          </div>
+          <p className="text-secondary-text text-sm">
+            Buy. Sell. Repeat the loop.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm">
+          <h2 className="font-semibold mb-1">Marketplace</h2>
+          <Link to="/shop" className="text-secondary-text hover:text-primary-text">Browse Items</Link>
+          <Link to="/sell-item" className="text-secondary-text hover:text-primary-text">Sell an Item</Link>
+          <Link to="/search" className="text-secondary-text hover:text-primary-text">Search</Link>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm">
+          <h2 className="font-semibold mb-1">Account</h2>
+          <Link to="/login" className="text-secondary-text hover:text-primary-text">Login</Link>
+          <Link to="/register" className="text-secondary-text hover:text-primary-text">Create Account</Link>
+          <Link to="/user-profile" className="text-secondary-text hover:text-primary-text">My Profile</Link>
+          <Link to="/messages" className="text-secondary-text hover:text-primary-text">Inbox</Link>
+        </div>
+
+        <div className="flex flex-col gap-2 text-sm">
+          <h2 className="font-semibold mb-1">Support</h2>
+          <Link to="/help" className="text-secondary-text hover:text-primary-text">Help Center</Link>
+          <Link to="/safety" className="text-secondary-text hover:text-primary-text">Safety Tips</Link>
+          <Link to="/terms" className="text-secondary-text hover:text-primary-text">Terms of Service</Link>
+          <Link to="/privacy" className="text-secondary-text hover:text-primary-text">Privacy Policy</Link>
+        </div>
+
+      </div>
+
+      <div className="border-t border-border-color py-4 text-center text-xs text-secondary-text">
+        <div className='flex flex-row gap-3 justify-center mb-3'>
+          <div className='rounded-full h-8 w-8 border border-border-color items-center flex justify-center cursor-pointer hover:bg-bg-surface'>
+            <img src={Facebook} alt="facebook_svg" className='h-4 filter-(--icon-filter)'/>
+          </div>
+          <div className='rounded-full h-8 w-8 border border-border-color items-center flex justify-center cursor-pointer hover:bg-bg-surface'>
+            <img src={Xtwitter} alt="twitter_svg" className='h-4 filter-(--icon-filter)'/>
+          </div>
+          <div className='rounded-full h-8 w-8  border border-border-color items-center flex justify-center cursor-pointer hover:bg-bg-surface'>
+            <img src={Linkedin} alt="linkedin_svg" className='h-4 filter-(--icon-filter)'/>
+          </div>
+          <div className='rounded-full h-8 w-8 border border-border-color items-center flex justify-center cursor-pointer hover:bg-bg-surface '>
+            <img src={Instagram} alt="instagram_svg" className='h-5 filter-(--icon-filter)'/>
+          </div>
+          <div className='rounded-full h-8 w-8 border border-border-color items-center flex justify-center cursor-pointer hover:bg-bg-surface'>
+            <img src={Github} alt="github_svg" className='h-5 filter-(--icon-filter)'/>
+          </div>
+            
+        </div>
+        <p>
+          © {new Date().getFullYear()} LoopCart. All rights reserved.
+        </p>
+      </div>
+    </footer>
+  )
+}
 
 function SkeletonCard(){
   return(
@@ -28,12 +96,8 @@ export default function LandingPage(){
   
   const {items, getUsername, load_items, load_users} = useAppContext()
   const [pageLoading, setPageLoading] = useState(true)
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [categoryMenu, setCategoryMenu] = useState(false)
-  const [sortMenu, setSortMenu] = useState(false)
+ 
 
-  const currentCategory = searchParams.get('category') || 'explore'
-  const currentSort = searchParams.get('sort') || 'recent'
   const navigate = useNavigate()
 
 
@@ -46,51 +110,7 @@ export default function LandingPage(){
     { id: 'mens_clothing', label: "Men" },
     { id: 'womens_clothing', label: "Women" },
   ];
-
-  const SORT = [
-    {id: 'recent', label: 'Most Recent'},
-    {id: 'popular', label: 'Most Popular'},
-    {id: 'price_low', label: 'Price: Low to High'},
-    {id: 'price_high', label: 'Price: High to Low'},
-  ]
-  
-  
-  
-  const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
-  const activeSort = SORT.find(sort => sort.id === currentSort)
-
-  const handleCategoryChange = (newCategory: string) => {
-    const newParams = new URLSearchParams(searchParams)
-    newParams.set('category', newCategory)
-    setSearchParams(newParams)
-  }
-
-  const handleSortChange = (newSort: string) => {
-    const newParams = new URLSearchParams(searchParams)
-    newParams.set('sort', newSort)
-    setSearchParams(newParams)
-  }
-
-  const filteredItems = useMemo(() => {
-    if (!items) return []
-    
-    let categorizedItems = currentCategory === 'explore' ? [...items] : items?.filter(item => item.category === currentCategory)
-
-    if(currentSort === 'recent'){
-      categorizedItems.sort((a, b) => b.created_at.localeCompare(a.created_at))
-    }else if(currentSort === 'popular'){  
-      categorizedItems?.sort((a, b) => b.likes - a.likes)
-    }else if(currentSort === 'price_low'){
-      categorizedItems?.sort((a, b) => a.price - b.price)
-    }else if(currentSort === 'price_high'){
-      categorizedItems?.sort((a, b) => b.price - a.price)
-    }
-
-    return categorizedItems
-  }, [currentCategory, currentSort, items.length])
-
  
-  
 
   
   useEffect(() => {
@@ -103,17 +123,10 @@ export default function LandingPage(){
     loadItems()
     
   }, [])
-  const handleCategoryMenu = () => {
-    setCategoryMenu(!categoryMenu)
-  }
+  
 
-  const handleSortMenu = () => {
-    setSortMenu(!sortMenu)
-  }
-
-
-  const handleEditListing = (id: string) => {
-    navigate(`/home`, {
+  const handleChangeCategory = (id: string) => {
+    navigate(`/shop`, {
       state: {
         category: id
       }
@@ -125,7 +138,7 @@ export default function LandingPage(){
       <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-border-color bg-bg-canvas flex-row items-center gap-6 z-50 `}>
         {CATEGORIES.map((category) => (
           <div 
-            onClick={() => handleEditListing(category.id)}
+            onClick={() => handleChangeCategory(category.id)}
             className={`cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}>
             {category.label}
           </div>
@@ -158,58 +171,8 @@ export default function LandingPage(){
           </div>
         </div>
 
-
-
-        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
-          <div className="relative">
-            <button
-              onClick={handleCategoryMenu}
-              className="cursor-pointer border border-border-color bg-bg-canvas px-2 py-1 rounded-md flex flex-row items-center gap-2">
-              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-              {activeCategory?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
-            </button>
-            {categoryMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
-                {CATEGORIES.map((category) => (
-                  
-                  <div
-                    onClick={() => handleCategoryChange(category.id)} 
-                    className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`} >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
-            }
-          </div>
-
-          <div className="relative">
-            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
-              <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
-              {activeSort?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
-            </button>
-            {sortMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
-                {SORT.map((sort) => (
-                  <div
-                    onClick={() => handleSortChange(sort.id)} 
-                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`}>
-                    {sort.label}
-                  </div>
-                ))}
-              
-              </div>
-            }
-            <div>
-
-            </div>
-          </div>
-        </div>
-
-
-        <div className=" rounded-md py-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mx-5">
           
+        <div className=" rounded-md py-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mx-5">
           {/* Item Entry */}
           
           {pageLoading &&
@@ -219,7 +182,7 @@ export default function LandingPage(){
           }
 
           {!pageLoading &&
-            filteredItems.map((item: any) => (
+            items.map((item: any) => (
               (item.status === 'available' && item.deleted === false) && (
                 <ItemCard 
                   key={item._id}
@@ -235,6 +198,7 @@ export default function LandingPage(){
           }
         </div>
       </div>
+      <Footer/>
     </>
   )
 }

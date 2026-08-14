@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { useAppContext } from "../context/context"
+import { useAppContext } from "../context/context.tsx"
 import Category from "../assets/category.svg"
 import { useLocation } from "react-router-dom"
 import ArrowDown from "../assets/arrow_down.svg"
@@ -8,12 +8,6 @@ import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
 
-
-/* TODO 
-  - Make the landing page category selector deliver the selected category to the home page
-  - And saves that selected category in a useState which will then be loaded to a params
-
-*/
 
 function SkeletonCard(){
   return(

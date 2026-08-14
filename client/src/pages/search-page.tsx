@@ -130,7 +130,7 @@ export default function SearchPage(){
       </div>
       
       
-      <div className={`mx-5 px-2 py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
+      <div className={`mx-5  py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : `${category === 'Sellers' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}`}>
         {
         (prefill && searchResults.length === 0 && category === 'Items') && (
           items.map(item => (
@@ -205,3 +205,4 @@ export default function SearchPage(){
   )
 }
 
+// grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3

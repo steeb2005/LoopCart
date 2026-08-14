@@ -13,7 +13,7 @@ import Dark from '../assets/dark_mode.svg'
 import Light from '../assets/light_mode.svg'
 import Inbox from '../assets/inbox.svg'
 import { Spinner } from './ui/spinner';
-
+import Heart from '../assets/Heart.svg'
 
 export function Header({openSidebar, isDesktop}: {
   openSidebar: () => void,
@@ -93,7 +93,7 @@ export function Header({openSidebar, isDesktop}: {
     <div className={`fixed top-0 left-0 right-0 z-60 transition-transform duration-300 ease-in-out
       ${isDesktop ? 'translate-y-0' : isHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
-      <div className="justify-between bg-bg-canvas text-primary-text shadow-md  items-center flex flex-row py-2 px-3 mb-2">
+      <div className="justify-between bg-bg-canvas text-primary-text border-b border-border-color items-center flex flex-row py-2 px-3 mb-2">
         <div className='flex flex-row gap-2 items-center'>
           {/* MENU BUTTON */}
           <div onClick={openSidebar} className='lg:hidden relative cursor-pointer font-bold'>
@@ -112,11 +112,13 @@ export function Header({openSidebar, isDesktop}: {
       
           
 
-        <div className='flex flex-row items-center gap-2 lg:gap-3'>
+        <div className='flex flex-row items-center gap-3'>
+          {/* Search (Always shows) */}
           <Link to={'/search'}>
             <img src={Search} alt="search" className='h-7 w-7 filter-(--icon-filter)'/>
           </Link>
 
+          {/* Inbox (Always shows)*/}
           <Link to={'/messages'}>
             <div className='relative'>
               <img src={Inbox} alt="inbox" className='filter-(--icon-filter)'/>
@@ -127,9 +129,10 @@ export function Header({openSidebar, isDesktop}: {
               }
             </div>
           </Link>
-
-          <Link to={'/sell-item'}>
-            <div className='hidden cursor-pointer bg-button-color hover:bg-button-color/80 font-semibold text-primary-text-inverse px-3 py-1 lg:flex items-center'>
+          
+          {/* Hidden when in mobile */}
+          <Link to={'/sell-item'} className='hidden lg:flex'>
+            <div className='cursor-pointer bg-button-color hover:bg-button-color/80 font-semibold text-primary-text-inverse px-3 py-1 items-center'>
               Sell Now
             </div>
           </Link>
@@ -146,30 +149,14 @@ export function Header({openSidebar, isDesktop}: {
           {user && (
             <>
               <Link to={'/user-profile'} className='lg:hidden flex'>
-                <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
-                  {
-                    user?.avatar_url ? (
-                      <img src={user.avatar_url} alt="avatar"/>
-                    ) : (
-                      <span className='text-primary-text-inverse text-sm'>
-                        {
-                          user?.username ? (
-                            user?.username.charAt(0).toUpperCase()
-                          ) : (
-                            '?'
-                          )
-                        }
-                      </span>
-                    ) 
-                  }
-                </div>
+                <img src={Heart} alt="heart-svg" className='filter-(--icon-filter)'/>
               </Link>
               <div className='hidden lg:flex flex-row items-center gap-3'>
                 <Link to={'/user-profile'}>
                   <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
                     {
                       user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="avatar"/>
+                        <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
                       ) : (
                         <span className='text-primary-text-inverse text-sm'>
                           {

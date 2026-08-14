@@ -234,9 +234,7 @@ export default function EditProfile() {
           }
         }
       )
-      if(res.ok){
-        console.log('success in searching location');
-      }
+     
       const data = await res.json()
       setResults(data)
       setIsLoading(false)

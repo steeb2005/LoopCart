@@ -232,7 +232,7 @@ function ItemDetails(){
           <h1>Error 404 Item not found</h1>
           
           <div className='flex flex-row justify-start'>
-            <Link to={'/home'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
+            <Link to={'/shop'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
           </div>
         </div>
       </div>
@@ -245,7 +245,7 @@ function ItemDetails(){
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-secondary-text gap-2 flex flex-col'>
           <h1>Item has been deleted</h1>
-          <Link to={'/home'}>
+          <Link to={'/shop'}>
             <button className='cursor-pointer rounded-md px-3 py-2 bg-bg-inverse text-primary-text-inverse font-semibold'>Back</button>
           </Link>
         </div>
@@ -366,7 +366,7 @@ function ItemDetails(){
                 to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
                 className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
                 <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
                 </div>
                 <h1>@{sellerUsername}</h1>
               </Link>

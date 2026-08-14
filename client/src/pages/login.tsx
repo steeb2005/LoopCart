@@ -27,7 +27,7 @@ function Login(){
       if(user){
         // console.log('autologged')
         setLoading(true)
-        navigate('/home')
+        navigate('/')
       }else{
         setLoading(false)
       }
@@ -45,7 +45,7 @@ function Login(){
     try{
       const res = await login(formData)
       if(res.success){
-        navigate('/home')
+        navigate(-1)
       }else{
         setError(res.error || 'Login failed')
       }
@@ -60,7 +60,7 @@ function Login(){
 
       const res = await google_login(codeResponse.access_token) 
       if(res.success){
-        navigate('/home')
+        navigate('/shop')
       }else{
         console.error(res.error)
       }

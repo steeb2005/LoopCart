@@ -10,6 +10,7 @@ import Dark from '../assets/dark_mode.svg'
 import { Spinner } from './ui/spinner'
 import ArrowRight from '../assets/ArrowRight.svg'
 import Logo from '../assets/Logo.svg'
+import { useSearchParams } from 'react-router-dom'
 
 
 // TODO
@@ -25,7 +26,8 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
   const {user, logout, inbox, toggleTheme, theme} = useAppContext()
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const CATEGORIES = [
     { id: 'phones', label: 'Phones' },
     { id: 'electronics_computers', label: 'Electronics' },
@@ -34,6 +36,8 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     { id: 'mens_clothing', label: "Men" },
     { id: 'womens_clothing', label: "Women" },
   ];
+
+  const currentCategory = searchParams.get('category') || 'explore'
 
   const handleLogout = async () => {
     setIsLoading(true);    
@@ -65,12 +69,22 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     unreadMessages += conversation.unread_count || 0
   })
 
-  const getStructuredName = (firstname?: string, lastname?: string) => {
-    if(firstname && !lastname) return (firstname.charAt(0).toUpperCase() + firstname.slice(1))
-    if(!firstname && lastname) return (lastname.charAt(0).toUpperCase() + lastname.slice(1))
-    if (!firstname || !lastname) return 'Unknown'
-    return (firstname.charAt(0).toUpperCase() + firstname.slice(1)) + " " + (lastname.charAt(0).toUpperCase()) + "."
+  const handleNavigateCategory = (id: string) => {
+    navigate(`/shop`, {
+      state: {
+        category: id
+      }
+    })
+    closeSidebar()
   }
+
+  const handleCategoryChange = (newCategory: string) => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('category', newCategory)
+    setSearchParams(newParams)
+    closeSidebar()
+  }
+
 
   if(isLoading){
     return (
@@ -107,7 +121,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 </div>
                 <p 
                   onClick={closeSidebar}
-                  className='text-2xl font-thin'>✕</p>
+                  className='text-2xl font-thin cursor-pointer'>✕</p>
               </div>
               <div className="head mb-3 text-primary-text font-semibold border-b border-border-color">
                 {!user && (
@@ -132,17 +146,33 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 )}
               </div>
                 
-
-              <div className={`text-primary-text navlinks flex flex-col pb-3 px-5 border-b border-border-color`}>
-                {CATEGORIES.map((category) => (
-                  <div className='flex flex-row justify-between items-center py-4 font-semibold'>
-                    <p>
-                      {category.label}
-                    </p>
-                    <img src={ArrowRight} alt="arrow_right" className='filter-(--icon-filter) h-5'/>
-                  </div>
-                ))}
-              </div>
+              {currentLocation === 'home' ? (
+                <div className={`text-primary-text flex flex-col pb-3 border-b border-border-color`}>
+                  {CATEGORIES.map((category) => (
+                    <div 
+                      onClick={() => handleCategoryChange(category.id)}
+                      className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-5 flex cursor-pointer flex-row justify-between items-center py-4 font-semibold`}>
+                      <p>
+                        {category.label}
+                      </p>
+                      <img src={ArrowRight} alt="arrow_right" className='filter-(--icon-filter) h-5'/>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={`text-primary-text flex flex-col pb-3 px-5 border-b border-border-color`}>
+                  {CATEGORIES.map((category) => (
+                    <div 
+                      onClick={() => handleNavigateCategory(category.id)}
+                      className={`flex flex-row justify-between items-center py-4 font-semibold`}>
+                      <p>
+                        {category.label}
+                      </p>
+                      <img src={ArrowRight} alt="arrow_right" className='filter-(--icon-filter) h-5'/>
+                    </div>
+                  ))}
+                </div>
+              )}
                 
 
               {user && (
@@ -152,7 +182,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     <p>
                       Your profile
                     </p>
-                    <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
+                    <div className='flex h-7 w-7 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
                         {
                           user?.avatar_url ? (
                             <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>

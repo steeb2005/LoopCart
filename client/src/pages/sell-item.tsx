@@ -186,7 +186,7 @@ function SellItem(){
             },
             position: 'top-center'
           })
-          navigate('/home')
+          navigate('/shop')
         }else{
           toast.error('Failed to update item', {
             action: {
@@ -218,7 +218,7 @@ function SellItem(){
             },
             position: 'top-center'
           })
-          navigate('/home')
+          navigate('/shop')
         }
       }
     }catch(error){

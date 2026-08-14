@@ -78,7 +78,7 @@ export default function UserProfile() {
         <div className='h-dvh w-full p-10 flex items-center justify-center'>
           {
             user?.avatar_url ? (
-              <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+              <img src={user?.avatar_url} alt="avatar"  className='object-contain h-full w-full' />
             ) : (
               <div className="h-full flex justify-center items-center text-secondary-text">
                 No Image
@@ -172,7 +172,7 @@ export default function UserProfile() {
               <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
                 {
                   user?.avatar_url ? (
-                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-cover'/>
+                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer" className='cursor-pointer w-full h-full object-cover'/>
                   ) : (
                     <span className='text-primary-text text-3xl font-bold'>
                       {

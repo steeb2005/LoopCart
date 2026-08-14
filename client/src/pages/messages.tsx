@@ -224,7 +224,7 @@ function InboxEntry({conversationId, currentItemId, currentOtherUserId, unreadCo
       className={`${currentItemId === itemId && currentOtherUserId === userId ? 'bg-bg-surface' : ''} cursor-pointer hover:bg-bg-surface duration-100 item-entry px-3 py-2  gap-2 rounded-md flex flex-row shrink-0 text-sm items-center`}>
       <div className="w-12 h-12 items-center justify-center overflow-hidden border border-border-color bg-bg-canvas rounded-full flex">
         {otherUser?.avatar_url ? (
-          <img src={otherUser?.avatar_url} alt="avatar" className=" h-auto w-auto object-contain"/>
+          <img src={otherUser?.avatar_url} alt="avatar" referrerPolicy="no-referrer" className=" h-auto w-auto object-contain"/>
         ) : (
           <span className='text-primary-text text-xl font-bold justify-center flex items-center'>
             {otherUsername?.charAt(0).toUpperCase()}
@@ -570,7 +570,7 @@ function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
               className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
               <div className='bg-bg-canvas rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
                 {otherUser?.avatar_url ? (
-                  <img src={isSeller ? user?.avatar_url! : otherUser?.avatar_url} alt="avatar"/>
+                  <img src={isSeller ? user?.avatar_url! : otherUser?.avatar_url} referrerPolicy="no-referrer" alt="avatar"/>
                   ) : (
                     <span className='text-primary-text text-xl font-bold'>
                       {isSeller ? user?.username!.charAt(0).toUpperCase() : otherUser?.username.charAt(0).toUpperCase()}</span>
