@@ -146,7 +146,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 )}
               </div>
                 
-              {currentLocation === 'home' ? (
+              {currentLocation === 'shop' ? (
                 <div className={`text-primary-text flex flex-col pb-3 border-b border-border-color`}>
                   {CATEGORIES.map((category) => (
                     <div 
@@ -176,9 +176,9 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                 
 
               {user && (
-                <div className='flex flex-col font-light  mb-3'>
+                <div onClick={() => closeSidebar()} className='flex flex-col font-light  mb-3'>
                   <Link to={'/user-profile'}>
-                    <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''} px-5 justify-between py-2 flex flex-row items-center gap-3`}>
+                    <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''} px-5 justify-between py-4 flex flex-row items-center gap-3`}>
                     <p>
                       Your profile
                     </p>
@@ -202,17 +202,17 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     </div>
                   </Link>
                   <Link to={'/sell-item'}>
-                    <div className={`${currentLocation === 'sell-item' ? 'bg-bg-gray-surface' : ''} px-5 py-2 flex flex-row items-center gap-3`}>
+                    <div className={`${currentLocation === 'sell-item' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
                       Sell
                     </div>
                   </Link>
                   <Link to={'/purchase-history'}>
-                    <div className={`${currentLocation === 'purchase-history' ? 'bg-bg-gray-surface' : ''} px-5 py-2 flex flex-row items-center gap-3`}>
+                    <div className={`${currentLocation === 'purchase-history' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
                       Purchases
                     </div>
                   </Link>
                   <Link to={'/liked-items'}>
-                    <div className={`${currentLocation === 'liked-items' ? 'bg-bg-gray-surface' : ''} px-5 py-2 flex flex-row items-center gap-3`}>
+                    <div className={`${currentLocation === 'liked-items' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
                       Favorites
                     </div>
                   </Link>

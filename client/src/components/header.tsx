@@ -1,14 +1,11 @@
 import Logo from '../assets/Logo.svg'
 import Menu from '../assets/Menu.svg'
 import { useScrollDirection } from '../hooks/scrollDirection';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/context';
 import Search from '../assets/search.svg'
 import { useEffect, useRef, useState } from 'react';
 import DropArrow from '../assets/arrow_down.svg'
-import History from '../assets/history.svg'
-import LikedItems from '../assets/Heart.svg'
-import Profile from '../assets/profile.svg'
 import Dark from '../assets/dark_mode.svg'
 import Light from '../assets/light_mode.svg'
 import Inbox from '../assets/inbox.svg'
@@ -21,7 +18,6 @@ export function Header({openSidebar, isDesktop}: {
 }){
   const navigate = useNavigate()
 
-  const location = useLocation()
   
   const {inbox, user, toggleTheme, theme, logout} = useAppContext()
 
@@ -29,7 +25,6 @@ export function Header({openSidebar, isDesktop}: {
   const [isLoading, setIsLoading] = useState(false);
   let unreadMessages = 0;
 
-  const currentLocation = location.pathname.substring(1)
   const dropDownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -69,14 +64,9 @@ export function Header({openSidebar, isDesktop}: {
     }finally{
       setIsLoading(false)
     }
-}
-
-  const getStructuredName = (firstname?: string, lastname?: string) => {
-    if(firstname && !lastname) return (firstname.charAt(0).toUpperCase() + firstname.slice(1))
-    if(!firstname && lastname) return (lastname.charAt(0).toUpperCase() + lastname.slice(1))
-    if (!firstname || !lastname) return 'Unknown'
-    return (firstname.charAt(0).toUpperCase() + firstname.slice(1)) + " " + (lastname.charAt(0).toUpperCase()) + "."
   }
+
+ 
 
   if(isLoading){
     return (
@@ -137,15 +127,13 @@ export function Header({openSidebar, isDesktop}: {
             </div>
           </Link>
           
+          {/* Theme toggle (desktop) */}
+          <div className='hidden lg:flex'>
+            <img src={theme === 'dark' ? Dark : Light} alt="theme_svg" className='filter-(--icon-filter) cursor-pointer' onClick={() => toggleTheme()}/>
+          </div>
+                  
           
-
-
-          
-
-
           {/* User profile display for large screens */}
-          
-          
           {user && (
             <>
               <Link to={'/user-profile'} className='lg:hidden flex'>
@@ -171,56 +159,34 @@ export function Header({openSidebar, isDesktop}: {
                     }
                   </div>
                 </Link>
-                <div className='flex flex-col'>
-                  <p className='text-sm font-bold'>
-                    {getStructuredName(user?.firstname, user?.lastname)}
-                  </p>
-                  <p className='text-xs text-secondary-text font-light'>{user?.username}</p>
-                </div>  
+                 
                 
                 {/* Dropdown Component */}
                 <div ref={dropDownRef}>
                   <img onClick={handleDropdown} src={DropArrow} alt="arrow_down" className='cursor-pointer filter-(--icon-filter)'/>
                   {openDropdown && (
             
-                    <div className='absolute top-14 min-w-[15%]  rounded-lg bg-bg-canvas border border-border-color right-0 flex flex-col text-sm text-primary-text '>
-
-                      <div className='border-border-color border-b p-2'>
+                    <div onClick={handleDropdown} className='absolute top-12 min-w-[15%] bg-bg-canvas shadow-xl right-0 flex flex-col font-light text-primary-text '>
+                      
                       <Link to={'/user-profile'}>
-                        <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''}  py-2 px-3 rounded-sm flex flex-row items-center gap-3`}>
-                          <img src={Profile} alt="profile" className='h-5 filter-(--icon-filter)'/>
+                        <div className={`hover:bg-bg-gray-surface py-4 px-4  flex flex-row items-center gap-3`}>
                           Profile
                         </div>
                       </Link>
                       <Link to={'/purchase-history'}>
-                          <div className={`${currentLocation === 'purchase-history' ? 'bg-bg-gray-surface' : ''}  py-2 px-3 rounded-sm flex flex-row items-center  gap-3 text-sm`}>
-                            <img src={History} alt="history" className='h-5 filter-(--icon-filter)'/>
+                          <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
                             History
                           </div>
                         </Link>
                         <Link to={'/liked-items'}>
-                          <div className={`${currentLocation === 'liked-items' ? 'bg-bg-gray-surface' : ''}  py-2 px-3 rounded-sm flex flex-row items-center gap-3  text-sm`}>
-                            <img src={LikedItems} alt="liked-items" className='h-5 filter-(--icon-filter)'/>
+                          <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
                             Favorites
                           </div>
                         </Link>
-                      </div>
-
-                      <div className='flex flex-col p-2 gap-2'>
-
-                        <div className="flex flex-row border border-border-color justify-around font-semibold items-center bg-bg-theme-color rounded-full text-primary-text py-1.5 px-1.5">
-                          <div onClick={() => toggleTheme()} className={`${theme === 'light' ? 'bg-button-color' : ''} duration-100 transition-all flex justify-center  w-full text-center py-1 rounded-full cursor-pointer`}>
-                            <img src={Light} alt="light_mode" className={`h-4`}/>
-                          </div>
-                          <div onClick={() => toggleTheme()} className={`${theme === 'dark' ? 'bg-button-color' : ''} duration-100 transition-all flex justify-center  w-full text-center py-1  rounded-full cursor-pointer`}> 
-                            <img src={Dark} alt="dark_mode" className={` invert h-4`}/>
-                          </div>
+                        <div onClick={handleLogout}  className='hover:bg-bg-gray-surface py-4 px-4 flex flex-row cursor-pointer items-center gap-3 '>
+                          Log out
                         </div>
-
-                        <button onClick={handleLogout} className='text-primary-text-inverse w-full bg-button-color font-semibold hover:cursor-pointer rounded-md py-2'>
-                          Logout
-                        </button> 
-                      </div>
+                   
                     </div>
                   )}
                 </div>
@@ -237,10 +203,7 @@ export function Header({openSidebar, isDesktop}: {
               
             </>
           )}
-            
-
-          
-
+ 
         </div>
       </div>
     </div>

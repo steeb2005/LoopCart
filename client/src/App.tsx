@@ -17,8 +17,8 @@ import NotFound from './pages/not-found'
 import { Spinner } from './components/ui/spinner'
 import MessagesInterface from './pages/messages'
 
-
-function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend protection for login bypass  
+{/* Reroutes to Login page if user is not logged in */}
+function ProtectedRoute({children}: {children: React.ReactNode}){  
   const { user, authLoading } = useAppContext();
   
   if(authLoading){
@@ -28,13 +28,11 @@ function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend p
       </div>
     )
   }
-
   
   if(!user){
     return <Navigate to="/login" replace/>
   }
   return children
-
 }
 
 

@@ -215,36 +215,12 @@ const WS_URL = import.meta.env.VITE_WS_URL
 
 
 
-/**
-function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
-  const token = getToken()
-  return{
-    'Content-type': 'application/json',
-    ...(token ? {Authorization: `Bearer ${token}`} : {}),
-    ...extra,
-  }
-}
-
-*/
-
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
   return{
     'Content-type': 'application/json',
     ...extra
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // Providers ------------------------------------------------------------------------------------ 
@@ -262,7 +238,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
     return (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
   })
   
-  
+
   useEffect(() => {
     const root = document.documentElement
     if(theme === 'dark'){
@@ -335,6 +311,35 @@ export function AppContext({children}: {children: React.ReactNode}) {
   }
 
   // Auth -------------------------------------------------------------------------------------
+  async function authedFetch(url: RequestInfo, init: RequestInit = {}): Promise<Response> {
+    let res = await fetch(url, {...init, credentials: 'include'})
+    if(res.status === 401){
+      const refreshed = await refresh_access_token()
+      if(refreshed){
+        res = await fetch(url, {...init, credentials: 'include'})
+      }else{
+        setUser(null)
+        setLikedItems([])
+        setInbox([])
+      }
+    }
+    return res 
+  }
+
+
+  const refresh_access_token = async () => {
+    try{
+      const res = await fetch(`${API_URL}/refresh`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      return res.ok
+    }catch{
+      console.error('network error refreshing token')
+      return false
+    }
+  }
+
 
   const google_login = async (credential: string) => {
     try{
@@ -508,7 +513,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
     //setItems(prev => [...items, tempItem])
     try{
-      const res = await fetch(`${API_URL}/items`, {
+      const res = await authedFetch(`${API_URL}/items`, {
         method: 'POST',
         body: payload,
         credentials:'include'
@@ -581,7 +586,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
   
   const load_liked_items = async(user_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/likes/${user_id}`, {
+      const res = await authedFetch(`${API_URL}/likes/${user_id}`, {
         headers: authHeaders(),
         credentials: 'include'
       });
@@ -596,7 +601,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const like_item = async (userId: string, itemId: string) => {
     try{
-      const res = await fetch(`${API_URL}/likes`, {
+      const res = await authedFetch(`${API_URL}/likes`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({user_id: userId, item_id: itemId}),
@@ -623,7 +628,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const unlike_item = async (userId: string, itemId: string) => {
     try{
-      const res = await fetch(`${API_URL}/likes?user_id=${userId}&item_id=${itemId}`, {
+      const res = await authedFetch(`${API_URL}/likes?user_id=${userId}&item_id=${itemId}`, {
         method: 'DELETE',
         headers: authHeaders(),
         credentials: 'include'
@@ -652,7 +657,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const load_inbox = async(userId: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/inbox`, {   
+      const res = await authedFetch(`${API_URL}/users/${userId}/inbox`, {   
         headers: authHeaders(),    
         credentials: 'include'
       }) 
@@ -677,7 +682,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
   
   const send_message = async(message: MessageSend) => {
     try{
-      const res = await fetch(`${API_URL}/messages/send`, {
+      const res = await authedFetch(`${API_URL}/messages/send`, {
         method: "POST",
         headers: authHeaders(),
         credentials: 'include',
@@ -711,7 +716,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const load_messages = async(conversation_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversation/${conversation_id}/messages`, {
+      const res = await authedFetch(`${API_URL}/conversation/${conversation_id}/messages`, {
         headers: authHeaders(),
         credentials: 'include'
 
@@ -732,7 +737,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const fetch_conversation_id = async (sender_id: string, item_id: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversations/${sender_id}/${item_id}`, {
+      const res = await authedFetch(`${API_URL}/conversations/${sender_id}/${item_id}`, {
         headers: authHeaders(),
         credentials: 'include'
       })
@@ -752,7 +757,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const read_messages = async (conversationId: string, userId: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversations/${conversationId}/read?user_id=${userId}`, {
+      const res = await authedFetch(`${API_URL}/conversations/${conversationId}/read?user_id=${userId}`, {
         method: 'PUT',
         headers: authHeaders()
       })
@@ -828,7 +833,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
       payload.append('seller_id', updateData.seller_id)
 
     
-      const res = await fetch(`${API_URL}/items/${itemId}`, {
+      const res = await authedFetch(`${API_URL}/items/${itemId}`, {
         method: 'PUT',     
         body: payload,
         credentials: 'include'
@@ -849,7 +854,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_item_sold = async (itemId: string, userId: string, status: string, conversationId?: string) => {
     try{
-      const res = await fetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
+      const res = await authedFetch(`${API_URL}/items/${itemId}/${userId}/${status}/sold${conversationId ? `?conversation_id=${conversationId}` : ''}`, {
         method: 'PATCH',
         headers: authHeaders(),
         credentials: 'include'
@@ -869,7 +874,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_bio = async (userId: string, bio: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/bio`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/bio`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({bio: bio}),
@@ -887,7 +892,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_birthdate = async(userId: string, birthdate: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/birthdate`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/birthdate`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({birthdate: birthdate}),
@@ -906,7 +911,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_gender = async(userId: string, gender: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/gender`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/gender`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({gender: gender}),
@@ -926,7 +931,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_address = async (userId: string, address: AddressDetails) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/address`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/address`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify(address),
@@ -949,7 +954,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
     formData.append('file', compress)
 
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/avatar`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/avatar`, {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -974,7 +979,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const update_username = async (userId: string, username: string) => {
     try{
-      const res = await fetch(`${API_URL}/users/${userId}/username`, {
+      const res = await authedFetch(`${API_URL}/users/${userId}/username`, {
         method: 'PATCH',
         headers: authHeaders(),
         body: JSON.stringify({username: username}),
@@ -997,7 +1002,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
   // Delete ----------------------------------------------------------------------------
   const delete_item = async (itemId: string) => {
     try{
-      const res = await fetch(`${API_URL}/items/${itemId}/delete`, {
+      const res = await authedFetch(`${API_URL}/items/${itemId}/delete`, {
         method: "PATCH",
         headers: authHeaders(),
         credentials: 'include'
@@ -1017,7 +1022,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const delete_conversation = async (conversationId: string) => {
     try{
-      const res = await fetch(`${API_URL}/conversations/${conversationId}/delete`, {
+      const res = await authedFetch(`${API_URL}/conversations/${conversationId}/delete`, {
         method: "PATCH",
         headers: authHeaders(),
         credentials: 'include'

@@ -233,6 +233,17 @@
     --font-heading: var(--font-sans);
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--color-bg-root) inset !important;
+  -webkit-text-fill-color: var(--color-primary-text) !important;
+  caret-color: var(--color-primary-text) !important;
+  background-color: var(--color-bg-root) !important;
+  background-clip: content-box !important;
+    
+}
 
 html, body{
     background-color: var(--color-bg-root);
