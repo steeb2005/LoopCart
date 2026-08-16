@@ -568,16 +568,34 @@ function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
             <Link  
               to={`${isSeller ? `/user-profile` : `/users/${item?.seller_id}`} `}
               className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
-              <div className='bg-bg-canvas rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-                {otherUser?.avatar_url ? (
+              <div className='bg-bg-inverse rounded-full  w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
+                {isSeller ? (
+                  user?.avatar_url ? (
+                    <img src={user?.avatar_url} referrerPolicy="no-referrer" alt="avatar"/>
+                  ) : (
+                    <span className='text-primary-text-inverse text-xl font-semibold'>
+                      {user?.username!.charAt(0).toUpperCase()}</span>
+                  )
+                ) : (
+                 otherUser?.avatar_url ? (
+                  <img src={isSeller ? user?.avatar_url! : otherUser?.avatar_url} referrerPolicy="no-referrer" alt="avatar"/>
+                  ) : (
+                    <span className='text-primary-text-inverse text-xl font-semibold'>
+                      {isSeller ? user?.username!.charAt(0).toUpperCase() : otherUser?.username.charAt(0).toUpperCase()}</span>
+                  ) 
+                )}
+                {/* {otherUser?.avatar_url ? (
+                  
                   <img src={isSeller ? user?.avatar_url! : otherUser?.avatar_url} referrerPolicy="no-referrer" alt="avatar"/>
                   ) : (
                     <span className='text-primary-text text-xl font-bold'>
                       {isSeller ? user?.username!.charAt(0).toUpperCase() : otherUser?.username.charAt(0).toUpperCase()}</span>
                   ) 
-                }
+                } */}
               </div>
-              <h1>{otherUser?.username}</h1>
+              <h1>{
+                isSeller ? user?.username : otherUser?.username}
+              </h1>
             </Link>
           </div>
         </div>

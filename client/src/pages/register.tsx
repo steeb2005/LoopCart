@@ -184,7 +184,7 @@ export default function Register(){
                 onClick={handleShowPassword}
                 src={showPassword ? Eye : EyeOff} 
                 alt="eye" 
-                className='absolute right-0 top-2 cursor-pointer'  
+                className='absolute right-1 top-2 cursor-pointer'  
               />
             </div>
 

@@ -135,7 +135,7 @@ export default function LandingPage(){
   
   return(
     <>  
-      <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-border-color bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+      <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-b border-border-color/40 bg-bg-canvas flex-row items-center gap-6 z-50 `}>
         {CATEGORIES.map((category) => (
           <div 
             onClick={() => handleChangeCategory(category.id)}

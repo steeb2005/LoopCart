@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
 import { useAppContext } from "../context/context.tsx"
-import Category from "../assets/category.svg"
 import { useLocation } from "react-router-dom"
 import ArrowDown from "../assets/arrow_down.svg"
 import { Skeleton } from "../components/ui/skeleton.tsx"
@@ -28,7 +27,6 @@ function Home(){
   const {items, getUsername, load_items, load_users} = useAppContext()
   const [pageLoading, setPageLoading] = useState(true)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [categoryMenu, setCategoryMenu] = useState(false)
   const [sortMenu, setSortMenu] = useState(false)
 
   const location = useLocation()
@@ -46,7 +44,7 @@ function Home(){
   ];
 
   const SORT = [
-    {id: 'recent', label: 'Most Recent'},
+    {id: 'recent', label: 'Newly listed'},
     {id: 'popular', label: 'Most Popular'},
     {id: 'price_low', label: 'Price: Low to High'},
     {id: 'price_high', label: 'Price: High to Low'},
@@ -57,8 +55,6 @@ function Home(){
   useEffect(() => {
     if(setCategory) handleCategoryChange(setCategory)
   } , [setCategory])
-  const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
-  const activeSort = SORT.find(sort => sort.id === currentSort)
 
 
   const handleCategoryChange = (newCategory: string) => {
@@ -105,9 +101,7 @@ function Home(){
     loadItems()
     
   }, [])
-  const handleCategoryMenu = () => {
-    setCategoryMenu(!categoryMenu)
-  }
+ 
 
   const handleSortMenu = () => {
     setSortMenu(!sortMenu)
@@ -116,7 +110,7 @@ function Home(){
   
   return(
     <>  
-      <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-border-color bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+      <div className={`hidden lg:flex fixed w-full border-b border-border-color/40 font-semibold top-12 px-5 border-t  bg-bg-canvas flex-row items-center gap-6 z-50 `}>
         {CATEGORIES.map((category) => (
           <div 
             className={`${currentCategory === category.id ? 'border-button-color' : 'border-bg-canvas'} cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}
@@ -130,41 +124,20 @@ function Home(){
         
       <div className="top-section flex flex-col lg:mt-15 ">
       
-        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
-          <div className="relative">
-            <button
-              onClick={handleCategoryMenu}
-              className="cursor-pointer border border-border-color bg-bg-canvas px-2 py-1 rounded-md flex flex-row items-center gap-2">
-              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-              {activeCategory?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
-            </button>
-            {categoryMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
-                {CATEGORIES.map((category) => (
-                  
-                  <div
-                    onClick={() => handleCategoryChange(category.id)} 
-                    className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`} >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
-            }
-          </div>
+        <div className="mx-5 flex flex-row text-primary-text mt-2 items-center gap-3 justify-end text-sm">
+  
 
-          <div className="relative">
-            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
+          <div className="relative z-40 ">
+            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas hover:border-border-color/50 border-border-color px-2 gap-2 font-md text-sm py-1 flex flex-row items-center">
               <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
-              {activeSort?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
+                Sort
             </button>
             {sortMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
+              <div className="absolute right-0 top-10 whitespace-nowrap min-w-full bg-bg-canvas border border-border-color flex flex-col">        
                 {SORT.map((sort) => (
                   <div
                     onClick={() => handleSortChange(sort.id)} 
-                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`}>
+                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} border-b border-border-color last:border-0 px-5 py-3  cursor-pointer text-secondary-text`}>
                     {sort.label}
                   </div>
                 ))}

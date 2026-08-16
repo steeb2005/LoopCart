@@ -121,10 +121,10 @@ export default function SearchPage(){
       </div>
 
       <div className={`fixed w-full ${isHidden ? 'top-0' : 'top-13'} px-5 py-3 border-t border-border-color bg-bg-canvas shadow-md flex flex-row items-center gap-3  z-50 transition-all duration-300 ease-in-out`}>
-        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface'} cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'}  border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Items
         </div>
-        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface'} cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'} border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Sellers
         </div>
       </div>

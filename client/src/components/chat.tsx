@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 import { useAppContext } from '../context/context'
 import { Spinner } from './ui/spinner'
-import { MoreVerticalIcon } from 'lucide-react'
 
 type Item = {
   _id?: string;
@@ -98,18 +97,12 @@ function Message({isOwn, message}: {
       onMouseEnter={handleOnHover}
       onMouseLeave={handleOnHover} 
       className={`message-box flex flex-row ${isOwn ? 'justify-end' : 'justify-start'} items-center text-primary-text gap-3`}>
-      {isOwn && (
-        <MoreVerticalIcon            
-          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
-      )}
+     
       <div    
         className={`flex cursor-pointer flex-row gap-2 break-all items-center w-fit max-w-[70%] bg-bg-surface p-3 rounded-md ${isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
         {message}
       </div>
-      {!isOwn && (
-        <MoreVerticalIcon 
-          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
-      )}
+     
       
     </div>
   )
