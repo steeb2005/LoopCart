@@ -15,6 +15,7 @@ ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 @router.get("/users/me")       
 async def get_me(current_user: dict = Depends(get_current_user)):
     user = await users.find_one({"_id" : ObjectId(current_user["sub"])})
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {
@@ -71,6 +72,8 @@ async def update_bio(user_id: str, bioData: BioUpdate, current_user: dict = Depe
         raise
     except:
         raise HTTPException(status_code=400, detail="Invalid request")
+
+
 
 # Update user birthdate
 @router.patch('/users/{user_id}/birthdate')

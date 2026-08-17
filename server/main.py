@@ -14,11 +14,14 @@ PORT = settings.PORT
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print(f"Starting main.py, LoopCart Port:{PORT}")
-    await conversations.create_index(
-        "conversation_key", 
-        unique=True,
-        sparse=True
-    )
+    try:
+        await conversations.create_index(
+            "conversation_key", 
+            unique=True,
+            sparse=True
+        )
+    except Exception as e:
+        print(f"Index creation skipped or already created: {e}")
 
     yield
 

@@ -260,23 +260,23 @@ export function AppContext({children}: {children: React.ReactNode}) {
         
         if(!res.ok){
           setAuthLoading(false)
-          return
+          console.error('no user logged in');
+          setUser(null)
+        }else{
+          const data = await res.json() // Loaded info 
+          setAuthLoading(false) // Setting auth to false and setting the loadingdata to true
+          setDataLoading(true)
+          
+          setUser(data)
+          if(data._id){
+            await load_liked_items(data._id)
+            connectInboxSocket(data._id)
+          }
+          await load_inbox(data._id)
         }
         
-        const data = await res.json() // Loaded info 
-        setAuthLoading(false) // Setting auth to false and setting the loadingdata to true
-        setDataLoading(true)
-        
-        setUser(data)
-        if(data._id){
-          await load_liked_items(data._id)
-          connectInboxSocket(data._id)
-        }
-
         await load_items()
         await load_users()
-        await load_inbox(data._id)
-
       }catch{
         console.error('Error in loading initial data');
       }finally{
@@ -316,6 +316,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
     if(res.status === 401){
       const refreshed = await refresh_access_token()
       if(refreshed){
+        console.log('refreshed token')
         res = await fetch(url, {...init, credentials: 'include'})
       }else{
         setUser(null)

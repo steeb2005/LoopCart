@@ -104,6 +104,7 @@ function ItemDetails(){
     
     if(foundItem){
       setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
+      
       setItem(foundItem)
 
       const founduser = users?.find(user => user._id === foundItem?.seller_id)
@@ -191,8 +192,8 @@ function ItemDetails(){
     }
   }
 
-  
-  if(dataLoading || pageLoading){
+ 
+  if(dataLoading || pageLoading ){
     return(
       <div className="mx-5 p-0 m-0 pb-5 h-dvh flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
@@ -224,8 +225,7 @@ function ItemDetails(){
     )
   }
 
-  
-  if(!item){
+   if(!item){
     return(
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-primary-text gap-2 flex flex-col'>
@@ -238,6 +238,9 @@ function ItemDetails(){
       </div>
     )
   }
+
+
+  
 
 
   if(item.deleted === true){
@@ -255,7 +258,7 @@ function ItemDetails(){
 
   if(displayImage){
     return(
-      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+      <div className='fixed inset-0 z-100 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-10 flex items-center justify-center'>
           <img src={item.image} alt="image" className='object-contain h-full w-full' />

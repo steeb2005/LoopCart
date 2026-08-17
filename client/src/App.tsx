@@ -67,7 +67,7 @@ function AppRoute(){
         }/>
 
         <Route path='/item/:id' element={
-            <ItemDetails/>
+          <ItemDetails/>
         }/>
 
         <Route path='/liked-items' element={
@@ -77,7 +77,7 @@ function AppRoute(){
         }/>
 
         <Route path='/users/:userId' element={
-            <SellerProfile/>
+          <SellerProfile/>
         }/>
 
         <Route path='/user-profile' element={

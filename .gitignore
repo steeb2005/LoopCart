@@ -23,6 +23,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Virtual Environment
+venv/
+.venv/
+env/
+
 # Environment Variables
 .env
 .env.local

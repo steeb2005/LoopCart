@@ -17,7 +17,7 @@ import UserCard from '../components/user-card'
 export default function SearchPage(){
   
   const navigate = useNavigate()
-  const {items, getUsername, users} = useAppContext()
+  const {items, getUsername, users, load_items, load_users} = useAppContext()
 
   const [searchResults, setSearchResults] = useState<(typeof items[0] | typeof users[0])[]>([])
   const [searchInput, setSearchInput] = useState('')
@@ -29,6 +29,17 @@ export default function SearchPage(){
   const category = searchParams.get('tab') || 'Items'
   const query = searchParams.get('query') || ''
   
+  useEffect(() => {
+    const loadItems = async() =>{
+      // setPageLoading(true)
+      await load_items()
+      await load_users()
+      // setPageLoading(false) 
+    }
+    loadItems()
+    
+  }, [])
+
   useEffect(() => {
     setSearchInput(query)
     getSearchResults(category, query)

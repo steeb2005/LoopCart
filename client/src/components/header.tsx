@@ -136,7 +136,7 @@ export function Header({openSidebar, isDesktop}: {
           {/* User profile display for large screens */}
           {user && (
             <>
-              <Link to={'/user-profile'} className='lg:hidden flex'>
+              <Link to={'/liked-items'} className='lg:hidden flex'>
                 <img src={Heart} alt="heart-svg" className='filter-(--icon-filter)'/>
               </Link>
               <div className='hidden lg:flex flex-row items-center gap-3'>
