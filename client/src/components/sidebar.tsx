@@ -1,8 +1,5 @@
-import Close from '../assets/close.svg'
 import { motion ,AnimatePresence } from 'framer-motion'
 import { useAppContext } from '../context/context'
-import History from '../assets/history.svg'
-import LikedItems from '../assets/Heart.svg'
 import { useLocation, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'  
 import Light from '../assets/light_mode.svg'
