@@ -73,7 +73,7 @@ type User = {
 
 
 function ItemDetails(){
-  const naviagte = useNavigate()
+  const navigate = useNavigate()
   const {id} = useParams() 
   const {items, user, getUsername, users, dataLoading, delete_item} = useAppContext()
   
@@ -104,6 +104,7 @@ function ItemDetails(){
     
     if(foundItem){
       setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
+      
       setItem(foundItem)
 
       const founduser = users?.find(user => user._id === foundItem?.seller_id)
@@ -146,12 +147,12 @@ function ItemDetails(){
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id!, item?.likes || 0)
 
   const handleBackClick = () => {
-    naviagte(-1)
+    navigate(-1)
   }
   
 
   const handleEditListing = () => {
-    naviagte(`/sell-item`, {
+    navigate(`/sell-item`, {
       state: {
         id: item?._id,
         item: item,
@@ -187,12 +188,12 @@ function ItemDetails(){
         position: "top-center"
       })
     }finally{
-      naviagte(-1)
+      navigate(-1)
     }
   }
 
-  
-  if(dataLoading || pageLoading){
+ 
+  if(dataLoading || pageLoading ){
     return(
       <div className="mx-5 p-0 m-0 pb-5 h-dvh flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
@@ -224,15 +225,14 @@ function ItemDetails(){
     )
   }
 
-  
-  if(!item){
+   if(!item){
     return(
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-primary-text gap-2 flex flex-col'>
           <h1>Error 404 Item not found</h1>
           
           <div className='flex flex-row justify-start'>
-            <Link to={'/home'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
+            <Link to={'/shop'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
           </div>
         </div>
       </div>
@@ -240,12 +240,15 @@ function ItemDetails(){
   }
 
 
+  
+
+
   if(item.deleted === true){
     return(
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-secondary-text gap-2 flex flex-col'>
           <h1>Item has been deleted</h1>
-          <Link to={'/home'}>
+          <Link to={'/shop'}>
             <button className='cursor-pointer rounded-md px-3 py-2 bg-bg-inverse text-primary-text-inverse font-semibold'>Back</button>
           </Link>
         </div>
@@ -255,7 +258,7 @@ function ItemDetails(){
 
   if(displayImage){
     return(
-      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+      <div className='fixed inset-0 z-100 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-10 flex items-center justify-center'>
           <img src={item.image} alt="image" className='object-contain h-full w-full' />
@@ -366,7 +369,7 @@ function ItemDetails(){
                 to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
                 className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
                 <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
                 </div>
                 <h1>@{sellerUsername}</h1>
               </Link>

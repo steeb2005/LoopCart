@@ -17,7 +17,7 @@ import UserCard from '../components/user-card'
 export default function SearchPage(){
   
   const navigate = useNavigate()
-  const {items, getUsername, users} = useAppContext()
+  const {items, getUsername, users, load_items, load_users} = useAppContext()
 
   const [searchResults, setSearchResults] = useState<(typeof items[0] | typeof users[0])[]>([])
   const [searchInput, setSearchInput] = useState('')
@@ -30,13 +30,24 @@ export default function SearchPage(){
   const query = searchParams.get('query') || ''
   
   useEffect(() => {
+    const loadItems = async() =>{
+      // setPageLoading(true)
+      await load_items()
+      await load_users()
+      // setPageLoading(false) 
+    }
+    loadItems()
+    
+  }, [])
+
+  useEffect(() => {
     setSearchInput(query)
     getSearchResults(category, query)
   },[category, query, items, users])
 
 
   const handleBackClick = () => {
-    navigate('/home')
+    navigate(-1)
   }
 
 
@@ -121,16 +132,16 @@ export default function SearchPage(){
       </div>
 
       <div className={`fixed w-full ${isHidden ? 'top-0' : 'top-13'} px-5 py-3 border-t border-border-color bg-bg-canvas shadow-md flex flex-row items-center gap-3  z-50 transition-all duration-300 ease-in-out`}>
-        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface'} cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'}  border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Items
         </div>
-        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-bg-inverse text-primary-text-inverse' : 'bg-bg-surface'} cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'} border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Sellers
         </div>
       </div>
       
       
-      <div className={`mx-5 px-2 py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
+      <div className={`mx-5  py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : `${category === 'Sellers' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}`}>
         {
         (prefill && searchResults.length === 0 && category === 'Items') && (
           items.map(item => (
@@ -205,3 +216,4 @@ export default function SearchPage(){
   )
 }
 
+// grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3

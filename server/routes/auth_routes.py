@@ -1,13 +1,37 @@
 from models.models import User, LoginRequest, GoogleAuthRequest
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Response, Request
 from datetime import datetime, timezone
 from database import users
 import httpx
-from auth import create_access_token
+from auth import create_access_token, create_refresh_token
+from auth import decode_token
+from bson import ObjectId
+
 
 router = APIRouter()
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
+def set_auth_cookies(response: Response, access_token: str, refresh_token: str | None = None, remember_me: bool = False):
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none", # Set to lax if in development none if in production
+        max_age=60 * 15
+    )
+
+    if refresh_token:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="none", # Set to lax if in development none if in production
+            max_age=60 * 60 * 24 * 7 if remember_me else 60 * 60 * 12  # If remember me is set refresh token is 7 days else its 24 hours  
+        )
+
+    
 #add user to database
 @router.post("/auth/google")
 async def google_auth(payload: GoogleAuthRequest, response: Response):
@@ -46,7 +70,6 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
             "email": email,
             "google_id": google_id,
             "avatar_url": avatar_url,
-            "google_id": google_id,
             "auth_provider": "google",
             "join_date": datetime.now(tz=timezone.utc).isoformat()
         }
@@ -80,6 +103,8 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
             "birthdate": user_doc.get("birthdate")
         } 
     }
+
+
 
 @router.post("/users")
 async def create_user(user: User):
@@ -118,7 +143,6 @@ async def create_user(user: User):
     }    
 
 
-
 # login 
 @router.post("/login")
 async def login(login_data: LoginRequest, response: Response):
@@ -133,27 +157,10 @@ async def login(login_data: LoginRequest, response: Response):
 
 
     user_id = str(user["_id"])
-    token = create_access_token(user_id, login_data.email)
+    access_token = create_access_token(user_id, login_data.email)
+    refresh_token = create_refresh_token(user_id, login_data.email)
 
-    if login_data.rememberMe:
-        response.set_cookie(
-            key="access_token",
-            value=token,
-            httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none", # Set to lax if in development none if in production
-            max_age=60*60*24*30
-        )
-    else:
-        response.set_cookie(
-            key="access_token",
-            value=token,
-            httponly=True,
-            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="none", # Set to lax if in development none if in production
-            max_age=60*60*24
-        )
-
+    set_auth_cookies(response, access_token, refresh_token, login_data.rememberMe)
 
     return {
         "user": {
@@ -172,12 +179,33 @@ async def login(login_data: LoginRequest, response: Response):
     }
 
 
+# Refreshes the token 
+@router.post("/refresh")
+async def refresh(request: Request, response: Response):
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="No refresh token provided")
+
+    payload = decode_token(refresh_token, expected_type="refresh")
+
+    user = await users.find_one({"_id": ObjectId(payload["sub"])})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    new_access_token = create_access_token(payload["_id"], payload["email"])
+    set_auth_cookies(response, new_access_token)
 
 # Logout
 @router.post('/logout')
 async def logout(response: Response):
     response.delete_cookie(
         "access_token",
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none" # Set to lax if in development none if in production
+        )
+    
+    response.delete_cookie(
+        "refresh_token",
         secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
         samesite="none" # Set to lax if in development none if in production
         )

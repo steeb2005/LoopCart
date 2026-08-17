@@ -3,7 +3,7 @@ import { useLocation} from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import Location from '../assets/location.svg'
 import { useAppContext } from '../context/context'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import {NumericFormat} from 'react-number-format'
@@ -12,7 +12,6 @@ import AddPhoto from '../assets/add_photo.svg'
 import Close from '../assets/close.svg'
 import { Spinner } from '../components/ui/spinner'
 import { toast } from 'sonner'
-
 
 type ItemFormData = {
   title: string;
@@ -187,7 +186,7 @@ function SellItem(){
             },
             position: 'top-center'
           })
-          navigate('/home')
+          navigate('/shop')
         }else{
           toast.error('Failed to update item', {
             action: {
@@ -219,7 +218,7 @@ function SellItem(){
             },
             position: 'top-center'
           })
-          navigate('/home')
+          navigate('/shop')
         }
       }
     }catch(error){
@@ -466,6 +465,42 @@ function SellItem(){
           
           
         </div>
+        {!user?.address && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 ">
+            <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
+
+              {/* Header with accent */}
+              <div className="relative">
+                <div className="px-6 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0">
+                      <img src={Location} alt="check" className="filter-(--icon-filter) h-6"/>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-primary-text">Set Address </h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="px-6 py-4">
+                <h1 className="text-primary-text">Set your address first to sell an item</h1>
+              </div>
+
+              <div className="flex flex-row justify-end p-3 border-t border-border-color">
+                <Link to={`/edit-profile/${user?._id}`}>
+                  <button 
+                  
+                    className="cursor-pointer text-primary-text-inverse px-3 py-2 rounded-xl bg-button-color border border-border-color"
+                  >
+                    Set Address
+                  </button>
+                </Link>
+              </div>
+              
+            </div>
+          </div>
+        )}
       </div>
     </>
   )

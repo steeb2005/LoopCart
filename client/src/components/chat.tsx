@@ -10,7 +10,6 @@ import { useNavigate } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
 import { useAppContext } from '../context/context'
 import { Spinner } from './ui/spinner'
-import { MoreVerticalIcon } from 'lucide-react'
 
 type Item = {
   _id?: string;
@@ -98,18 +97,12 @@ function Message({isOwn, message}: {
       onMouseEnter={handleOnHover}
       onMouseLeave={handleOnHover} 
       className={`message-box flex flex-row ${isOwn ? 'justify-end' : 'justify-start'} items-center text-primary-text gap-3`}>
-      {isOwn && (
-        <MoreVerticalIcon            
-          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
-      )}
+     
       <div    
         className={`flex cursor-pointer flex-row gap-2 break-all items-center w-fit max-w-[70%] bg-bg-surface p-3 rounded-md ${isOwn ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
         {message}
       </div>
-      {!isOwn && (
-        <MoreVerticalIcon 
-          className={` bg-bg-surface rounded-full p-0.5 cursor-pointer ${onHover ? 'flex' : 'hidden'}`}/>
-      )}
+     
       
     </div>
   )
@@ -519,7 +512,7 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                 <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
                   {
                     otherUser?.avatar_url ? (
-                    <img src={otherUser.avatar_url} alt="avatar"/>
+                    <img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
                     ) : (
                     <span className='text-primary-text text-sm justify-center items-center font-bold'>
                       {otherUser?.username.charAt(0).toUpperCase()}</span>
@@ -782,7 +775,7 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
                   <div className="flex items-center gap-3">
                     <div className="w-15 h-15 rounded-full flex items-center justify-center overflow-hidden shrink-0 bg-bg-inverse">
                       {otherUser?.avatar_url ? (
-                        <img src={otherUser?.avatar_url} alt="avatar" className="object-contain"/>
+                        <img src={otherUser?.avatar_url} alt="avatar" referrerPolicy="no-referrer" className="object-contain"/>
                       ) : (
                       <span className="text-accent font-semibold text-sm">
                         {otherUser?.username?.charAt(0).toUpperCase() || '?'}

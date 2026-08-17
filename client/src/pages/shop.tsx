@@ -1,21 +1,13 @@
 import { useEffect, useMemo, useState } from "react"
-import { useAppContext } from "../context/context"
-import Category from "../assets/category.svg"
-import ArrowDown from "../assets/arrow_down.svg"
+import { useAppContext } from "../context/context.tsx"
+import { useLocation } from "react-router-dom"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
 
 
-
-
 function SkeletonCard(){
-
-
-
-
-
   return(
     <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
       <Skeleton className="h-48 bg-border-color" />
@@ -34,33 +26,35 @@ function Home(){
   const {items, getUsername, load_items, load_users} = useAppContext()
   const [pageLoading, setPageLoading] = useState(true)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [categoryMenu, setCategoryMenu] = useState(false)
   const [sortMenu, setSortMenu] = useState(false)
 
+  const location = useLocation()
   const currentCategory = searchParams.get('category') || 'explore'
   const currentSort = searchParams.get('sort') || 'recent'
 
+  // Removed Explore from categories to check if its good ui
   const CATEGORIES = [
-    { id: 'explore', label: 'Explore' },
-    { id: 'phones', label: 'Mobile Phones' },
-    { id: 'electronics_computers', label: 'Electronics & Computers' },
+    { id: 'phones', label: 'Phones' },
+    { id: 'electronics_computers', label: 'Electronics' },
     { id: 'jewelry', label: 'Jewelry' },
     { id: 'bags', label: 'Bags' },
-    { id: 'mens_clothing', label: "Men's clothing & shoes" },
-    { id: 'womens_clothing', label: "Women's clothing & shoes" },
+    { id: 'mens_clothing', label: "Men" },
+    { id: 'womens_clothing', label: "Women" },
   ];
 
   const SORT = [
-    {id: 'recent', label: 'Most Recent'},
+    {id: 'recent', label: 'Newly listed'},
     {id: 'popular', label: 'Most Popular'},
     {id: 'price_low', label: 'Price: Low to High'},
     {id: 'price_high', label: 'Price: High to Low'},
   ]
   
   
-  
-  const activeCategory = CATEGORIES.find(cat => cat.id === currentCategory)
-  const activeSort = SORT.find(sort => sort.id === currentSort)
+  const setCategory = location.state?.category
+  useEffect(() => {
+    if(setCategory) handleCategoryChange(setCategory)
+  } , [setCategory])
+
 
   const handleCategoryChange = (newCategory: string) => {
     const newParams = new URLSearchParams(searchParams)
@@ -106,66 +100,43 @@ function Home(){
     loadItems()
     
   }, [])
-  const handleCategoryMenu = () => {
-    setCategoryMenu(!categoryMenu)
-  }
+ 
 
   const handleSortMenu = () => {
     setSortMenu(!sortMenu)
   }
   
-
+  
   return(
-    <>
-      {/* Sidebar */}
-   
-        
-        {/* SEARCH BAR
-        <div className={`search-bar sticky ${isHidden ? 'top-2' : 'top-14'} z-50 transition-all duration-300 ease-in-out`}>
-          <img src={Search} alt="searchsvg" className="absolute left-5 top-3"/>
-          <input 
-            type="text" 
-            className="pl-14 text-sm items-center text-primary-text bg-bg-surface py-3 w-full rounded-md decoration-none outline-0" 
-            placeholder="search"  
-          />
-        </div> */}
-
-      <div className="top-section flex flex-col mx-5">
-        
-        <div className="flex flex-row text-primary-text mt-2 items-center gap-3 justify-between text-sm">
-          <div className="relative">
-            <button
-              onClick={handleCategoryMenu}
-              className="cursor-pointer border border-border-color bg-bg-canvas px-2 py-1 rounded-md flex flex-row items-center gap-2">
-              <img src={Category} alt="category" className="filter-(--icon-filter)"/>
-              {activeCategory?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
-            </button>
-            {categoryMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 left-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
-                {CATEGORIES.map((category) => (
-                  <div
-                    onClick={() => handleCategoryChange(category.id)} 
-                    className={`${currentCategory === category.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`} >
-                    {category.label}
-                  </div>
-                ))}
-              </div>
-            }
+    <>  
+      <div className={`hidden lg:flex fixed w-full border-b border-border-color/40 font-semibold top-12 px-5 border-t  bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+        {CATEGORIES.map((category) => (
+          <div 
+            className={`${currentCategory === category.id ? 'border-button-color' : 'border-bg-canvas'} cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}
+            onClick={() => handleCategoryChange(category.id)}>
+            {category.label}
           </div>
+        ))}
+        
+      
+      </div>
+        
+      <div className="top-section flex flex-col lg:mt-15 ">
+      
+        <div className="mx-5 flex flex-row text-primary-text mt-2 items-center gap-3 justify-end text-sm">
+  
 
-          <div className="relative">
-            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas border-border-color px-2 gap-2 font-md text-sm py-1 rounded-md flex flex-row items-center">
+          <div className="relative z-40 ">
+            <button onClick={handleSortMenu} className="cursor-pointer border bg-bg-canvas hover:border-border-color/50 border-border-color px-2 gap-2 font-md text-sm py-1 flex flex-row items-center">
               <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
-              {activeSort?.label}
-              <img src={ArrowDown} alt="arrow_down_svg" className="filter-(--icon-filter)"/>
+                Sort
             </button>
             {sortMenu && 
-              <div className="absolute top-10 whitespace-nowrap min-w-full p-2 right-0 bg-bg-canvas border border-border-color rounded-md flex flex-col">        
+              <div className="absolute right-0 top-10 whitespace-nowrap min-w-full bg-bg-canvas border border-border-color flex flex-col">        
                 {SORT.map((sort) => (
                   <div
                     onClick={() => handleSortChange(sort.id)} 
-                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} px-2 py-1 rounded-sm  cursor-pointer text-secondary-text`}>
+                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} border-b border-border-color last:border-0 px-5 py-3  cursor-pointer text-secondary-text`}>
                     {sort.label}
                   </div>
                 ))}
@@ -179,17 +150,17 @@ function Home(){
         </div>
 
 
-        <div className=" rounded-md py-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className=" rounded-md py-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 mx-5">
           
           {/* Item Entry */}
           
           {pageLoading &&
-            Array.from({ length: 8 }).map((_, index) => (
+            Array.from({ length: 15 }).map((_, index) => (
               <SkeletonCard key={index} />
             ))
           }
 
-          {
+          {!pageLoading &&
             filteredItems.map((item: any) => (
               (item.status === 'available' && item.deleted === false) && (
                 <ItemCard 

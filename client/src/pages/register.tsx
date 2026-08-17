@@ -1,28 +1,21 @@
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import {useAppContext} from "../context/context"
 import React from "react"
-
-
-/*
-TODO:
- - Learn FullStackOpen
- - Try to make a small sample demo using supabase
- - Learn FastAPI
- - Learn FARM Stack
- - Make the login / register backend logic and api routes (take inspo from trackr) make it using FastAPI
-*/
+import { toast } from "sonner"
+import Logo from '../assets/Logo.svg'
+import { Spinner } from "../components/ui/spinner"
 
 
 
-
-function Register(){
+export default function Register(){
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const { register } = useAppContext();
   const [ showPassword, setShowPassword ] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
     firstname: '',
@@ -38,6 +31,8 @@ function Register(){
   }
 
   const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    if(loading) return // Prevents the user from spamming the register button
+    setLoading(true)
     e.preventDefault();
     try{
       
@@ -52,108 +47,162 @@ function Register(){
       
       const res = await register(trimmedForm)
       if(res.success){
+        toast.success('Successfully registered', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
         navigate('/login')
       }else if(res.error === 'User already exists'){
         setError('User already exists')
+        toast.error('User already exists', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }else if(res.error === 'Email already exists'){
         setError('Email already exists')
+        toast.error('Email already exists', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }else{
         setError(res.error || 'Registration failed')
+        toast.error('Registration failed', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
       }
     }catch{
-      console.log('Regsistration failed');
+      console.error('Regsistration failed');
       setError('Something went wrong please try again')
+      toast.error('User already exists', {
+        action: {
+          label: '✕',
+          onClick: () => {
+            toast.dismiss
+          }
+        },
+        position: 'top-center'
+      })
+    }finally{
+      setLoading(false)
     }
   }
 
 
-
-
-
   return(
-    <div className="flex flex-col items-center h-dvh justify-center lg:p-5">
-
-
-      <div className="lg:mx-10 py-5 lg:border lg:border-border-color px-10 bg-bg-canvas rounded-2xl  lg:w-[50%]">
-            
-        <div className="text-primary-text mt-10">
-          <h1 className="text-3xl font-semibold">Create an account</h1>
-          <p>Already have an account? <Link to={'/login'} className="underline">Login</Link> </p>
-        </div>
-
-        <div className='mt-5'>
-            <form onSubmit={handleSubmit}>
-              <input 
-                type="text" 
-                value={formData.username}
-                onChange={(e) => {
-                  setFormData({...formData, username: e.target.value});
-                  setError('');
-                }}
-                className={`${error === 'Username already taken' ? 'border-2 border-red-500' : ''} duration-100 mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0`}
-                placeholder='Username'
-                required
-              />
-
-              <input 
-                type="text" 
-                value={formData.firstname}
-                onChange={(e) => setFormData({...formData, firstname: e.target.value})}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
-                placeholder='Firstname'
-                required
-              />
-
-              <input 
-                type="text" 
-                value={formData.lastname}
-                onChange={(e) => setFormData({...formData, lastname: e.target.value})}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
-                placeholder='Lastname'
-                required
-              />
-
-              <input 
-                type="email" 
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0'
-                placeholder='Email'
-                required
-              />
-    
-              <div className='relative'>
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  value={formData.password}
-                  onChange={(e) => setFormData({...formData, password: e.target.value})}
-                  className='mt-5 text-sm items-center text-primary-text bg-bg-surface px-4 py-4 w-full rounded-md decoration-none outline-0 pr-12'  // ← added pr-12
-                  placeholder='Password'
-                  required
-                />
-                <img 
-                  onClick={handleShowPassword}
-                  src={showPassword ? Eye : EyeOff} 
-                  alt="eye" 
-                  className='absolute right-3 top-9 cursor-pointer'  
-                />
-              </div>
-              <div className="mt-2 duration-100">
-                <p className="text-sm text-red-400 ">{error}</p>
-              </div>
-              <p className="text-tertiary-text mt-5 text-center font-light text-sm">By registering an account you agree to the terms and conditions</p>
-    
-              <button className='mt-5 text-primary-text-inverse w-full bg-button-color font-semibold text-xl hover:cursor-pointer rounded-md py-2'>
-                Create account
-              </button>
-            </form>
-    
-    
-            
-          </div>
+    <>
+      <div className='flex flex-row text-xl z-50 items-center gap-2 font-bold fixed w-full justify-center top-0 border-b border-border-color py-3'>
+        <h1>LoopCart</h1>   
+        <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
       </div>
-    </div>
+        {/* Header */}
+      <div className="flex flex-col items-center justify-center h-dvh">
+
+        <div className='rounded-md w-70 lg:w-100 flex flex-col items-center justify-center border border-border-color px-5 pt-9 pb-5'>
+          <p className='font-semibold lg:text-xl mb-5 text-center'>
+            Sign up with email
+          </p>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
+            <input 
+              type="text" 
+              value={formData.firstname}
+              className='text-sm items-center text-primary-text border-b border-border-color py-2 w-full decoration-none outline-0'
+              onChange={(e) => {
+                setFormData({...formData, firstname: e.target.value});
+              }}
+              placeholder='First name'
+              required
+            />
+
+            <input 
+              type="text" 
+              value={formData.lastname}
+              className='text-sm items-center  text-primary-text border-b border-border-color py-2 w-full decoration-none outline-0'
+              onChange={(e) => {
+                setFormData({...formData, lastname: e.target.value});
+              }}
+              placeholder='Last name'
+              required
+            />
+
+            <input 
+              type="text" 
+              value={formData.username}
+              className='text-sm items-center  text-primary-text border-b border-border-color py-2 w-full decoration-none outline-0'
+              onChange={(e) => {
+                setFormData({...formData, username: e.target.value});
+                setError('');
+              }}
+              placeholder='Username'
+              required
+            />
+
+            <input 
+              type="text" 
+              value={formData.email}
+              className='text-sm items-center  text-primary-text border-b border-border-color py-2 w-full decoration-none outline-0'
+              onChange={(e) => {
+                setFormData({...formData, email: e.target.value})
+                setError('')
+              }}
+              placeholder='Email'
+              required
+            />
+
+            <div className="relative">
+              <input 
+                type={showPassword ? 'text' : 'password'} 
+                value={formData.password}
+                className='text-sm items-center  text-primary-text border-b border-border-color py-2 w-full decoration-none outline-0'
+                onChange={(e) => {
+                  setFormData({...formData, password: e.target.value});
+                }}
+                placeholder='Password'
+                required
+              />
+              <img 
+                onClick={handleShowPassword}
+                src={showPassword ? Eye : EyeOff} 
+                alt="eye" 
+                className='absolute right-1 top-2 cursor-pointer'  
+              />
+            </div>
+
+            <div className="duration-100">
+              <p className="text-sm text-red-500 ">{error}</p>
+            </div>
+            <p className="text-tertiary-text text-center font-light text-xs">By registering an account you agree to the terms and conditions of LoopCart</p>
+            <button className='flex flex-row items-center justify-center gap-2 text-primary-text-inverse w-full bg-button-color hover:bg-button-color/80 font-semibold text-lg cursor-pointer rounded-md py-2'>
+              {loading && (
+                <Spinner/>
+              )}
+              Continue
+            </button>
+
+          </form>
+
+        </div>        
+      </div>
+    </>
   )
 }
-
-export default Register

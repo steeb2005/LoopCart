@@ -73,12 +73,12 @@ export default function UserProfile() {
 
   if(displayImage){
     return(
-      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+      <div className='fixed inset-0 z-100 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-10 flex items-center justify-center'>
           {
             user?.avatar_url ? (
-              <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+              <img src={user?.avatar_url} alt="avatar"  className='object-contain h-full w-full' />
             ) : (
               <div className="h-full flex justify-center items-center text-secondary-text">
                 No Image
@@ -169,12 +169,12 @@ export default function UserProfile() {
         <div className='flex flex-col gap-5 shadow-md rounded-md bg-bg-canvas mx-5 p-5'>
           <div className="flex flex-row flex-1 gap-5 text-primary-text  ">
             <div className='relative group w-25 h-25 lg:w-30 lg:h-30 shrink-0'>
-              <div className="w-full h-full bg-bg-canvas ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
+              <div className="w-full h-full bg-bg-inverse ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
                 {
                   user?.avatar_url ? (
-                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" className='cursor-pointer w-full h-full object-cover'/>
+                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer" className='cursor-pointer w-full h-full object-cover'/>
                   ) : (
-                    <span className='text-primary-text text-3xl font-bold'>
+                    <span className='text-primary-text-inverse text-5xl font-semibold'>
                       {
                         user?.username ? (
                           user?.username.charAt(0).toUpperCase()
@@ -195,52 +195,50 @@ export default function UserProfile() {
               <h1 className="text-secondary-text ">@{user?.username}</h1>
             </div>
           </div>
-          <div className="flex flex-col text-primary-text mt-3">
-            <h1 className="text-xl font-bold mb-2">About</h1>
-            <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
-          </div>
+          
         </div>
 
 
 
 
-        <div className='flex flex-col bg-bg-canvas mx-5 p-3 rounded-md shadow-md'>
+        <div className='flex flex-col bg-bg-canvas mx-5 rounded-md p-5 shadow-md'>
           
+          <div className="flex flex-col text-primary-text  pb-3">
+            <div className="flex flex-col text-primary-text ">
+              <h1 className="text-xl font-bold mb-2">About</h1>
+              <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
+            </div>
+            <div className='flex flex-row gap-6 items-center mb-3 mt-5'>
+              <h1 className="text-xl font-bold">Personal Details</h1>
+              <Link
+                to={`/edit-profile/${user?._id}`}>
+                <img src={Edit} alt="edit" className='cursor-pointer filter-(--icon-filter)'/>
+              </Link>
+            </div>
+            
+            <div className="flex flex-col">
+              <h1 className="font-semibold">Email Address</h1>
+              <p className="text-secondary-text">{user?.email}</p>
+            </div>
 
-          <div className="flex flex-col text-primary-text mt-5 pb-3">
-            <div className="mx-5">
-              <div className='flex flex-row gap-6 items-center'>
-                <h1 className="text-xl font-bold">Personal Details</h1>
-                <Link
-                  to={`/edit-profile/${user?._id}`}>
-                  <img src={Edit} alt="edit" className='cursor-pointer filter-(--icon-filter)'/>
-                </Link>
-              </div>
-              
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Email Address</h1>
-                <p className="text-secondary-text">{user?.email}</p>
-              </div>
+            <div className="flex flex-col">
+              <h1 className="font-semibold mt-5">Join Date</h1>
+              <p className="text-secondary-text">{formattedJoinDate}</p>
+            </div>
 
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Join Date</h1>
-                <p className="text-secondary-text">{formattedJoinDate}</p>
-              </div>
+            <div className="flex flex-col">
+              <h1 className="font-semibold mt-5">Birthdate</h1>
+              <p className="text-secondary-text">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy')  : 'No birthdate yet'}</p>
+            </div>
 
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Birthdate</h1>
-                <p className="text-secondary-text">{user?.birthdate ? format(new Date(user?.birthdate), 'MMMM d, yyyy')  : 'No birthdate yet'}</p>
-              </div>
+            <div className="flex flex-col">
+              <h1 className="font-semibold mt-5">Gender</h1>
+              <p className="text-secondary-text">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'No gender yet'}</p>
+            </div>
 
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Gender</h1>
-                <p className="text-secondary-text">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'No gender yet'}</p>
-              </div>
-
-              <div className="flex flex-col">
-                <h1 className="font-semibold mt-5">Address</h1>
-                <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address'}</p>
-              </div>
+            <div className="flex flex-col">
+              <h1 className="font-semibold mt-5">Address</h1>
+              <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address'}</p>
             </div>
           </div>
         </div>
@@ -252,7 +250,7 @@ export default function UserProfile() {
               <img src={ItemBox} alt="items-svg" className='filter-(--icon-filter)'/>
               <h1 className="font-bold text-xl">My Items</h1>
             </div>
-            <div className={`${userItems.length === 0 ? ' ' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
+            <div className={`${userItems.length === 0 ? ' ' : ' grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}>
 
               {(() => {
                 

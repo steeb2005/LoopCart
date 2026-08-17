@@ -2,7 +2,7 @@ import {BrowserRouter, Route, Routes, Navigate} from 'react-router-dom'
 import LandingPage from './pages/landing-page'
 import Login from './pages/login'
 import Register from './pages/register'
-import Home from './pages/home'
+import Home from './pages/shop'
 import { AppContext, useAppContext } from './context/context'
 import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
@@ -17,8 +17,8 @@ import NotFound from './pages/not-found'
 import { Spinner } from './components/ui/spinner'
 import MessagesInterface from './pages/messages'
 
-
-function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend protection for login bypass  
+{/* Reroutes to Login page if user is not logged in */}
+function ProtectedRoute({children}: {children: React.ReactNode}){  
   const { user, authLoading } = useAppContext();
   
   if(authLoading){
@@ -28,13 +28,11 @@ function ProtectedRoute({children}: {children: React.ReactNode}){  // Frontend p
       </div>
     )
   }
-
   
   if(!user){
     return <Navigate to="/login" replace/>
   }
   return children
-
 }
 
 
@@ -50,15 +48,16 @@ function AppRoute(){
 
   return(
     <Routes>
-      <Route path="/" element={<LandingPage/>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
       <Route element={<Layout/>}>
-        <Route path='/home' element={
-          <ProtectedRoute>
-            <Home/>
-          </ProtectedRoute>
+        <Route path="/" element={
+          <LandingPage/>
+        }/>
+
+        <Route path='/shop' element={
+          <Home/>
         }/>
 
         <Route path='/sell-item' element={
@@ -68,9 +67,7 @@ function AppRoute(){
         }/>
 
         <Route path='/item/:id' element={
-          <ProtectedRoute>
-            <ItemDetails/>
-          </ProtectedRoute>
+          <ItemDetails/>
         }/>
 
         <Route path='/liked-items' element={
@@ -80,9 +77,7 @@ function AppRoute(){
         }/>
 
         <Route path='/users/:userId' element={
-          <ProtectedRoute>
-            <SellerProfile/>
-          </ProtectedRoute>
+          <SellerProfile/>
         }/>
 
         <Route path='/user-profile' element={
@@ -119,9 +114,7 @@ function AppRoute(){
       </Route>
 
       <Route path='/search' element={
-        <ProtectedRoute>
           <SearchPage/>
-        </ProtectedRoute> 
       }/>  
       
       

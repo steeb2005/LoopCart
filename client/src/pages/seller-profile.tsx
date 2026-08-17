@@ -104,12 +104,12 @@ export default function SellerProfile(){
 
   if(displayImage){
     return(
-      <div className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm'>
+      <div className='fixed inset-0 z-100 bg-black/50 backdrop-blur-sm'>
         <img onClick={() => setDisplayImage(false)} src={Close} alt="close_svg" className='absolute top-3 right-3 cursor-pointer h-7 w-7'/>
         <div className='h-dvh w-full p-30 flex items-center justify-center'>
           {
             user?.avatar_url ? (
-              <img src={user?.avatar_url} alt="avatar" className='object-contain h-full w-full' />
+              <img src={user?.avatar_url} alt="avatar" referrerPolicy="no-referrer" className='object-contain h-full w-full' />
             ) : (
               <span>No Image</span>
             )
@@ -127,7 +127,7 @@ export default function SellerProfile(){
   
   if(sellerLoading || dataLoading){
     return(
-      <div> 
+      <div>   
         <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
           <img src={Back} alt="back" />
           Seller Profile
@@ -200,38 +200,49 @@ export default function SellerProfile(){
         <img onClick={handleBackClick} src={Back} alt="back" className="filter-(--icon-filter)"/>
         Seller Profile
       </div>
-      <div className="flex flex-col gap-5">
-        <div className="bg-bg-canvas flex flex-col gap-5 mt-5 mx-5 p-5 rounded-xl shadow-md">
-
-          <div className="flex flex-row gap-5 text-primary-text ">
-            <div className="w-25 h-25 lg:w-30 lg:h-30 ring ring-border-color bg-bg-inverse rounded-full items-center flex justify-center overflow-hidden">
-              {user?.avatar_url ? (
-                <img src={user.avatar_url} onClick={() => setDisplayImage(true)} alt="avatar" className="h-full w-full cursor-pointer object-cover"/>
-                ) : (
-                <span className='text-primary-text-inverse text-3xl font-bold'>
-                  {user?.username.charAt(0).toUpperCase()}
-                </span>) }
-
+      <div className="flex flex-col gap-5 mt-5">
+        <div className='flex flex-col gap-5 shadow-md rounded-md bg-bg-canvas mx-5 p-5'>
+          <div className="flex flex-row flex-1 gap-5 text-primary-text">
+            <div className='relative group w-25 h-25 lg:w-30 lg:h-30 shrink-0'>
+              <div className="w-full h-full bg-bg-inverse ring ring-border-color rounded-full overflow-hidden items-center justify-center flex">
+                {
+                  user?.avatar_url ? (
+                  <img onClick={() => setDisplayImage(true)} src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer" className='cursor-pointer w-full h-full object-cover'/>
+                  ) : (
+                    <span className='text-primary-text-inverse text-5xl font-semibold'>
+                      {
+                        user?.username ? (
+                          user?.username.charAt(0).toUpperCase()
+                        ) : (
+                          "U"
+                        )
+                      }
+                    </span>
+                  )
+                }
+              </div>
             </div>
-            <div className="flex flex-col justify-center">
+              
+            <div className="flex flex-col justify-center line-clamp-1">
               <h1 className="font-bold text-2xl">
                 {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
               </h1>
               <h1 className="text-secondary-text">@{user?.username}</h1>
             </div>
           </div>
+          
+        </div>
 
-          <div className="flex flex-col text-primary-text mt-5">
+        <div className="flex flex-col text-primary-text bg-bg-canvas p-5 rounded-md shadow-md mx-5">
+          <div className="flex flex-col text-primary-text ">
             <h1 className="text-xl font-bold mb-2">About</h1>
             <p className="text-secondary-text text-sm">{user?.bio || 'No bio yet'}</p>
           </div>
-        </div>
 
-        <div className="flex flex-col text-primary-text bg-bg-canvas p-5 rounded-xl shadow-md mx-5">
-          <h1 className="text-xl font-bold">Personal Details</h1>
+          <h1 className="text-xl font-bold mt-5 mb-2">Personal Details</h1>
       
           <div className="flex flex-col">
-            <h1 className="font-semibold mt-5">Join Date</h1>
+            <h1 className="font-semibold">Join Date</h1>
             <p className="text-secondary-text">{formattedDate}</p>
           </div>
 
@@ -261,7 +272,7 @@ export default function SellerProfile(){
             <h1 className="font-bold text-xl">{user?.username}'s Items</h1>
           </div>
 
-          <div className={`${sellerItems.length === 0 ? 'flex justify-center ' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}`}>
+          <div className={`${sellerItems.length === 0 ? 'flex justify-center ' : ' grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}>
 
             {sellerItems.length === 0 ? <div className="mb-2 text-center text-empty-state font-light mt-auto">No items yet</div> : sellerItems?.map(i => (
               <ItemCard
