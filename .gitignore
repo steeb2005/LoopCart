@@ -28,6 +28,10 @@ venv/
 .venv/
 env/
 
+# all pycache
+**/__pycache__/
+*.pyc
+
 # Environment Variables
 .env
 .env.local
