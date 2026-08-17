@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { useAppContext } from "../context/context.tsx"
 import { useLocation } from "react-router-dom"
-import ArrowDown from "../assets/arrow_down.svg"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
