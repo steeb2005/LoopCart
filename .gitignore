@@ -23,13 +23,19 @@ dist-ssr
 *.sln
 *.sw?
 
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# all pycache
+**/__pycache__/
+*.pyc
+
 # Environment Variables
 .env
 .env.local
 .env.*.local
 
-
-__pycache__/
-*.pyc
 
 temp.py
