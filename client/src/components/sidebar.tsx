@@ -1,6 +1,6 @@
 import { motion ,AnimatePresence } from 'framer-motion'
 import { useAppContext } from '../context/context'
-import { useLocation, Link, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, NavLink } from 'react-router-dom'
 import { useState, useEffect } from 'react'  
 import Light from '../assets/light_mode.svg'
 import Dark from '../assets/dark_mode.svg'
@@ -9,10 +9,6 @@ import ArrowRight from '../assets/ArrowRight.svg'
 import Logo from '../assets/Logo.svg'
 import { useSearchParams } from 'react-router-dom'
 
-
-// TODO
-// - Make the landing page into the homepage and make the login and register dynamic
-// - Put the categories in the sidebar for mobile and below the header for desktop
 
 export default function Sidebar({closeSidebar, isOpenSidebar}: {
   closeSidebar: () => void, 
@@ -82,7 +78,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
     closeSidebar()
   }
 
-
+ 
   if(isLoading){
     return (
       <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -123,22 +119,22 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
               <div className="head mb-3 text-primary-text font-semibold border-b border-border-color">
                 {!user && (
                   <div className='flex flex-col gap-3 pb-3 pt-3 px-5'>
-                    <Link to={'/sell-item'}>
+                    <NavLink to={'/sell-item'}>
                       <div className='bg-button-color w-full py-1 text-primary-text-inverse text-center text-lg font-semibold'>
                         Sell now
                       </div>
-                    </Link>
+                    </NavLink>
                     
-                    <Link to={'/register'}>
+                    <NavLink to={'/register'}>
                       <div className='border-2 border-button-color w-full py-1 text-primary-text text-center text-lg font-semibold'>
                         Sign up
                       </div>
-                    </Link>
-                    <Link to={'/login'}>
+                    </NavLink>
+                    <NavLink to={'/login'}>
                       <div className='border-2 border-button-color w-full py-1 text-primary-text text-center text-lg font-semibold'>
                         Login
                       </div>
-                    </Link>
+                    </NavLink>
                   </div>
                 )}
               </div>
@@ -174,45 +170,44 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
 
               {user && (
                 <div onClick={() => closeSidebar()} className='flex flex-col font-light  mb-3'>
-                  <Link to={'/user-profile'}>
-                    <div className={`${currentLocation === 'user-profile' ? 'bg-bg-gray-surface' : ''} px-5 justify-between py-4 flex flex-row items-center gap-3`}>
-                    <p>
-                      Your profile
-                    </p>
+                  <NavLink 
+                    to={`/${user.username}`}
+                    end
+                    className={({ isActive }) => 
+                      `${isActive ? 'bg-bg-gray-surface' : ''} px-5 justify-between py-4 flex flex-row items-center gap-3`
+                    }
+                  >
+                    <p>Your profile</p>
                     <div className='flex h-7 w-7 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
-                        {
-                          user?.avatar_url ? (
-                            <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
-                          ) : (
-                            <span className='text-primary-text-inverse text-sm'>
-                              {
-                                user?.username ? (
-                                  user?.username.charAt(0).toUpperCase()
-                                ) : (
-                                  '?'
-                                )
-                              }
-                            </span>
-                          ) 
-                        }
-                      </div>
+                      {user?.avatar_url ? (
+                        <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
+                      ) : (
+                        <span className='text-primary-text-inverse text-sm'>
+                          {user?.username ? user.username.charAt(0).toUpperCase() : '?'}
+                        </span>
+                      )}
                     </div>
-                  </Link>
-                  <Link to={'/sell-item'}>
-                    <div className={`${currentLocation === 'sell-item' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
-                      Sell
-                    </div>
-                  </Link>
-                  <Link to={'/purchase-history'}>
-                    <div className={`${currentLocation === 'purchase-history' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
-                      Purchases
-                    </div>
-                  </Link>
-                  <Link to={'/liked-items'}>
-                    <div className={`${currentLocation === 'liked-items' ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
-                      Favorites
-                    </div>
-                  </Link>
+                  </NavLink>
+
+                  <NavLink 
+                    to={'/sell-item'}
+                    className={({ isActive }) => `${isActive ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}>
+                      <p>Sell</p>
+                  </NavLink>
+                  
+                  <NavLink 
+                    to={'/purchase-history'}
+                    className={({ isActive}) => `${isActive ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}  
+                    >
+                    <p>Pruchases</p>
+                  </NavLink>
+
+                  <NavLink 
+                    to={`/${user.username}/likes`}
+                    className={({ isActive}) => `${isActive ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}
+                    >
+                      <p>Favorites</p>
+                  </NavLink>
                 </div>
               )}
               

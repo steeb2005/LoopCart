@@ -246,14 +246,14 @@ input:-webkit-autofill:active {
 }
 
 html, body{
-    background-color: var(--color-bg-root);
+    background-color: var(--color-bg-canvas);
     width: 100%;
     transition: background-color 0.2s ease;
     scrollbar-width: thin;
 }
 
 #root {
-    background-color: var(--color-bg-root);
+    background-color: var(--color-bg-canvas);
     transition: background-color 0.2s ease;
 }
 

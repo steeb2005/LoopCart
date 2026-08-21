@@ -1,4 +1,4 @@
-from database import items, likes
+from database import items, likes, users
 from fastapi import APIRouter, Depends, HTTPException
 from models.models import LikeRequest
 from bson import ObjectId
@@ -72,31 +72,76 @@ async def get_user_liked_items(user_id: str ,current_user: dict = Depends(get_cu
     if current_user["sub"] != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    liked_items = [] # Only stores the item ids
-    async for like in likes.find({"user_id": user_id}): # Searches the userId in the likes db and loads only the liked items of the logged in user
-        liked_items.append(like["item_id"]) 
+    # Gets the users likes from the database and only gets the item ids
+    liked_cursor = likes.find({"user_id": user_id}, {"item_id": 1, "_id": 0})
 
-    items_list = [] # Stores the items full items
+    # Stores the item id's from the liked 
+    liked_item_ids = [ObjectId(like["item_id"]) async for like in liked_cursor]
 
-    for item_id in liked_items:
-        item = await items.find_one({"_id": ObjectId(item_id)})
-        if item:
-            items_list.append({
-                "_id": str(item["_id"]),
-                "title": item["title"],
-                "price": item["price"],
-                "category": item["category"],
-                "condition": item["condition"],
-                "description": item["description"],
-                "created_at": item["created_at"],
-                "status": item["status"],
-                "sold_at": item.get("sold_at"),
-                "seller_id": item["seller_id"],
-                "buyer_id": item.get("buyer_id"),
-                "image": item["image"],
-                "likes": item.get("likes", 0),
-                "deleted": item.get("deleted", False)
-            })
+    if not liked_item_ids:
+        return []
+
+    # Gets the items from the database and stores them in a list
+    items_cursor = items.find({"_id": {"$in": liked_item_ids}})
+
+    items_list = []
+
+    async for item in items_cursor:
+        items_list.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item["price"],
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
 
     return items_list
 
+
+
+@router.get('/likes/user/{user_id}')
+async def get_user_likes(user_id: str):
+
+   
+    # Gets the users likes from the database and only gets the item ids
+    liked_cursor = likes.find({"user_id": user_id}, {"item_id": 1, "_id": 0})
+
+    # Stores the item id's from the liked 
+    liked_item_ids = [ObjectId(like["item_id"]) async for like in liked_cursor]
+
+    if not liked_item_ids:
+        return []
+
+    # Gets the items from the database and stores them in a list
+    items_cursor = items.find({"_id": {"$in": liked_item_ids}})
+
+    items_list = []
+
+    async for item in items_cursor:
+        items_list.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item["price"],
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
+
+    return items_list

@@ -1,7 +1,7 @@
 import Logo from '../assets/Logo.svg'
 import Menu from '../assets/Menu.svg'
 import { useScrollDirection } from '../hooks/scrollDirection';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/context';
 import Search from '../assets/search.svg'
 import { useEffect, useRef, useState } from 'react';
@@ -19,7 +19,7 @@ export function Header({openSidebar, isDesktop}: {
   const navigate = useNavigate()
 
   
-  const {inbox, user, toggleTheme, theme, logout} = useAppContext()
+  const {inbox, user, toggleTheme, theme, logout, authLoading, dataLoading} = useAppContext()
 
   const [openDropdown, setOpenDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,16 +83,11 @@ export function Header({openSidebar, isDesktop}: {
     <div className={`fixed top-0 left-0 right-0 z-60 transition-transform duration-300 ease-in-out
       ${isDesktop ? 'translate-y-0' : isHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
-      <div className="justify-between bg-bg-canvas text-primary-text border-b border-border-color items-center flex flex-row py-2 px-3 mb-2">
+      <div className="justify-between bg-bg-canvas text-primary-text border-b border-border-color items-center flex flex-row py-2 px-3">
         <div className='flex flex-row gap-2 items-center'>
           {/* MENU BUTTON */}
           <div onClick={openSidebar} className='lg:hidden relative cursor-pointer font-bold'>
             <img src={Menu} alt="menu" className='cursor-pointer filter-(--icon-filter) h-7'/>
-            {unreadMessages > 0 && 
-              <div className='absolute top-0 -right-1 flex border-2 border-bg-canvas justify-center bg-primary-text rounded-full items-center text-center align-middle text-xs h-5 w-6 text-primary-text-inverse'>
-                {unreadMessages > 9 ? '9+' : unreadMessages}
-              </div>
-            }
           </div>
           <Link to={'/'} className='flex flex-row text-xl items-center gap-2 font-bold'>
             <h1>LoopCart</h1>   
@@ -136,59 +131,65 @@ export function Header({openSidebar, isDesktop}: {
           {/* User profile display for large screens */}
           {user && (
             <>
-              <Link to={'/liked-items'} className='lg:hidden flex'>
+              <NavLink to={`/${user.username}/likes`} className='lg:hidden flex'>
                 <img src={Heart} alt="heart-svg" className='filter-(--icon-filter)'/>
-              </Link>
+              </NavLink>
               <div className='hidden lg:flex flex-row items-center gap-3'>
-                <Link to={'/user-profile'}>
+                <NavLink to={`/${user.username}`}>
                   <div className='flex h-8 w-8 ring ring-border-color rounded-full bg-bg-inverse justify-center items-center cursor-pointer overflow-hidden'>
                     {
-                      user?.avatar_url ? (
-                        <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
+                      dataLoading || authLoading ? (
+                        <Spinner className='text-bg-root'/>
                       ) : (
-                        <span className='text-primary-text-inverse text-sm'>
-                          {
-                            user?.username ? (
-                              user?.username.charAt(0).toUpperCase()
-                            ) : (
-                              '?'
-                            )
-                          }
-                        </span>
-                      ) 
+
+                        user?.avatar_url ? (
+                          <img src={user.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
+                        ) : (
+                          <span className='text-primary-text-inverse text-sm'>
+                            {
+                              user?.username ? (
+                                user?.username.charAt(0).toUpperCase()
+                              ) : (
+                                '?'
+                              )
+                            }
+                          </span>
+                        ) 
+                      )
                     }
                   </div>
-                </Link>
+                </NavLink>
                  
                 
                 {/* Dropdown Component */}
                 <div ref={dropDownRef}>
                   <img onClick={handleDropdown} src={DropArrow} alt="arrow_down" className='cursor-pointer filter-(--icon-filter)'/>
-                  {openDropdown && (
             
-                    <div onClick={handleDropdown} className='absolute top-12 min-w-[15%] bg-bg-canvas shadow-xl right-0 flex flex-col font-light text-primary-text '>
-                      
-                      <Link to={'/user-profile'}>
-                        <div className={`hover:bg-bg-gray-surface py-4 px-4  flex flex-row items-center gap-3`}>
-                          Profile
-                        </div>
-                      </Link>
-                      <Link to={'/purchase-history'}>
-                          <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
-                            History
-                          </div>
-                        </Link>
-                        <Link to={'/liked-items'}>
-                          <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
-                            Favorites
-                          </div>
-                        </Link>
-                        <div onClick={handleLogout}  className='hover:bg-bg-gray-surface py-4 px-4 flex flex-row cursor-pointer items-center gap-3 '>
-                          Log out
-                        </div>
-                   
+                  <div onClick={handleDropdown} className={`${openDropdown ? 'opacity-100 visible' : 'opacity-0 invisible'} duration-100 absolute top-12 min-w-[15%] bg-bg-canvas shadow-xl right-0 flex flex-col font-light text-primary-text`}>
+                    
+                    <NavLink 
+                      to={`/${user.username}`}
+                      >
+                      <div className={`hover:bg-bg-gray-surface py-4 px-4  flex flex-row items-center gap-3`}>
+                        Profile
+                      </div>
+                    </NavLink>
+                    <NavLink to={'/purchase-history'}>
+                      <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
+                        History
+                      </div>
+                    </NavLink>
+                    <NavLink to={`/${user.username}/likes`}>
+                      <div className={`hover:bg-bg-gray-surface py-4 px-4 flex flex-row items-center gap-3`}>
+                        Favorites
+                      </div>
+                    </NavLink>
+                    <div onClick={handleLogout}  className='hover:bg-bg-gray-surface py-4 px-4 flex flex-row cursor-pointer items-center gap-3 '>
+                      Log out
                     </div>
-                  )}
+                  
+                  </div>
+                  
                 </div>
               </div>           
             </>

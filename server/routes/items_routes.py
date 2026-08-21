@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from typing import Optional
 from websocket_manager import manager
 
-
 router = APIRouter()
 
 
@@ -180,6 +179,32 @@ async def get_single_item(item_id: str):
         "deleted": item.get("deleted", False)
     }
 
+
+
+# Gets all items from a users seller_id
+@router.get('/items/user/{seller_id}')
+async def get_user_items(seller_id: str):
+    
+    items_list = []
+    async for item in items.find({"seller_id": seller_id}):
+        items_list.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item.get("price", 0),
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
+
+    return items_list
 
 
 

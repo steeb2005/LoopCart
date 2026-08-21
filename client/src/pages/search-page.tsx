@@ -113,7 +113,7 @@ export default function SearchPage(){
       <div className={`px-5 fixed ${isHidden ? '-translate-y-full' : 'translate-y-0'} top-0 left-0 z-100 transition-transform duration-300 ease-in-out bg-bg-canvas head flex flex-row gap-3 py-2 text-primary-text font-semibold items-center w-full`}>
         <img onClick={handleBackClick} src={Back} alt="back" className='h-6 cursor-pointer filter-(--icon-filter)'/>
         
-        <div className={`search-bar sticky flex flex-row justify-between top-0 w-full z-50  transition-all duration-300 ease-in-out `}>
+        <div className={`search-bar sticky flex flex-row justify-between top-0 w-full transition-all duration-200 ease-in-out `}>
           <img src={Search} alt="searchsvg" className="absolute left-4 top-2.5 filter-(--icon-filter) h-5"/>
           <input 
             ref={inputRef}
@@ -131,11 +131,11 @@ export default function SearchPage(){
         </div>
       </div>
 
-      <div className={`fixed w-full ${isHidden ? 'top-0' : 'top-13'} px-5 py-3 border-t border-border-color bg-bg-canvas shadow-md flex flex-row items-center gap-3  z-50 transition-all duration-300 ease-in-out`}>
-        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'}  border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+      <div className={`fixed w-full ${isHidden ? 'top-0' : 'top-13'} px-5 py-3 border-t border-border-color bg-bg-canvas flex flex-row items-center gap-3 z-20 transition-all duration-200 ease-in-out`}>
+        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-button-color text-primary-text-inverse' : 'hover:bg-bg-surface'}  border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Items
         </div>
-        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-bg-inverse text-primary-text-inverse' : 'hover:bg-bg-surface'} border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
+        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-button-color text-primary-text-inverse' : 'hover:bg-bg-surface'} border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
           Sellers
         </div>
       </div>
@@ -154,6 +154,7 @@ export default function SearchPage(){
                 price={item.price} 
                 seller_name={getUsername(item.seller_id)} 
                 likes={item.likes}
+                status={item.status}
               />
             ))
           ))    
@@ -192,6 +193,7 @@ export default function SearchPage(){
                 price={item.price} 
                 seller_name={getUsername(item.seller_id)} 
                 likes={item.likes}
+                status={item.status}
               />
               
             ))

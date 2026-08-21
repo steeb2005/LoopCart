@@ -34,7 +34,6 @@ async def get_me(current_user: dict = Depends(get_current_user)):
 
 
 
-
 # Reads the whole db and returns the users
 @router.get('/users')
 async def get_users():
@@ -56,6 +55,27 @@ async def get_users():
     return users_list
 
 
+# Gets a single user
+@router.get('/users/{username}')
+async def find_user(username: str):
+    user = await users.find_one({"username": username})
+    if not user: 
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return {
+        "_id": str(user["_id"]),
+        "username": user["username"],
+        "firstname": user["firstname"],
+        "lastname": user["lastname"],
+        "email": user["email"],
+        "join_date": user["join_date"],
+        "avatar_url": user.get("avatar_url"),
+        "address": user.get("address"),
+        "gender": user.get("gender"),
+        "bio": user.get("bio"),
+        "birthdate": user.get("birthdate")
+    }
+    
 
 # update user bio
 @router.patch('/users/{user_id}/bio')

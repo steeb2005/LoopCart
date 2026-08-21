@@ -7,6 +7,12 @@ import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
 
 
+/**
+  TODO
+  - Test in mobile use npm run dev -- --host and fastapi --host 0.0.0.0 --port 8000 --reload
+  - Make the item details load as get_item so it no longer searches for the item using find
+ */
+
 function SkeletonCard(){
   return(
     <Skeleton className="rounded-lg bg-bg-surface overflow-hidden p-3">
@@ -117,11 +123,9 @@ function Home(){
             {category.label}
           </div>
         ))}
-        
-      
       </div>
         
-      <div className="top-section flex flex-col lg:mt-15 ">
+      <div className="top-section flex flex-col mt-3 lg:mt-15 ">
       
         <div className="mx-5 flex flex-row text-primary-text mt-2 items-center gap-3 justify-end text-sm">
   
@@ -131,21 +135,18 @@ function Home(){
               <img src={Sort} alt="sort_svg" className="filter-(--icon-filter) h-5"/>
                 Sort
             </button>
-            {sortMenu && 
-              <div className="absolute right-0 top-10 whitespace-nowrap min-w-full bg-bg-canvas border border-border-color flex flex-col">        
-                {SORT.map((sort) => (
-                  <div
-                    onClick={() => handleSortChange(sort.id)} 
-                    className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} border-b border-border-color last:border-0 px-5 py-3  cursor-pointer text-secondary-text`}>
-                    {sort.label}
-                  </div>
-                ))}
-              
-              </div>
-            }
-            <div>
-
+            <div className={`${sortMenu ? 'opacity-100 visible' : 'opacity-0 invisible'} duration-100 absolute right-0 top-10 whitespace-nowrap min-w-full bg-bg-canvas border border-border-color flex flex-col z-50`}>        
+              {SORT.map((sort) => (
+                <div
+                  onClick={() => handleSortChange(sort.id)} 
+                  className={`${currentSort === sort.id ? 'bg-bg-gray-surface' : ''} border-b border-border-color last:border-0 px-5 py-3  cursor-pointer text-secondary-text`}>
+                  {sort.label}
+                </div>
+              ))}
+            
             </div>
+            
+         
           </div>
         </div>
 
@@ -171,6 +172,7 @@ function Home(){
                   price={item.price}
                   seller_name={getUsername(item.seller_id)}
                   likes={item.likes}
+                  status={item.status}
                 />
               )
             ))

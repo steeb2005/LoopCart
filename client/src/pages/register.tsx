@@ -57,9 +57,9 @@ export default function Register(){
           position: 'top-center'
         })
         navigate('/login')
-      }else if(res.error === 'User already exists'){
-        setError('User already exists')
-        toast.error('User already exists', {
+      }else if(res.error === 'User already taken'){
+        setError('Username already taken')
+        toast.error(res.error, {
           action: {
             label: '✕',
             onClick: () => {
@@ -70,7 +70,7 @@ export default function Register(){
         })
       }else if(res.error === 'Email already exists'){
         setError('Email already exists')
-        toast.error('Email already exists', {
+        toast.error(res.error, {
           action: {
             label: '✕',
             onClick: () => {

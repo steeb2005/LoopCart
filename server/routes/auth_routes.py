@@ -77,17 +77,11 @@ async def google_auth(payload: GoogleAuthRequest, response: Response):
         user_id = str(result.inserted_id)
         user_doc = new_user
 
-    token = create_access_token(user_id, email)
+    access_token = create_access_token(user_id, email)
+    refresh_token = create_refresh_token(user_id, email)
 
-    response.set_cookie(
-        key="access_token",
-        value=token,
-        httponly=True,
-        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="none", # Set to lax if in development none if in production
-        max_age=60*60*24*30 # Set cookie to expire in 30 days
-    )
-
+    set_auth_cookies(response, access_token, refresh_token)
+    
     return {    
         "user": {
             "_id": user_id,
@@ -111,7 +105,7 @@ async def create_user(user: User):
     #check if user already exists
     existing_email = await users.find_one({"email": user.email})
     if existing_email:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="Email already exists")
 
     existing_username = await users.find_one({"username": user.username})
     if existing_username:
@@ -146,7 +140,6 @@ async def create_user(user: User):
 # login 
 @router.post("/login")
 async def login(login_data: LoginRequest, response: Response):
-    
     user = await users.find_one({"email": login_data.email}) # Find user by email
 
     if not user:
@@ -192,8 +185,12 @@ async def refresh(request: Request, response: Response):
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 
-    new_access_token = create_access_token(payload["_id"], payload["email"])
+    new_access_token = create_access_token(payload["sub"], payload["email"])
     set_auth_cookies(response, new_access_token)
+
+
+
+
 
 # Logout
 @router.post('/logout')

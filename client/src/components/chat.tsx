@@ -509,56 +509,60 @@ export default function Chat({userId, itemId, item, otherUser, dataLoading, stat
               <div className="flex flex-row gap-3 items-center">
                 <img onClick={handleBackClick} src={Back} alt="back" className="lg:hidden cursor-pointer h-5 filter-(--icon-filter)"/>
                 
-                <div className="h-7 w-7 rounded-full bg-bg-canvas border border-border-color flex justify-center items-center overflow-hidden">
+                <div className="h-7 w-7 rounded-full bg-bg-inverse border border-border-color flex justify-center items-center overflow-hidden">
                   {
                     otherUser?.avatar_url ? (
                     <img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>
                     ) : (
-                    <span className='text-primary-text text-sm justify-center items-center font-bold'>
+                    <span className='text-primary-text-inverse text-sm justify-center items-center font-bold'>
                       {otherUser?.username.charAt(0).toUpperCase()}</span>
                     ) 
                   }
                 </div>
                 <h1>{otherUser?.username}</h1>
               </div>
-              <div className='lg:flex flex-row gap-3 items-center hidden '>
-                {
-                  !otherUser?._id ? (
-                    <div 
-                      className={`bg-bg-surface text-secondary-text rounded-md py-2 px-3 text-xs `}          
-                    >
-                      {isSold ? 'Item Sold' : 'Mark as Sold'}
-                    </div>
-                  ) : (
-                    item?.deleted ? (
-                      <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+
+              
+              
+              <div className='flex-row flex gap-3 items-center'>
+                <div className='lg:flex flex-row hidden '>  
+                  {
+                    !otherUser?._id ? (
+                      <div 
+                        className={`bg-bg-surface text-secondary-text rounded-md py-2 px-3 text-xs `}          
+                      >
+                        {isSold ? 'Item Sold' : 'Mark as Sold'}
+                      </div>
                     ) : (
-                      role === 'seller' && (
-                        <div 
-                          className={`${isSold ? 'border border-border-color text-primary-text' : 'bg-button-color text-primary-text-inverse'} cursor-pointer rounded-xl py-2 px-3 text-xs `}
-                          onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
-                        >
-                          {isSold ? 'Item Sold' : 'Mark as Sold'}
-                        </div>
+                      item?.deleted ? (
+                        <div className="font-light bg-bg-surface rounded-full justify-center items-center py-2 px-3 text-xs">Item Deleted</div>
+                      ) : (
+                        role === 'seller' && (
+                          <div 
+                            className={`${isSold ? 'border border-border-color text-primary-text' : 'bg-button-color text-primary-text-inverse'} cursor-pointer rounded-xl py-2 px-3 text-xs `}
+                            onClick={() => isSold ? setRevertSold(true): setSoldConfirmation(true)}
+                          >
+                            {isSold ? 'Item Sold' : 'Mark as Sold'}
+                          </div>
+                        )
                       )
                     )
-                  )
-                }  
+                  }  
 
-                <div onClick={() => setOpenItemDetails(true)} className={`${openItemDetails ? 'hidden' : 'flex'} flex-row gap-1 items-center bg-bg-surface  cursor-pointer rounded-full py-2 px-3 text-xs `}>
-                  <p>View item</p>
-                  <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                  <div onClick={() => setOpenItemDetails(true)} className={`${openItemDetails ? 'hidden' : 'flex'} flex-row gap-1 items-center bg-bg-surface  cursor-pointer rounded-full py-2 px-3 text-xs `}>
+                    <p>View item</p>
+                    <img src={ArrowRight} alt="arrow_right_svg" className="h-3 filter-(--icon-filter)"/>
+                  </div>
                 </div>
                 <div className='relative' ref={dropDownRef}>
                   <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
-                  {openDropdown && (
-                    <div className='absolute w-40 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                  
+                    <div className={`${openDropdown ? 'opacity-100 visible' : 'opacity-0 invisible'} duration-100 hover:bg-bg-canvas/50 absolute w-40 flex flex-row justify-center top-9 px-2 py-3 right-0 bg-bg-canvas border border-border-color text-sm`}>
                       <p className='cursor-pointer' onClick={handleConfirmDelete}>Delete Conversation</p>
                     </div>
-                  )}
+                  
                 </div>
               </div>
-              
             </div>
             
             {/**/}

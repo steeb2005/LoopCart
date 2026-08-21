@@ -13,8 +13,8 @@ export default function UserCard({userId, avatar_url, firstname, lastname, usern
 
   return(
     <Link
-      to={ isUser ? `/user-profile` : `/users/${userId}`}
-      className="shadow-md bg-bg-canvas p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
+      to={ isUser ? `/user-profile` : `/${username}`}
+      className="border-border-color border hover:border-border-color/60 p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full ring ring-border-color bg-bg-inverse flex justify-center items-center overflow-hidden">
           {avatar_url ? (<img src={avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{username?.charAt(0).toUpperCase()}</span>) }
@@ -31,3 +31,4 @@ export default function UserCard({userId, avatar_url, firstname, lastname, usern
     </Link>
   )
 }
+
