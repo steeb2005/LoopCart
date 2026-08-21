@@ -16,8 +16,8 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str |
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax", # Set to lax if in development none if in production
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none", # Set to lax if in development none if in production
         max_age=60 * 15
     )
 
@@ -26,8 +26,8 @@ def set_auth_cookies(response: Response, access_token: str, refresh_token: str |
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-            samesite="lax", # Set to lax if in development none if in production
+            secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+            samesite="none", # Set to lax if in development none if in production
             max_age=60 * 60 * 24 * 7 if remember_me else 60 * 60 * 12  # If remember me is set refresh token is 7 days else its 24 hours  
         )
 
@@ -197,13 +197,13 @@ async def refresh(request: Request, response: Response):
 async def logout(response: Response):
     response.delete_cookie(
         "access_token",
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax" # Set to lax if in development none if in production
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none" # Set to lax if in development none if in production
         )
     
     response.delete_cookie(
         "refresh_token",
-        secure=False, # Change to TRUE in production only works in http currently, switch to true to work for https
-        samesite="lax" # Set to lax if in development none if in production
+        secure=True, # Change to TRUE in production only works in http currently, switch to true to work for https
+        samesite="none" # Set to lax if in development none if in production
         )
     return{"success": True}
