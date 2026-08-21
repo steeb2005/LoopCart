@@ -17,12 +17,6 @@ import Location from '../assets/location.svg'
 import { useItemLike } from "../hooks/handle-like";
 import HeartClicked from '../assets/clickedHeart.svg'
 
-// TODO
-// - Add a delete message option
-// - Decide to move the login to the landing page (get inspo from claude)
-// - Make the landing page be the homepage and make the login and register dynamic
-// - Move the Burger icon to the left and make the user profile icon to the right 
-// - If the user is not logged in replace right icons with login/register (get inspo from depop)
 
 
 type AddressDetails = { 
@@ -222,11 +216,11 @@ function InboxEntry({conversationId, currentItemId, currentOtherUserId, unreadCo
     <div
       onClick={handleSetChat}
       className={`${currentItemId === itemId && currentOtherUserId === userId ? 'bg-bg-surface' : ''} cursor-pointer hover:bg-bg-surface duration-100 item-entry px-3 py-2  gap-2 rounded-md flex flex-row shrink-0 text-sm items-center`}>
-      <div className="w-12 h-12 items-center justify-center overflow-hidden border border-border-color bg-bg-canvas rounded-full flex">
+      <div className="w-12 h-12 items-center justify-center overflow-hidden border bg-bg-inverse border-border-color rounded-full flex">
         {otherUser?.avatar_url ? (
           <img src={otherUser?.avatar_url} alt="avatar" referrerPolicy="no-referrer" className=" h-auto w-auto object-contain"/>
         ) : (
-          <span className='text-primary-text text-xl font-bold justify-center flex items-center'>
+          <span className='text-primary-text-inverse text-xl font-bold justify-center flex items-center'>
             {otherUsername?.charAt(0).toUpperCase()}
           </span>
         )
@@ -394,7 +388,7 @@ function Inbox({onSelectChat}:{
       <div className='overflow-y-auto grow scrollbar-thin scrollbar-thumb-bg-surface scrollbar-track-bg-canvas items-section gap-2 flex flex-col mt-3'>
         <div className="flex px-3 flex-row justify-start gap-1 font-semibold mt-2 text-primary-text ">
 
-          <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 
+          <div onClick={() => handleFilter('all')} className={` border-b ${clickedFilter === 'all' ? 'border-button-color' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 cursor-pointer items-center text-sm shrink-0 px-4`}> 
             All
             {allUnreadCount > 0 && 
             <div className='bg-bg-surface text-primary-text font-bold w-6 h-5 rounded-full text-center justify-center flex items-center text-xs '>
@@ -402,7 +396,7 @@ function Inbox({onSelectChat}:{
             </div>}
           </div>
 
-          <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center shrink-0 text-center py-2 px-4 cursor-pointer items-center text-sm`}>
+          <div onClick={() => handleFilter("buying")} className={`border-b ${clickedFilter === 'buying' ? 'border-button-color' :'border-transparent' } gap-2 flex flex-row justify-center shrink-0 text-center py-2 px-4 cursor-pointer items-center text-sm`}>
             Buying 
             {buyingUnreadCount > 0 && 
             <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-bold '>
@@ -411,7 +405,7 @@ function Inbox({onSelectChat}:{
           </div>
            
             
-          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-bg-inverse' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 px-4 shrink-0 cursor-pointer items-center text-sm`}> 
+          <div onClick={() => handleFilter('selling')} className={` border-b ${clickedFilter === 'selling' ? 'border-button-color' :'border-transparent' } gap-2 flex flex-row justify-center text-center py-2 px-4 shrink-0 cursor-pointer items-center text-sm`}> 
             Selling 
             {sellingUnreadCount > 0 && 
             <div className='bg-bg-surface text-primary-text w-6 h-5 rounded-full text-center justify-center flex items-center text-xs font-bold '>
@@ -493,7 +487,7 @@ function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
   ].filter(Boolean)
 
   return(
-    <div className={`bg-bg-canvas rounded-xl col-span-1 h-dvh overflow-y-auto flex flex-col min-h-0 lg:shadow-xl`}>
+    <div className={`bg-bg-canvas rounded-xl col-span-1 h-dvh lg:py-2 overflow-y-auto flex flex-col lg:shadow-xl min-h-0 `}>
       <div className='head mb-5 flex flex-row pt-3 text-primary-text font-semibold px-5'>
         <div className="flex flex-row justify-between w-full">
           <h1>Details</h1>
@@ -566,7 +560,7 @@ function ItemDetails({itemId, item, otherUser, setOpenItemDetails}: {
             <h1 className="text-xl font-semibold mb-3">Seller</h1>
 
             <Link  
-              to={`${isSeller ? `/user-profile` : `/users/${item?.seller_id}`} `}
+              to={`${isSeller ? `/${user?.username}` : `/${otherUser?.username}`}`}
               className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
               <div className='bg-bg-inverse rounded-full  w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
                 {isSeller ? (
@@ -681,7 +675,7 @@ export default function MessagesInterface(){
     flex-1 min-w-0
   `
   return(
-    <div className="flex flex-col flex-1 min-h-0 lg:p-2">
+    <div className="flex bg-bg-root flex-col flex-1 min-h-0 lg:mt-10 lg:p-2">
       <div className="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
 
         <div className={inboxClass}>
@@ -739,6 +733,3 @@ export default function MessagesInterface(){
 
 }
 
-
-// <div className="flex flex-col flex-1 min-h-0 lg:p-2">
-//       <div className="grid md:grid-cols-1 lg:grid-cols-4 gap-5 flex-1 min-h-0">

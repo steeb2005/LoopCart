@@ -159,6 +159,7 @@ export type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  get_user_items: (seller_id: string) => Promise<void>;
   update_username: (userId: string, username: string) => Promise<{
     success: boolean;
     error?: string;
@@ -167,6 +168,8 @@ export type ContextType = {
     success: boolean; 
     error?: string}
   >;
+  get_user_liked_items: (user_id: string) => Promise<Item[] | []>;
+  get_user: (username: string) => Promise<User | null>;
   upload_avatar: (userId: string, file: File) => Promise<Boolean>
   update_address: (userId: string, address: AddressDetails) => Promise<void>;
   delete_conversation: (conversationId: string) => Promise<void>;
@@ -260,7 +263,6 @@ export function AppContext({children}: {children: React.ReactNode}) {
         
         if(!res.ok){
           setAuthLoading(false)
-          console.error('no user logged in');
           setUser(null)
         }else{
           const data = await res.json() // Loaded info 
@@ -316,7 +318,6 @@ export function AppContext({children}: {children: React.ReactNode}) {
     if(res.status === 401){
       const refreshed = await refresh_access_token()
       if(refreshed){
-        console.log('refreshed token')
         res = await fetch(url, {...init, credentials: 'include'})
       }else{
         setUser(null)
@@ -555,18 +556,28 @@ export function AppContext({children}: {children: React.ReactNode}) {
 
   const get_item = async (itemId: string) => {
     try{
-      const res = await fetch(`${API_URL}/items/${itemId}`, {
-        headers: authHeaders(),
-        credentials: 'include'
-      });
+      const res = await authedFetch(`${API_URL}/items/${itemId}`);
       const data = await res.json();
       return data
     }catch{
       console.error('error in getting item');
     }
   }
+
+
+  const get_user_items = async (seller_id: string) => {
+    try{
+      const res = await fetch(`${API_URL}/items/user/${seller_id}`);
+      const data = await res.json();
+      return data
+    }catch{
+      console.error('Error in getting users items')
+    }
+  }
   
   // Users ------------------------------------------------------------------------------------
+
+  
 
   const load_users = async () => {
     try{
@@ -580,7 +591,24 @@ export function AppContext({children}: {children: React.ReactNode}) {
   }; 
 
 
-
+  const get_user = async (username: string) => {
+    try{
+      if(!username){
+        console.error('No username provided');
+        return
+      } 
+        
+      const res = await authedFetch(`${API_URL}/users/${username}`);
+      if(res.ok){
+        const data = await res.json()
+        return data
+      }else{
+        console.error('Username not found');
+      }
+    }catch{
+      console.error('error in getting user');
+    }
+  }
 
   // Likes ---------------------------------------------------------------------------------------
 
@@ -598,6 +626,15 @@ export function AppContext({children}: {children: React.ReactNode}) {
     }
   }
 
+  const get_user_liked_items = async (user_id: string) => {
+    try{
+      const res = await fetch(`${API_URL}/likes/user/${user_id}`);
+      const data = await res.json();
+      return data
+    }catch{
+      console.error('Error in getting users liked items')
+    }
+  }
 
 
   const like_item = async (userId: string, itemId: string) => {
@@ -1078,6 +1115,9 @@ export function AppContext({children}: {children: React.ReactNode}) {
     authLoading,
     theme,
 
+    get_user_liked_items,
+    get_user_items,
+    get_user,
     update_username,
     google_login,
     upload_avatar,

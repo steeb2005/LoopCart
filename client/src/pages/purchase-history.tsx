@@ -120,8 +120,8 @@ export default function PurchaseHistory(){
 
 
   return(
-    <div className='lg:mx-30 bg-bg-canvas h-dvh rounded-xl shadow-md lg:m-2'>
-      <div className='head mx-5 flex flex-row gap-5 pt-3 text-primary-text font-semibold items-center'>
+    <div className='lg:mx-30  bg-bg-canvas h-dvh rounded-xl shadow-md lg:m-2'>
+      <div className='head mx-5 flex flex-row gap-5 pt-5 lg:pt-15 text-primary-text font-semibold items-center'>
         <img src={History} alt="history_svg" className="filter-(--icon-filter) h-6"/>
         History
       </div>
@@ -169,7 +169,7 @@ export default function PurchaseHistory(){
                     price={item.price}
                     isUserTheBuyer={isUserTheBuyer}
                     username={getUsername(item.buyer_id)}
-                    image={item.image} // SET LATER
+                    image={item.image} 
                     sold_at={item.sold_at}
                     seller_id={item.seller_id}
                   />

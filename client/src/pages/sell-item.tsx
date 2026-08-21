@@ -1,4 +1,3 @@
-import Back from '../assets/back.svg'
 import { useLocation} from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import Location from '../assets/location.svg'
@@ -239,9 +238,7 @@ function SellItem(){
     setItem({...item, price: values.floatValue !== undefined ? String(values.floatValue) : ''})
   }
 
-  const handleBackClick = () => {
-    navigate(-1)
-  }
+  
 
   const displayAddress = [
     user?.address?.building,
@@ -290,12 +287,7 @@ function SellItem(){
 
   return(
     <>
-      <div className='mx-5 pb-2 lg:mx-30'> 
-        <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-          <img src={Back} alt="back" onClick={handleBackClick} className='filter-(--icon-filter) cursor-pointer'/>
-          {mode === 'create' ? 'Create Listing' : 'Edit Listing'}
-        </div>
-
+      <div className='mx-5 pb-2 lg:mx-30 lg:mt-15'> 
         <div className='mx-5 grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
           <div className='relative'>
             <div onClick={handleRemoveImage} className={`${imagePreview ? 'block' : 'hidden'} h-6 w-6 absolute cursor-pointer top-2 right-2 bg-bg-surface flex items-center rounded-full justify-center`}>
@@ -309,7 +301,7 @@ function SellItem(){
               accept='image/png, image/jpeg, image/webp'
             />
 
-            <div className='h-100 flex justify-center bg-bg-canvas rounded-md overflow-hidden'>
+            <div className='h-100 flex border-border-color border justify-center bg-bg-canvas rounded-md overflow-hidden'>
               
               {imagePreview ? (
                 <img src={imagePreview} alt="item" className='w-full h-full object-contain '/>

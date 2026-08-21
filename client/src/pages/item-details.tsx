@@ -18,6 +18,7 @@ import Close from '../assets/close.svg'
 import { toast } from 'sonner'
 import { RelativeTime } from '../hooks/handle-relative-time'
 
+
 type Item = {
   _id?: string;
   title: string;
@@ -72,10 +73,10 @@ type User = {
 }
 
 
-function ItemDetails(){
+export default function ItemDetails(){
   const navigate = useNavigate()
   const {id} = useParams() 
-  const {items, user, getUsername, users, dataLoading, delete_item} = useAppContext()
+  const {items, user, getUsername, users, dataLoading, delete_item, get_item} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null)
@@ -91,39 +92,37 @@ function ItemDetails(){
       setPageLoading(true)
       return
     }
-
-    if(items.length === 0 && !dataLoading){
-      setItem(null)
-      setOtherUser(null)
-      setPageLoading(false)
-      setSellerUsername('Unknown Seller')
-      return
-    }
-
-    const foundItem = items?.find(item => item._id === id)
-    
-    if(foundItem){
-      setSellerUsername(getUsername(foundItem?.seller_id || 'Unkown Seller'))
-      
-      setItem(foundItem)
-
-      const founduser = users?.find(user => user._id === foundItem?.seller_id)
-      if(founduser){
-        setOtherUser(founduser)
-      }else{
+  
+    const findItem = async () => {
+      try{
+        if(!id){
+          console.error('params id not loaded')
+          return 
+        }
+        const res = await get_item(id)
+        if(res){
+          setItem(res)
+          setSellerUsername(getUsername(res?.seller_id || 'Unkown Seller'))
+          const foundSeller = users?.find(user => user._id === res?.seller_id)
+          if(foundSeller){
+            setOtherUser(foundSeller)
+          }
+        }else{
+          setItem(null)
+          setSellerUsername('Unknown Seller')
+          setOtherUser(null)  
+        }
+      }catch{
+        console.error('error in finding item');
+        setItem(null)
+        setSellerUsername('Unknown Seller')
         setOtherUser(null)
-        console.error('User not found')
+      }finally{
+        setPageLoading(false)
       }
-      setPageLoading(false)
-
-    }else{
-      setItem(null)
-      setOtherUser(null)
-      setSellerUsername('Unknown Seller')
-      console.error('Item not found')
     }
-    
-  }, [items, id, getUsername, users])
+    findItem()
+  }, [items, id, getUsername, users, dataLoading, get_item])
 
 
   useEffect(() => {
@@ -146,10 +145,6 @@ function ItemDetails(){
 
   const {isLiked, likesCount, handleLikeClick} = useItemLike(item?._id!, item?.likes || 0)
 
-  const handleBackClick = () => {
-    navigate(-1)
-  }
-  
 
   const handleEditListing = () => {
     navigate(`/sell-item`, {
@@ -197,7 +192,7 @@ function ItemDetails(){
     return(
       <div className="mx-5 p-0 m-0 pb-5 h-dvh flex flex-col lg:mx-30"> 
           <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-            <img src={Back} alt="back" className='cursor-pointer'/>
+            <img src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
             Item details
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 h-full'>
@@ -284,122 +279,120 @@ function ItemDetails(){
 
   return(
     <>
-        <div className='p-5 lg:mx-30 bg-bg-canvas lg:p-5 rounded-lg shadow-md'> 
-          <div className='head items-center flex flex-row justify-between text-primary-text font-semibold'>
-            <div className='flex flex-row gap-8'>
-              <img onClick={handleBackClick} src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
-              Item details
-            </div>
+      
+      <div className='p-5 lg:mx-30 bg-bg-canvas lg:mt-10 lg:p-5 rounded-lg shadow-md'> 
+        <div className='head items-center flex flex-row justify-between text-primary-text font-semibold'>
+          
 
-            {isUserItem && (    // Only allows the user to delete their own item
-              <div className='relative' ref={dropDownRef}>
-                <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
-                {openDropdown && (
-                  <div className='absolute w-30 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
-                    <p className='cursor-pointer' onClick={() => setConfirmDelete(true)}>Delete item</p>
-                  </div>
-                )}
+          {isUserItem && (    // Only allows the user to delete their own item
+            <div className='relative' ref={dropDownRef}>
+              <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
+              {openDropdown && (
+                <div className='absolute w-30 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                  <p className='cursor-pointer' onClick={() => setConfirmDelete(true)}>Delete item</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+
+        <div className='grid grid-cols-1 md:grid-cols-2 gap-10 items-center mt-5'>
+          <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+            {item?.image ? (
+              <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
+            ) : (
+              <div className=" h-full flex justify-center items-center text-secondary-text">
+                No Image
               </div>
             )}
           </div>
-          
 
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-10 items-center mt-5'>
-            <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
-              {item?.image ? (
-                <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
-              ) : (
-                <div className=" h-full flex justify-center items-center text-secondary-text">
-                  No Image
-                </div>
-              )}
+            
+
+          <div className='flex flex-col gap-3 '>   
+            <h1 className='font-semibold text-xl'>{item.title}</h1>
+
+            <div className='flex flex-row'>
+              <div className='border border-border-color rounded-md text-primary-text px-3 py-1 text-sm'>
+                {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'N/A'}
+              </div>
+            </div>
+            <div className='flex flex-row items-center gap-2'>
+              <img src={Tag} alt="tag_svg" className='filter-(--icon-filter) h-5'/>
+              <h1 className='font-semibold text-xl'>₱{item.price.toLocaleString('en-US')}</h1>
             </div>
 
+            <div className='flex flex-row items-center gap-2'>
+              <img src={Time} alt="time_svg" className='filter-(--icon-filter) h-6'/>
+              <h1 className='text-secondary-text'>{RelativeTime(item.created_at)}</h1> {/* Replace with actual time */}
+            </div>
+
+            <div className='flex flex-row gap-2'>
+              <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer'/>
+              <h1 className='text-secondary-text'>{likesCount} Likes</h1>
+            </div>
+
+            <div className='flex flex-row items-center gap-2'>
+              <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
+              <p className='text-secondary-text'>{otherUser?.address ? displayAddress.join(' ') : 'N/A' }</p>
+            </div>
+
+            <div className='flex flex-row gap-4 items-center'>
+              <h1 className='text-secondary-text text-lg'>Condition</h1>
+              <p className=''>{item.condition}</p>
+            </div>
+
+
+            <div className='flex flex-col'>
+              <h1 className='font-semibold text-xl gap-2'>Description</h1>
+              <p className=''>{item.description}</p>
+            </div>
+
+
+            <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
+              <div className='flex items-center'>
+                <h1>Seller</h1>
+                <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
+              </div>
+            </div>
               
 
-            <div className='flex flex-col gap-3 '>   
-              <h1 className='font-semibold text-xl'>{item.title}</h1>
-
-              <div className='flex flex-row'>
-                <div className='border border-border-color rounded-md text-primary-text px-3 py-1 text-sm'>
-                  {(item?.status?.charAt(0).toUpperCase() + item?.status?.slice(1)) || 'N/A'}
-                </div>
+            <Link  
+              to={`/${sellerUsername}`}
+              className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
+              <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
+                {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
               </div>
-              <div className='flex flex-row items-center gap-2'>
-                <img src={Tag} alt="tag_svg" className='filter-(--icon-filter) h-5'/>
-                <h1 className='font-semibold text-xl'>₱{item.price.toLocaleString('en-US')}</h1>
-              </div>
-
-              <div className='flex flex-row items-center gap-2'>
-                <img src={Time} alt="time_svg" className='filter-(--icon-filter) h-6'/>
-                <h1 className='text-secondary-text'>{RelativeTime(item.created_at)}</h1> {/* Replace with actual time */}
-              </div>
-
-              <div className='flex flex-row gap-2'>
-                <img onClick={handleLikeClick} src={isLiked ? HeartClicked : Heart} alt="heart" className='filter-(--icon-filter) cursor-pointer'/>
-                <h1 className='text-secondary-text'>{likesCount} Likes</h1>
-              </div>
-
-              <div className='flex flex-row items-center gap-2'>
-                <img src={Location} alt="location" className='filter-(--icon-filter) h-6'/>
-                <p className='text-secondary-text'>{otherUser?.address ? displayAddress.join(' ') : 'N/A' }</p>
-              </div>
-
-              <div className='flex flex-row gap-4 items-center'>
-                <h1 className='text-secondary-text text-lg'>Condition</h1>
-                <p className=''>{item.condition}</p>
-              </div>
-
- 
-              <div className='flex flex-col'>
-                <h1 className='font-semibold text-xl gap-2'>Description</h1>
-                <p className=''>{item.description}</p>
-              </div>
-
-
-              <div className='items-center flex flex-row text-primary-text text-xl justify-between font-semibold mt-5'>
-                <div className='flex items-center'>
-                  <h1>Seller</h1>
-                  <img src={Goto} alt="goto" className='h-8 filter-(--icon-filter)'/>
-                </div>
-              </div>
-                
-
-              <Link  
-                to={`${isUserItem ? `/user-profile` : `/users/${item.seller_id}`} `}
-                className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
-                <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-                  {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
-                </div>
-                <h1>@{sellerUsername}</h1>
+              <h1>@{sellerUsername}</h1>
+            </Link>
+            
+            {isUserItem ? (
+              <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+                Edit Listing
+              </button>
+            ) : (item?.sold_at ? (
+              <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
+                Item Sold
+              </button>
+            ) : (
+              <Link
+                to={`/messages/${item?._id}/${item?.seller_id}`}  
+              >
+                <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'> 
+                  Make an Offer
+                </button>
               </Link>
               
-              {isUserItem ? (
-                <button onClick={handleEditListing} className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-                  Edit Listing
-                </button>
-              ) : (item?.sold_at ? (
-                <button className='cursor-pointer justify-center flex mt-auto flex-row items-center bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'>
-                  Item Sold
-                </button>
-              ) : (
-                <Link
-                  to={`/messages/${item?._id}/${item?.seller_id}`}  
-                >
-                  <button className='justify-center cursor-pointer flex mt-auto flex-row bg-button-color rounded-md p-2 text-primary-text-inverse font-semibold w-full'> 
-                    Make an Offer
-                  </button>
-                </Link>
-                
-                )
-              )}
-            </div>
+              )
+            )}
           </div>
+        </div>
 
-          
-          
+        
+        
 
-          {confirmDelete && (
+        {confirmDelete && (
           <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
             <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
 
@@ -439,11 +432,10 @@ function ItemDetails(){
             </div>
           </div>
         )}
-          
-        </div>    
-
+      </div>    
     </>
   )    
 }
+        
 
-export default ItemDetails
+

@@ -195,8 +195,8 @@ export default function SellerProfile(){
   ].filter(Boolean)
   
   return(
-    <div className="pb-2"> 
-      <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold cursor-pointer'>
+    <div className="pb-2 pt-5"> 
+      <div className='mx-5 head flex flex-row gap-8 text-primary-text font-semibold cursor-pointer'>
         <img onClick={handleBackClick} src={Back} alt="back" className="filter-(--icon-filter)"/>
         Seller Profile
       </div>
@@ -224,10 +224,10 @@ export default function SellerProfile(){
             </div>
               
             <div className="flex flex-col justify-center line-clamp-1">
-              <h1 className="font-bold text-2xl">
+              <h1 className="font-bold lg:text-2xl text-xl">
                 {capitalizeName(user?.firstname)} {capitalizeName(user?.lastname)}
               </h1>
-              <h1 className="text-secondary-text">@{user?.username}</h1>
+              <h1 className="text-secondary-text text-sm lg:text-lg">@{user?.username}</h1>
             </div>
           </div>
           
@@ -243,33 +243,33 @@ export default function SellerProfile(){
       
           <div className="flex flex-col">
             <h1 className="font-semibold">Join Date</h1>
-            <p className="text-secondary-text">{formattedDate}</p>
+            <p className="text-secondary-text text-sm">{formattedDate}</p>
           </div>
 
           {user?.birthdate && (  
             <div className="flex flex-col">
               <h1 className="font-semibold mt-5">Birthdate</h1>
-              <p className="text-secondary-text">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
+              <p className="text-secondary-text text-sm">{format(new Date(user?.birthdate), 'MMMM d, yyyy')}</p>
             </div>
           )}
 
           {user?.gender && (
           <div className="flex flex-col">
             <h1 className="font-semibold mt-5">Gender</h1>
-            <p className="text-secondary-text">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
+            <p className="text-secondary-text text-sm">{user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1).toLowerCase()}</p>
           </div>
           )}
 
           <div className="flex flex-col">
             <h1 className="font-semibold mt-5">Address</h1>
-            <p className="text-secondary-text">{user?.address ? displayAddress.join(' ') : 'No address yet'}</p>
+            <p className="text-secondary-text text-sm">{user?.address ? displayAddress.join(' ') : 'No address yet'}</p>
           </div>
         </div>
 
         <div className="text-primary-text mx-5 mt-5">
           <div className="flex flex-row gap-3 mb-5">
             <img src={Items} alt="items-svg" className="filter-(--icon-filter)" />
-            <h1 className="font-bold text-xl">{user?.username}'s Items</h1>
+            <h1 className="font-bold lg:text-xl text-lg">{user?.username}'s Items</h1>
           </div>
 
           <div className={`${sellerItems.length === 0 ? 'flex justify-center ' : ' grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}>
@@ -282,7 +282,9 @@ export default function SellerProfile(){
                 title={i.title}
                 price={i.price}
                 seller_name={getUsername(i.seller_id)}
-                likes={i.likes}/>
+                likes={i.likes}
+                status={i.status}
+                />
             ))}
           </div>
 

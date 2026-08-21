@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom"
-import Back from '../assets/back.svg'
 import { useAppContext } from "../context/context"
 import Edit from '../assets/edit.svg'
 import React, { useEffect, useState, useRef } from "react"
-import Close from '../assets/close.svg'
 import TextareaAutosize from "react-textarea-autosize"
 import { DatePicker } from '../components/date-picker'
 import { format } from "date-fns"
@@ -12,6 +10,9 @@ import Erase from '../assets/close.svg'
 import BackArrow from '../assets/arrow_back.svg'
 import Camera from '../assets/camera.svg'
 import { toast } from "sonner"
+import { useSearchParams } from "react-router-dom"
+
+
 /*
   TODO
   - Make toasts that show if the profile is updated or not (from shadcn). 
@@ -75,16 +76,14 @@ export default function EditProfile() {
   const navigate = useNavigate()
   const {user, update_bio, update_birthdate, update_gender, update_address, update_username, upload_avatar} = useAppContext()
 
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [editBio, setEditBio] = useState(false)
-  const [editBirthdate, setEditBirthdate] = useState(false)
+
   const [limitReached, setLimitReached] = useState(false)
   const [bio, setBio] = useState('')
   const [birthdate, setBirthdate] = useState('')
   const [error, setError] = useState('')
-  const [editGender, setEditGender] = useState(false)
   const [gender, setGender] = useState('')
-  const [openLocationMenu, setOpenLocationMenu] = useState(false)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -99,8 +98,19 @@ export default function EditProfile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  if(!user) return null
+  const currentEditType = searchParams.get('edit')
+
+
   
+  if(!user) return null
+
+  const handleEditTypeChange = (editType: string) => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('edit', editType)
+    setSearchParams(newParams)
+  }
+
+
   const handleTriggerFileInput = () => {
     fileInputRef.current?.click()
   }
@@ -185,33 +195,6 @@ export default function EditProfile() {
     }
   }, [])
 
-  const handleBackClick = () => {
-    navigate(-1)  
-  }
-
-
-  const handleEditBio = () => {
-    if(user?.bio){
-      setBio(user.bio)  
-    }
-    setEditBio(!editBio)
-  }
-
-  const handleEditBirthdate = () => {
-    setError('')
-    setEditBirthdate(!editBirthdate)
-  }
-
-  const handleEditGender = () => {
-    setEditGender(!editGender)
-  }
-
-
-  const handleEditLocation = () => {
-    setOpenLocationMenu(!openLocationMenu)
-    setSearchQuery('')
-    setResults([])
-  }
 
  
   const handleSearch = async (query: string) => {
@@ -315,10 +298,10 @@ export default function EditProfile() {
         })
         user.address = prev
       }finally{
-        setOpenLocationMenu(false)
         setSearchQuery('')
         setResults([])
         setAddress(null)
+        navigate(-1)
       }
     }
   }
@@ -337,19 +320,24 @@ export default function EditProfile() {
     }
     const prev = user.username
     try{
-      user.username = username
-      await update_username(user._id, username)
-      toast.success('Successfully updated username', {
-        action: {
-          label: '✕',
-          onClick: () => {
-            toast.dismiss
-          }
-        },
-        position: 'top-center'
-      })
-      
+      const res = await update_username(user._id, username)
+      if(res.success){
+        user.username = username
+        toast.success('Successfully updated username', {
+          action: {
+            label: '✕',
+            onClick: () => {
+              toast.dismiss
+            }
+          },
+          position: 'top-center'
+        })
+      }else if(res.error === 'Username already exists'){
+        setError('Username already exists')
+        user.username = prev
+      }
     }catch{
+      setError('Something went wrong please try again')
       toast.error('Failed to update username', {
         action: {
           label: '✕',
@@ -361,7 +349,7 @@ export default function EditProfile() {
       })
       user.username = prev
     }finally{
-      setEditUsername(false)
+      navigate(-1)
     }
   }
 
@@ -380,7 +368,17 @@ export default function EditProfile() {
     user.address?.state,
   ].filter(Boolean)
 
-  if(editGender){
+
+
+
+
+
+
+
+
+
+
+  if(currentEditType === 'gender'){
     const handleGenderSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
       setGender(e.target.value)
     }
@@ -420,22 +418,17 @@ export default function EditProfile() {
         })
         user.gender = prev
       }
-      setEditGender(false)
+      navigate(-1)
     }
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30 ">
-        <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
-          <img onClick={handleEditGender} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
-          Edit Gender
-        </div>
-
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30 lg:mt-10">
         
         <div className="mx-5 flex flex-col">
-          <h1 className="font-bold mt-5 mb-3">Gender</h1>
+          <h1 className="font-bold mt-5">Gender</h1>
           <NativeSelect 
             value={gender}
             onChange={handleGenderSelect}
-            className="mt-5 w-full border border-border-color rounded-md bg-bg-canvas px-3 py-3 text-sm text-primary-text outline-none 
+            className="mt-3 w-full border border-border-color rounded-md bg-bg-canvas px-3 py-3 text-sm text-primary-text outline-none 
                 [&_select]:bg-bg-canvas 
                 [&_select]:border-none 
                 [&_select]:outline-none 
@@ -465,7 +458,16 @@ export default function EditProfile() {
   }
 
 
-  if(editBirthdate){
+
+
+
+
+
+
+
+
+
+  if(currentEditType === 'birthdate'){
     const handleDateSelect = (date: string) => {
       setError('')
       setBirthdate(date)
@@ -515,15 +517,11 @@ export default function EditProfile() {
         })
         user.birthdate = prev
       }
-      setEditBirthdate(false)
+      navigate(-1)
     }
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30">
-        <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
-          <img onClick={handleEditBirthdate} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
-          Edit Birthdate
-        </div>
+      <div className="p-0 m-0 h-dvh flex flex-col lg:mt-10 text-primary-text lg:mx-30">
 
         
         <div className="mx-5 flex flex-col">
@@ -543,7 +541,15 @@ export default function EditProfile() {
   }
 
     
-  if(editBio){
+
+
+
+
+
+
+
+
+  if(currentEditType === 'bio'){
     const handleChangeBio = async (e: React.SubmitEvent<HTMLFormElement>) => {
       if(!user?._id){
         console.error('user not found, error in updating bio');
@@ -575,7 +581,7 @@ export default function EditProfile() {
         })
         user.bio = prev
       }
-      setEditBio(false)
+      navigate(-1)
     }
 
     const MAX = 100
@@ -596,14 +602,7 @@ export default function EditProfile() {
 
 
     return(
-      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mx-30 ">
-
-        <div className="head mx-5 flex flex-row gap-8 pt-3 text-primary-text font-semibold">
-          <img onClick={handleEditBio} src={Close} alt="back" className="cursor-pointer filter-(--icon-filter)"/>
-          Edit Bio
-        </div>
-
-            
+      <div className="p-0 m-0 h-dvh flex flex-col text-primary-text lg:mt-10 lg:mx-30 ">      
         <div className="mx-5 ">
           <h1 className="font-bold mt-5">Add a bio</h1>
           <form onSubmit={handleChangeBio} id="form">
@@ -611,7 +610,7 @@ export default function EditProfile() {
               value={bio} 
               onChange={handeBioTextChange}
               placeholder="Introduce yourself"
-              className={`mt-5 resize-none text-sm items-center text-primary-text border bg-bg-canvas ${limitReached ? 'border-red-500' : 'border-border-color'} px-4 py-5 w-full rounded-md decoration-none outline-0`}
+              className={`mt-3 resize-none text-sm items-center text-primary-text border bg-bg-canvas ${limitReached ? 'border-red-500' : 'border-border-color'} px-4 py-5 w-full rounded-md decoration-none outline-0`}
             />
           </form>
           <h1 className="text-secondary-text text-sm">{biolength}/{MAX} words</h1>
@@ -627,15 +626,24 @@ export default function EditProfile() {
     )
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   return(
     <>
-      <div className='mx-5 lg:mx-30 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
-        <img onClick={handleBackClick} src={Back} alt="back" className="cursor-pointer filter-(--icon-filter)" />
-        Edit Profile
-      </div>
-      <div className="lg:mx-30">
+      <div className="lg:mx-30 lg:mt-10">
         
-        <div className="shadow-md bg-bg-canvas rounded-md p-5 mt-5 ">
+        <div className="rounded-md p-5 mt-5 ">
 
           <div className=" flex flex-row gap-5 text-primary-text ">
             <div className='relative group w-25 h-25'>
@@ -714,7 +722,7 @@ export default function EditProfile() {
           )}
           <div className="flex flex-col text-primary-text mt-5">
             <h1 className="text-xl font-bold mb-2 ">About</h1>
-            <p onClick={handleEditBio} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+            <p onClick={() => handleEditTypeChange('bio')} className="text-secondary-text  py-2 text-sm hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
               {user?.bio || 'No bio yet'}
             </p>
           </div>
@@ -727,7 +735,7 @@ export default function EditProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold ">Birthdate</h1>
-              <div onClick={handleEditBirthdate} className="flex flex-row py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+              <div onClick={() => handleEditTypeChange('birthdate')} className="flex flex-row py-1 justify-between items-center hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
                 <p className="text-secondary-text">{user?.birthdate ? format(new Date(user.birthdate), 'MMMM d, yyyy') : 'Set birthdate'}</p>
                 <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
               </div>
@@ -735,7 +743,7 @@ export default function EditProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold ">Gender</h1>
-              <div onClick={handleEditGender} className="flex flex-row justify-between items-center  py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
+              <div onClick={() => handleEditTypeChange('gender')} className="flex flex-row justify-between items-center  py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer" >
                 <p className="text-secondary-text ">{user?.gender ? (user?.gender.charAt(0).toUpperCase() + user?.gender.slice(1)) : 'Set gender'}</p>
                 <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
               </div>
@@ -743,18 +751,18 @@ export default function EditProfile() {
 
             <div className="flex flex-col">
               <h1 className="font-semibold ">Address</h1>
-              <div onClick={handleEditLocation} className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
+              <div onClick={() => handleEditTypeChange('address')} className="flex flex-row justify-between items-center py-1 hover:bg-bg-surface active:bg-bg-surface w-full duration-100 cursor-pointer">
                 <p className={` text-secondary-text`}>
                   {user?.address ? displayAddress.join(' ') : 'Current city or town'}
                 </p>
                 <img src={Edit} alt="edit-svg" className="filter-(--icon-filter)"/>
               </div>
-              {openLocationMenu && 
-                <div  className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              {currentEditType === 'address' && 
+                <div  className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                   <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
 
                     <div className={`search-bar sticky p-2 flex flex-row justify-between top-0 w-full z-50  transition-all duration-300 ease-in-out `}>
-                      <img src={BackArrow} onClick={() => setOpenLocationMenu(false)} alt="back_arrow_svg" className="cursor-pointer absolute left-4.5 top-4 filter-(--icon-filter) h-5"/>
+                      <img src={BackArrow} onClick={() => navigate(-1)} alt="back_arrow_svg" className="cursor-pointer absolute left-4.5 top-4 filter-(--icon-filter) h-5"/>
                       <input 
                         value={searchQuery}
                         onChange={handleQueryChange}

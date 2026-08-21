@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useEffect, useState } from "react"
 import { useAppContext } from "../context/context"
 import { Skeleton } from "../components/ui/skeleton.tsx"
@@ -11,10 +11,9 @@ import Instagram from '../assets/instagram_svg.svg'
 import Linkedin from '../assets/linkedin_svg.svg'
 import Xtwitter from '../assets/Xtwitter.svg'
 
-
 function Footer(){
   return(
-    <footer className="bg-bg-canvas border-t border-border-color text-primary-text mt-10">
+    <footer className="bg-bg-root border-t border-border-color text-primary-text mt-10">
       <div className="max-w-6xl mx-auto px-5 py-10 grid grid-cols-2 lg:grid-cols-4 gap-8">
         
         <div className="col-span-2 lg:col-span-1 flex flex-col gap-3">
@@ -49,8 +48,8 @@ function Footer(){
           <Link to="/terms" className="text-secondary-text hover:text-primary-text">Terms of Service</Link>
           <Link to="/privacy" className="text-secondary-text hover:text-primary-text">Privacy Policy</Link>
         </div>
-
       </div>
+
 
       <div className="border-t border-border-color py-4 text-center text-xs text-secondary-text">
         <div className='flex flex-row gap-3 justify-center mb-3'>
@@ -98,21 +97,6 @@ export default function LandingPage(){
   const [pageLoading, setPageLoading] = useState(true)
  
 
-  const navigate = useNavigate()
-
-
-  const CATEGORIES = [
-    { id: 'explore', label: 'Explore' },
-    { id: 'phones', label: 'Phones' },
-    { id: 'electronics_computers', label: 'Electronics' },
-    { id: 'jewelry', label: 'Jewelry' },
-    { id: 'bags', label: 'Bags' },
-    { id: 'mens_clothing', label: "Men" },
-    { id: 'womens_clothing', label: "Women" },
-  ];
- 
-
-  
   useEffect(() => {
     const loadItems = async() =>{
       setPageLoading(true)
@@ -124,32 +108,13 @@ export default function LandingPage(){
     
   }, [])
   
-
-  const handleChangeCategory = (id: string) => {
-    navigate(`/shop`, {
-      state: {
-        category: id
-      }
-    })
-  }
   
   return(
     <>  
-      <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-b border-border-color/40 bg-bg-canvas flex-row items-center gap-6 z-50 `}>
-        {CATEGORIES.map((category) => (
-          <div 
-            onClick={() => handleChangeCategory(category.id)}
-            className={`cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}>
-            {category.label}
-          </div>
-        ))}
-      </div>
-        
-      
-        
-      <div className="top-section flex flex-col lg:mt-20">
-        <div className='w-full grid grid-cols-1 lg:grid-cols-2 gap-5'>
-          <div className='flex flex-col lg:mx-5 lg:p-15 p-10  bg-bg-canvas rounded-xl items-center lg:items-start'>
+            
+      <div className="flex flex-col lg:mt-20">
+        <div className='w-full grid grid-cols-1 lg:grid-cols-2 lg:gap-5 '>
+          <div className='flex flex-col lg:mx-5 lg:p-15 p-10 lg:rounded-xl bg-bg-surface items-center lg:items-start'>
             <p className='font-semibold text-2xl text-center lg:text-start'>Turn your clutter into cash and your next find into a steal.</p>
             <p className='font-light text-sm text-secondary-text mt-3 text-center lg:text-start'>
               Fast listings, secure connections, and smarter shopping—all in one seamless loop.
@@ -162,11 +127,13 @@ export default function LandingPage(){
             </Link>
           </div>
 
-          <div className='flex justify-center items-center'>
+          <div className='relative z-0 flex justify-center items-center overflow-hidden'>
+            <div className='flex lg:hidden absolute top-0 left-0 w-full h-1/2 bg-bg-surface z-[-1]'></div>
+
             <img 
               src={HomeBuyerImage} 
               alt="home-buyer-image" 
-              className='w-full max-h-[300px] object-contain'
+              className='w-full max-h-[300px] object-contain scale-110 lg:scale-100'
             />
           </div>
         </div>
@@ -192,6 +159,7 @@ export default function LandingPage(){
                   price={item.price}
                   seller_name={getUsername(item.seller_id)}
                   likes={item.likes}
+                  status={item.status}
                 />
               )
             ))

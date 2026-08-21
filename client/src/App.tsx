@@ -7,15 +7,15 @@ import { AppContext, useAppContext } from './context/context'
 import SellItem from './pages/sell-item'
 import ItemDetails from './pages/item-details'
 import Layout from './pages/layout'
-import LikedItems from './pages/liked-items'
 import SellerProfile from './pages/seller-profile'
-import UserProfile from './pages/user-profile'
 import EditProfile from './pages/edit-profile'
 import PurchaseHistory from './pages/purchase-history'
 import SearchPage from './pages/search-page'
 import NotFound from './pages/not-found'
 import { Spinner } from './components/ui/spinner'
 import MessagesInterface from './pages/messages'
+import Profile from './pages/profile'
+import Likes from './pages/likes'
 
 {/* Reroutes to Login page if user is not logged in */}
 function ProtectedRoute({children}: {children: React.ReactNode}){  
@@ -40,10 +40,6 @@ function ProtectedRoute({children}: {children: React.ReactNode}){
 
 
 
-
-
-
-
 function AppRoute(){
 
   return(
@@ -60,29 +56,25 @@ function AppRoute(){
           <Home/>
         }/>
 
-        <Route path='/sell-item' element={
-          <ProtectedRoute>
-            <SellItem/>
-          </ProtectedRoute>
+        <Route path='/users/:userId' element={
+          <SellerProfile/>
         }/>
 
         <Route path='/item/:id' element={
           <ItemDetails/>
         }/>
 
-        <Route path='/liked-items' element={
-          <ProtectedRoute>
-            <LikedItems/>
-          </ProtectedRoute>
+        <Route path='/:username/' element={
+          <Profile/>
         }/>
 
-        <Route path='/users/:userId' element={
-          <SellerProfile/>
+        <Route path='/:username/likes' element={
+          <Likes/>
         }/>
 
-        <Route path='/user-profile' element={
+        <Route path='/sell-item' element={
           <ProtectedRoute>
-            <UserProfile/>
+            <SellItem/>
           </ProtectedRoute>
         }/>
 
