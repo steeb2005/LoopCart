@@ -11,6 +11,8 @@ import AddPhoto from '../assets/add_photo.svg'
 import Close from '../assets/close.svg'
 import { Spinner } from '../components/ui/spinner'
 import { toast } from 'sonner'
+import Footer from '../components/footer'
+
 
 type ItemFormData = {
   title: string;
@@ -287,8 +289,8 @@ function SellItem(){
 
   return(
     <>
-      <div className='mx-5 pb-2 lg:mx-30 lg:mt-15'> 
-        <div className='mx-5 grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
+      <div className='pb-2 lg:mt-15'> 
+        <div className='mx-5 lg:mx-30 grid grid-cols-1 md:grid-cols-2 gap-5 mt-5'>
           <div className='relative'>
             <div onClick={handleRemoveImage} className={`${imagePreview ? 'block' : 'hidden'} h-6 w-6 absolute cursor-pointer top-2 right-2 bg-bg-surface flex items-center rounded-full justify-center`}>
               <img src={Close} alt="close_svg" className='filter-(--icon-filter) h-4'/>
@@ -455,8 +457,8 @@ function SellItem(){
 
             
           
-          
         </div>
+        
         {!user?.address && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 ">
             <div className="w-[90%] max-w-md bg-bg-canvas rounded-2xl shadow-2xl border border-border-color overflow-hidden">
@@ -493,6 +495,7 @@ function SellItem(){
             </div>
           </div>
         )}
+        <Footer/>
       </div>
     </>
   )

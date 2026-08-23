@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom"
-import Back from '../assets/back.svg'
 import { useNavigate } from "react-router-dom"
 import { useAppContext } from "../context/context"
 import { useEffect, useState } from "react"
@@ -10,6 +9,7 @@ import Close from '../assets/close.svg'
 import { ChevronDown } from "lucide-react"
 import ItemsGrid from "../components/items-grid"
 import Edit from '../assets/edit.svg'
+import Footer from "../components/footer"
 
 /*
   TODO 
@@ -101,6 +101,7 @@ export default function ProfilePage(){
         }else{
           setSellerItems([])
           setProfileUser(null)
+          navigate('*', {replace: true})  
         }      
         
       }catch{
@@ -149,52 +150,50 @@ export default function ProfilePage(){
   
   if(sellerLoading || dataLoading){
     return(
-      <div>   
-        <div className='mx-5 head flex flex-row gap-8 pt-3 text-primary-text font-semibold '>
-          <img src={Back} alt="back" />
-          Seller Profile
-        </div>
-
-        <div className="mx-5">
-          <div className="flex flex-row flex-1 mt-8 gap-2">
-            <Skeleton className="w-20 h-20 bg-bg-surface rounded-full items-center flex justify-center"/>
-            <div className="flex flex-col flex-1 justify-center space-y-2">
-              <Skeleton className="h-4 w-1/2 bg-bg-surface items-center flex justify-center"/>
-              <Skeleton className="h-4 w-2/3 bg-bg-surface items-center flex justify-center"/>
+      <div className="pb-2 lg:mt-10">
+        <div className="flex flex-col gap-3">
+          <div className='flex flex-col gap-5 mt-2 rounded-md p-5'>
+            <div className="flex flex-row flex-1 gap-5 px-3 text-primary-text">
+              <div className='relative group w-25 h-25 lg:w-30 lg:h-30 shrink-0'>
+                <Skeleton className="w-full h-full bg-bg-surface rounded-full items-center flex justify-center"/>
+              </div>
+              
+              <div className="flex flex-col justify-center line-clamp-1 space-y-2">
+                <div className="flex flex-row items-center gap-2">
+                  <Skeleton className="h-6 w-32 bg-bg-surface items-center flex justify-center"/>
+                  <Skeleton className="h-6 w-6 bg-bg-surface items-center flex justify-center"/>
+                </div>
+                <Skeleton className="h-4 w-24 bg-bg-surface items-center flex justify-center"/>
+              </div>
             </div>
-          </div>  
-        </div>
-        <div className="border-b border-border-color py-5">
-          <div className="flex flex-1 flex-col mx-5">
-            <Skeleton className="h-4 w-7/10 mt-5 bg-bg-surface items-center flex justify-center"/>
-            
-            <div className="flex flex-col space-y-2 mt-5">
-              <Skeleton className="h-4 w-3/10 bg-bg-surface items-center flex justify-center"/>
-              <Skeleton className="h-4 w-6/10 bg-bg-surface items-center flex justify-center"/>
-            </div>
-            <div className="flex flex-col space-y-2 mt-5">
-              <Skeleton className="h-4 w-4/10 bg-bg-surface items-center flex justify-center"/>
-              <Skeleton className="h-4 w-5/10 bg-bg-surface items-center flex justify-center"/>
-            </div>
-            <div className="flex flex-col space-y-2 mt-5">
-              <Skeleton className="h-4 w-5/10 bg-bg-surface items-center flex justify-center"/>
-              <Skeleton className="h-4 w-7/10 bg-bg-surface items-center flex justify-center"/>
-            </div>
-            <div className="flex flex-col space-y-2 mt-5">
-              <Skeleton className="h-4 w-3/10 bg-bg-surface items-center flex justify-center"/>
-              <Skeleton className="h-4 w-4/10 bg-bg-surface items-center flex justify-center"/>
+          </div>
+         
+          <div className="flex flex-col text-primary-text px-3 rounded-md mx-5">
+            <div className="flex flex-col mb-5">
+              <Skeleton className="h-6 w-16 bg-bg-surface items-center flex justify-center mb-2"/>
+              <Skeleton className="h-4 w-40 bg-bg-surface items-center flex justify-center"/>
+            </div> 
+          </div>
           
+          <div className="w-full flex px-9 font-light border-b border-border-color/40 flex-row items-center">
+            <Skeleton className="h-5 w-20 bg-bg-surface items-center flex justify-center mr-4"/>
+            <Skeleton className="h-5 w-20 bg-bg-surface items-center flex justify-center"/>
+          </div>
+          
+          <div className="text-primary-text mx-5 mt-5">
+            <div className="flex flex-row gap-3 mb-5">
+              <Skeleton className="h-6 w-6 bg-bg-surface items-center flex justify-center"/>
+              <Skeleton className="h-6 w-32 bg-bg-surface items-center flex justify-center"/>
+            </div>
+            
+            {/* Skeleton for ItemsGrid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <Skeleton className="h-48 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+              <Skeleton className="h-48 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+              <Skeleton className="h-48 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
+              <Skeleton className="h-48 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
             </div>
           </div>
-        </div>
-        <div className="mx-5 mt-5">
-          <Skeleton className="h-4 w-8/10 bg-bg-surface items-center flex justify-center"/>
-          <div className="flex flex-col gap-3 mt-5">
-            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
-            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
-            <Skeleton className="h-20 w-full bg-bg-surface rounded-md items-center flex justify-center"/>
-          </div>
-
         </div>
       </div>
     )
@@ -343,7 +342,7 @@ export default function ProfilePage(){
 
         </div>
 
-        
+        <Footer/>
       </div>
     </>
   )

@@ -65,7 +65,7 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
 
 function EntrySkeleton(){
   return(
-    <Skeleton className="rounded-lg flex flex-row bg-bg-surface items-center overflow-hidden p-2">
+    <div className="rounded-lg flex flex-row items-center overflow-hidden p-2">
       <div className='flex-1 flex flex-col gap-2'>
         <Skeleton className="h-4 w-3/4 bg-bg-gray-surface"/>
         <div className='flex flex-row items-center'>
@@ -82,7 +82,7 @@ function EntrySkeleton(){
           <Skeleton className="h-4 w-2/8 bg-bg-gray-surface"/>
         </div>
       </div>
-    </Skeleton>
+    </div>
   )
 }
 
@@ -123,7 +123,7 @@ export default function PurchaseHistory(){
     <div className='lg:mx-30  bg-bg-canvas h-dvh rounded-xl shadow-md lg:m-2'>
       <div className='head mx-5 flex flex-row gap-5 pt-5 lg:pt-15 text-primary-text font-semibold items-center'>
         <img src={History} alt="history_svg" className="filter-(--icon-filter) h-6"/>
-        History
+        Purchases
       </div>
 
       <div className='mx-5 overflow-y-auto pr-1 grow normal-scrollbar items-section gap-2 flex flex-col mt-3'>

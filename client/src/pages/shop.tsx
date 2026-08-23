@@ -5,7 +5,7 @@ import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"
 import { useSearchParams } from "react-router-dom"
 import ItemCard from "../components/item-card.tsx"
-
+import Footer from "../components/footer.tsx"
 
 /**
   TODO
@@ -178,6 +178,7 @@ function Home(){
             ))
           }
         </div>
+        <Footer/>
       </div>
     </>
   )
