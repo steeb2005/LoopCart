@@ -10,6 +10,7 @@ import { ChevronDown } from "lucide-react"
 import ItemsGrid from "../components/items-grid"
 import Edit from '../assets/edit.svg'
 import Footer from "../components/footer"
+import NotFound from "./not-found"
 
 
 
@@ -84,6 +85,8 @@ export default function Likes(){
   const [displayImage, setDisplayImage] = useState(false)
   const [userLikes, setUserLikes] = useState<Item[]>([])
 
+  const [notFound, setNotFound] = useState(false)
+
   useEffect(() => {
     const fetchUserData = async () => {
       try{
@@ -98,9 +101,11 @@ export default function Likes(){
             const items = await get_user_liked_items(sellerProfile._id)
             setUserLikes(items ?? [])
           }
+
         }else{
           setUserLikes([])
           setProfileUser(null)
+          setNotFound(true)
         }      
         
       }catch{
@@ -123,6 +128,10 @@ export default function Likes(){
     day: 'numeric',
     year: 'numeric'
   });
+
+  if(notFound){
+    return <NotFound />
+  }
 
   if(displayImage){
     return(

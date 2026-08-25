@@ -10,6 +10,7 @@ import { ChevronDown } from "lucide-react"
 import ItemsGrid from "../components/items-grid"
 import Edit from '../assets/edit.svg'
 import Footer from "../components/footer"
+import NotFound from "./not-found"
 
 /*
   TODO 
@@ -89,6 +90,8 @@ export default function ProfilePage(){
   const [sellerItems, setSellerItems] = useState<Item[]>([])
   const [displayImage, setDisplayImage] = useState(false)
 
+  const [notFound, setNotFound] = useState(false)
+
   useEffect(() => {
     const fetchUserData = async () => {
       try{
@@ -101,7 +104,7 @@ export default function ProfilePage(){
         }else{
           setSellerItems([])
           setProfileUser(null)
-          navigate('*', {replace: true})  
+          setNotFound(true)
         }      
         
       }catch{
@@ -124,6 +127,10 @@ export default function ProfilePage(){
     day: 'numeric',
     year: 'numeric'
   });
+
+  if(notFound){
+    return <NotFound />
+  }
 
   if(displayImage){
     return(

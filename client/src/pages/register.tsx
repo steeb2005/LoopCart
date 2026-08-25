@@ -192,12 +192,16 @@ export default function Register(){
               <p className="text-sm text-red-500 ">{error}</p>
             </div>
             <p className="text-tertiary-text text-center font-light text-xs">By registering an account you agree to the terms and conditions of LoopCart</p>
-            <button className='flex flex-row items-center justify-center gap-2 text-primary-text-inverse w-full bg-button-color hover:bg-button-color/80 font-semibold text-lg cursor-pointer rounded-md py-2'>
-              {loading && (
+            {loading ? (
+              <button className='flex flex-row items-center justify-center gap-2 text-primary-text-inverse w-full pointer-events-none bg-button-color/80 font-semibold text-lg cursor-pointer rounded-md py-2'>
                 <Spinner/>
-              )}
-              Continue
-            </button>
+                Continue
+              </button>
+            ) : (
+              <button className='flex flex-row items-center justify-center gap-2 text-primary-text-inverse w-full bg-button-color hover:bg-button-color/80 font-semibold text-lg cursor-pointer rounded-md py-2'>
+                Continue
+              </button>
+            )}
 
           </form>
 

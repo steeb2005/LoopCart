@@ -123,14 +123,7 @@ export default function Login(){
     setUsingEmail(val)
   }
 
-  if(loading){
-    return(
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner/>
-      </div>
-    )
-  }
-
+ 
   return(
 
     <div className="flex items-center justify-center h-dvh">
@@ -189,10 +182,16 @@ export default function Login(){
                     bg-transparent'/>
                 <p className='ml-2 text-sm text-secondary-text'>Remember Me</p>
               </div>
-              
-              <button type='submit' className='mt-5 text-primary-text-inverse w-full bg-button-color font-semibold hover:bg-bg-inverse/80 cursor-pointer rounded-md py-2'>
-                Continue
-              </button>
+              {loading ? (
+                <button className='justify-center items-center flex flex-row gap-2 pointer-events-none mt-5 text-primary-text-inverse w-full font-semibold bg-button-color/80 cursor-pointer rounded-md py-2'>
+                  <Spinner/>
+                  Continue
+                </button>
+              ) : (
+                <button type='submit' className='mt-5 text-primary-text-inverse w-full bg-button-color font-semibold hover:bg-button-color/80 cursor-pointer rounded-md py-2'>
+                  Continue
+                </button>
+              )}
             </form>
             <div 
               onClick={() => handleToggleUseEmail(false)}
