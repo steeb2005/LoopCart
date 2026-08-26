@@ -2,6 +2,7 @@
   "version": 2,
   "framework": "vite",
   "rewrites": [
+    { "source": "/api/:path*", "destination": "https://loopcart-7nbn.onrender.com"},
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
