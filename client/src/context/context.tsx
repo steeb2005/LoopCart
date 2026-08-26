@@ -353,36 +353,42 @@ export function AppContext({children}: {children: React.ReactNode}) {
         body: JSON.stringify({ token: credential})
       })
 
+      if(!res.ok){
+        const errorDetail = await res.json().catch(() => ({detail: "Invalid email or password"}))
+        console.error('Login failed: ', errorDetail.detail)
+        return {success: false, error: errorDetail.detail}
+      }
+
       const data = await res.json()
 
-      if(res.ok){
-        setLikedItems([])
-     
-        const userData = {
-          _id: data.user._id || '',  // Make sure _id is included
-          username: data.user.username,
-          firstname: data.user.firstname,
-          lastname: data.user.lastname,
-          email: data.user.email,
-          join_date: data.user.join_date,
-          avatar_url: data.user.avatar_url,
-          address: data.user.address,
-          gender: data.user.gender,
-          bio: data.user.bio
-        }
-        setUser(userData)
-        load_liked_items(userData?._id)
-        
-        await load_items()
-        await load_users()  
-        await load_inbox(data.user._id)
-        connectInboxSocket(userData._id)
-        return {success: true}
-      }else{
-        console.error('invalid email or password')
-        return {success: false, error: data.detail}
+      
+      setLikedItems([])
+    
+      const userData = {
+        _id: data.user._id || '',  // Make sure _id is included
+        username: data.user.username,
+        firstname: data.user.firstname,
+        lastname: data.user.lastname,
+        email: data.user.email,
+        join_date: data.user.join_date,
+        avatar_url: data.user.avatar_url,
+        address: data.user.address,
+        gender: data.user.gender,
+        bio: data.user.bio
       }
-    }catch{
+      setUser(userData)
+      
+      await Promise.all([
+        load_liked_items(userData?._id),
+        load_users(),  
+        load_items(),
+        load_inbox(data.user._id)
+      ])
+
+      connectInboxSocket(userData._id)
+      return {success: true}
+      
+    }catch(error){
       console.error('network error in logging in');
       return {success: false, error: 'Network Error, please try again'}
     }finally{
@@ -429,37 +435,40 @@ export function AppContext({children}: {children: React.ReactNode}) {
         credentials: 'include'
       })
 
-      const data = await res.json()
-
-      if(res.ok){
-        setLikedItems([])
-     
-        const userData = {
-          _id: data.user._id || '',  // Make sure _id is included
-          username: data.user.username,
-          firstname: data.user.firstname,
-          lastname: data.user.lastname,
-          email: data.user.email,
-          password: '', // Don't store password in state
-          join_date: data.user.join_date,
-          avatar_url: data.user.avatar_url,
-          address: data.user.address,
-          gender: data.user.gender,
-          bio: data.user.bio
-        }
-        setUser(userData)
-        load_liked_items(userData?._id)
-        
-        await load_items()
-        await load_users()  
-        await load_inbox(data.user._id)
-        connectInboxSocket(userData._id)
-        return {success: true}
-      }else{
-        console.error('invalid email or password')
-        return {success: false, error: data.detail}
+      if(!res.ok){
+        const errorDetail = await res.json().catch(() => ({detail: "Invalid email or password"}))
+        console.error('Login failed: ', errorDetail.detail)
+        return {success: false, error: errorDetail.detail}
       }
-    }catch{
+
+      const data = await res.json()
+      setLikedItems([])
+    
+      const userData = {
+        _id: data.user._id || '',  // Make sure _id is included
+        username: data.user.username,
+        firstname: data.user.firstname,
+        lastname: data.user.lastname,
+        email: data.user.email,
+        password: '', // Don't store password in state
+        join_date: data.user.join_date,
+        avatar_url: data.user.avatar_url,
+        address: data.user.address,
+        gender: data.user.gender,
+        bio: data.user.bio
+      }
+      setUser(userData)
+      
+      await Promise.all([
+        load_liked_items(userData?._id),
+        load_items(),
+        load_inbox(data.user._id),
+        load_users()  
+      ])
+      connectInboxSocket(userData._id)
+      return {success: true}
+
+    }catch (error) {
       console.error('network error in logging in');
       return {success: false, error: 'Network Error, please try again'}
     }
