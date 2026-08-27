@@ -5,7 +5,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/context';
 import Search from '../assets/search.svg'
 import { useEffect, useRef, useState } from 'react';
-import DropArrow from '../assets/arrow_down.svg'
+import { ChevronDown } from 'lucide-react';
 import Dark from '../assets/dark_mode.svg'
 import Light from '../assets/light_mode.svg'
 import Inbox from '../assets/inbox.svg'
@@ -115,18 +115,17 @@ export function Header({openSidebar, isDesktop}: {
             </div>
           </Link>
           
+          {/* Theme toggle (desktop) */}
+          <div className='hidden lg:flex'>
+            <img src={theme === 'dark' ? Dark : Light} alt="theme_svg" className='filter-(--icon-filter) cursor-pointer' onClick={() => toggleTheme()}/>
+          </div>
+
           {/* Hidden when in mobile */}
           <Link to={'/sell-item'} className='hidden lg:flex'>
             <div className='cursor-pointer bg-button-color hover:bg-button-color/80 font-semibold text-primary-text-inverse px-3 py-1 items-center'>
               Sell Now
             </div>
           </Link>
-          
-          {/* Theme toggle (desktop) */}
-          <div className='hidden lg:flex'>
-            <img src={theme === 'dark' ? Dark : Light} alt="theme_svg" className='filter-(--icon-filter) cursor-pointer' onClick={() => toggleTheme()}/>
-          </div>
-                  
           
           {/* User profile display for large screens */}
           {user && (
@@ -163,8 +162,12 @@ export function Header({openSidebar, isDesktop}: {
                 
                 {/* Dropdown Component */}
                 <div ref={dropDownRef}>
-                  <img onClick={handleDropdown} src={DropArrow} alt="arrow_down" className='cursor-pointer filter-(--icon-filter)'/>
-            
+                  <ChevronDown 
+                    onClick={handleDropdown}
+                    className={`cursor-pointer transition-transform duration-300 ${
+                      openDropdown ? 'rotate-180' : ''
+                    }`}
+                  />
                   <div onClick={handleDropdown} className={`${openDropdown ? 'opacity-100 visible' : 'opacity-0 invisible'} duration-100 absolute top-12 min-w-[15%] bg-bg-canvas shadow-xl right-0 flex flex-col font-light text-primary-text`}>
                     
                     <NavLink 

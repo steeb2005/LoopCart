@@ -288,7 +288,7 @@ export default function ItemDetails(){
             <div className='relative' ref={dropDownRef}>
               <img src={More} alt="more_svg" onClick={handleDropdown} className='filter-(--icon-filter) h-8 cursor-pointer'/>
               {openDropdown && (
-                <div className='absolute w-30 flex flex-row justify-center top-7 p-2 right-0 rounded-md bg-bg-canvas border border-border-color text-sm'>
+                <div className='absolute w-30 flex flex-row justify-center top-7 p-2 rounded-md bg-bg-canvas border border-border-color text-sm'>
                   <p className='cursor-pointer' onClick={() => setConfirmDelete(true)}>Delete item</p>
                 </div>
               )}
