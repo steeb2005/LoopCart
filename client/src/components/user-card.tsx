@@ -1,19 +1,15 @@
 import { Link } from "react-router-dom"
-import { useAppContext } from "../context/context"
 
-export default function UserCard({userId, avatar_url, firstname, lastname, username }: {
-  userId: string, 
+export default function UserCard({ avatar_url, firstname, lastname, username }: {
   avatar_url: string | null, 
   firstname: string,
   lastname: string,
   username: string
 }){
-  const {user} = useAppContext()
-  const isUser = user?._id === userId
 
   return(
     <Link
-      to={ isUser ? `/user-profile` : `/${username}`}
+      to={`/${username}`}
       className="border-border-color border hover:border-border-color/60 p-3 text-primary-text rounded-md flex flex-row justify-between cursor-pointer">
       <div className="flex flex-row items-center gap-3">
         <div className="h-10 w-10 rounded-full ring ring-border-color bg-bg-inverse flex justify-center items-center overflow-hidden">

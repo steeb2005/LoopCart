@@ -1,14 +1,12 @@
 import Back from '../assets/back.svg'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Search from '../assets/search.svg'
 import { useAppContext } from '../context/context'
-import Erase from '../assets/close.svg'
-import React, { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import ItemCard from '../components/item-card'
 import UserCard from '../components/user-card'
-
-
+import SearchBar from '../components/search-bar.tsx'
+import Footer from '../components/footer.tsx'
 
 
 
@@ -18,31 +16,27 @@ export default function SearchPage(){
   
   const navigate = useNavigate()
   const {items, getUsername, users, load_items, load_users} = useAppContext()
+  const [itemResults, setItemResults] = useState<(typeof items[0])[]>([])
+  const [userResults, setUserResults] = useState<(typeof users[0])[]>([])
 
-  const [searchResults, setSearchResults] = useState<(typeof items[0] | typeof users[0])[]>([])
-  const [searchInput, setSearchInput] = useState('')
-  const [searchParams, setSearchParams] = useSearchParams()
-  
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [prefill, setPrefill] = useState(true)
+  const [searchParams] = useSearchParams()
+
 
   const category = searchParams.get('tab') || 'Items'
   const query = searchParams.get('query') || ''
   
+
   useEffect(() => {
     const loadItems = async() =>{
-      // setPageLoading(true)
-      await load_items()
-      await load_users()
-      // setPageLoading(false) 
+      await Promise.all([load_items(), load_users()])
     }
     loadItems()
     
   }, [])
 
+  // Runs when category or query changes
   useEffect(() => {
-    setSearchInput(query)
-    getSearchResults(category, query)
+    getSearchResults(query)
   },[category, query, items, users])
 
 
@@ -51,58 +45,28 @@ export default function SearchPage(){
   }
 
 
-  const handleErase = (e: any) => {
-    inputRef.current?.focus()
-    e.preventDefault()
-    setSearchInput('')
-    setPrefill(true)
-    setSearchResults([])
-    const newParams = new URLSearchParams(searchParams)
-    newParams.delete('query')
-    setSearchParams(newParams, {replace: true})
-  }
 
-  const getSearchResults = (category: string, searchQuery: string) => {
-    if(searchQuery.length > 0){
-      if(category === 'Items'){
-        const searchRes = items?.filter(item => 
-          item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
-        )
-        setSearchResults(searchRes)
-        setPrefill(false)
-      }else{
-        const searchRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
-        setSearchResults(searchRes)
-        setPrefill(false)
-      }
+  const getSearchResults = (searchQuery: string) => {
+    const trimmedQuery = searchQuery.trim()
+
+    if(trimmedQuery.length > 0){
+       
+      const itemsRes = items?.filter(item => 
+        item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
+      )
+      const usersRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
+      setUserResults(usersRes || [])
+      setItemResults(itemsRes || [])
     }else{
-      setPrefill(true)
-      setSearchResults([])
+      setItemResults([])
+      setUserResults([])
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      const newParams = new URLSearchParams(searchParams)
-      if(searchInput.length > 0){
-        newParams.set('query', searchInput)
-      }else{
-        newParams.delete('query')
-      }
-      setSearchParams(newParams, {replace: true})
-      getSearchResults(category, searchInput)
-    }
-  }
+ 
 
 
-  const handleClickCategory = (newCategory: string) => {
-    const newParams =  new URLSearchParams(searchParams)
-    newParams.set('tab', newCategory)
-    setSearchParams(newParams, {replace: true}) // This overwrites the url in the same stack
-   
-  }
-
+ 
 
 
   const scrollDirection = useScrollDirection();
@@ -112,110 +76,85 @@ export default function SearchPage(){
     <div className="p-0 m-0 h-dvh flex flex-col">
       <div className={`px-5 fixed ${isHidden ? '-translate-y-full' : 'translate-y-0'} top-0 left-0 z-100 transition-transform duration-300 ease-in-out bg-bg-canvas head flex flex-row gap-3 py-2 text-primary-text font-semibold items-center w-full`}>
         <img onClick={handleBackClick} src={Back} alt="back" className='h-6 cursor-pointer filter-(--icon-filter)'/>
-        
-        <div className={`search-bar sticky flex flex-row justify-between top-0 w-full transition-all duration-200 ease-in-out `}>
-          <img src={Search} alt="searchsvg" className="absolute left-4 top-2.5 filter-(--icon-filter) h-5"/>
-          <input 
-            ref={inputRef}
-            type="text" 
-            className="pl-13 text-sm items-center text-secondary-text bg-bg-surface py-2 px-13 w-full rounded-full outline-0" 
-            placeholder="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}  
-            onKeyDown={handleKeyDown}
-          />
-          
-          <div onClick={handleErase} className={`${searchInput.length > 0 ? 'flex' : 'hidden'} cursor-pointer absolute right-2 top-1.5 items-center p-1 bg-bg-gray-surface rounded-full`}>
-            <img src={Erase} alt="Erase" className='h-4 filter-(--icon-filter)'/>
-          </div>
-        </div>
+        <SearchBar/>
       </div>
 
-      <div className={`fixed w-full ${isHidden ? 'top-0' : 'top-13'} px-5 py-3 border-t border-border-color bg-bg-canvas flex flex-row items-center gap-3 z-20 transition-all duration-200 ease-in-out`}>
-        <div onClick={() => handleClickCategory('Items')} className={`${category === 'Items' ? 'bg-button-color text-primary-text-inverse' : 'hover:bg-bg-surface'}  border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
-          Items
-        </div>
-        <div onClick={() => handleClickCategory('Sellers')} className={`${category === 'Sellers' ? 'bg-button-color text-primary-text-inverse' : 'hover:bg-bg-surface'} border border-border-color cursor-pointer font-semibold px-3 py-1 rounded-full text-sm`}>
-          Sellers
-        </div>
-      </div>
-      
-      
-      <div className={`mx-5  py-2 mt-28 rounded-md ${(searchResults.length === 0 && !prefill) ? 'flex flex-col' : `${category === 'Sellers' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'}`}`}>
-        {
-        (prefill && searchResults.length === 0 && category === 'Items') && (
-          items.map(item => (
-            (item.status === 'available' && item.deleted === false && (
-              <ItemCard 
-                key={item._id} 
-                image={item.image}
-                item_id={item._id!} 
-                title={item.title} 
-                price={item.price} 
-                seller_name={getUsername(item.seller_id)} 
-                likes={item.likes}
-                status={item.status}
-              />
-            ))
-          ))    
-        )
-        }
-
-        {
-          prefill && searchResults.length === 0 && category === 'Sellers' && (
-            users.map(user => (
-              <UserCard 
-                key={user._id} 
-                userId={user._id} 
-                username={user.username}
-                firstname={user.firstname} 
-                lastname={user.lastname} 
-                avatar_url={user.avatar_url ?? null}
-              />
-              
-            ))
-          )
-        }
-         
-        {
-          (searchResults.length === 0 && !prefill) ? (
-            <div className='flex items-center justify-center text-empty-state '>
-              No results found
-            </div>
-          ) : (    
-          category === 'Items' ? (
-            (searchResults as typeof items).map(item => (       
-              <ItemCard 
-                key={item._id} 
-                image={item.image}
-                item_id={item._id!} 
-                title={item.title} 
-                price={item.price} 
-                seller_name={getUsername(item.seller_id)} 
-                likes={item.likes}
-                status={item.status}
-              />
-              
-            ))
-          ) : (
-            (searchResults as typeof users).map(user => (
-              <UserCard 
-                key={user._id} 
-                userId={user._id} 
-                username={user.username}
-                firstname={user.firstname} 
-                lastname={user.lastname} 
-                avatar_url={user.avatar_url ?? null}
-              />
-            ))
-          )
-        )
-        }
-      </div>
      
-
+      <div className={`mx-5 py-2 mt-15 rounded-md`}>
+        {query.length === 0 ? (
+          <div className="flex flex-col justify-center mt-10 mb-10">
+            <div className="flex flex-col justify-center mx-5 select-none">
+              <h1 className="lg:text-2xl text-xl font-bold">Looking for something?</h1> 
+              <p className="font-light">Try searching for an item</p>
+            </div>
+          </div>
+        ) : (
+          itemResults.length === 0 && userResults.length === 0 && (
+            (
+              <div className="flex flex-col justify-center mt-10 mb-10">
+                <div className="flex flex-col justify-center mx-5 select-none">
+                  <h1 className="lg:text-2xl text-xl font-bold">Sorry, we couldn't find anything</h1> 
+                  <p className="font-light mt-3">Try searching for another item</p>
+                </div>
+              </div>
+            )
+          )
+        )}
+          
+        {userResults.length > 0 && (
+          <>
+            <h1 className='text-2xl font-semibold mb-5'>People</h1>
+            <div className={'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3'}>
+              {userResults.map(user => (
+                <UserCard 
+                  key={user._id} 
+                  username={user.username}
+                  firstname={user.firstname} 
+                  lastname={user.lastname} 
+                  avatar_url={user.avatar_url ?? null}
+                />
+              ))}
+            </div>
+          </>
+        )}
+        {
+          itemResults.length > 0 && (
+            <div className='mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
+              {itemResults.map(item => (
+                <ItemCard 
+                  key={item._id} 
+                  image={item.image}
+                  item_id={item._id!} 
+                  title={item.title} 
+                  price={item.price} 
+                  seller_name={getUsername(item.seller_id)} 
+                  likes={item.likes}
+                  status={item.status}
+                />
+              ))}
+            </div>
+          )
+        }
+              
+        <h1 className='text-xl lg:text-2xl font-bold text-center mt-30'>Browse LoopCart</h1>
+        <div className='mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
+          {items.filter(item => item.status === 'available').map(item => (
+            <ItemCard 
+              key={item._id} 
+              image={item.image}
+              item_id={item._id!} 
+              title={item.title} 
+              price={item.price} 
+              seller_name={getUsername(item.seller_id)} 
+              likes={item.likes}
+              status={item.status}
+            />
+          ))}
+        </div>
+      </div>
+      <Footer/>
     </div>
   )
 }
+     
 
-// grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3

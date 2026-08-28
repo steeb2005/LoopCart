@@ -199,7 +199,7 @@ export default function Sidebar({closeSidebar, isOpenSidebar}: {
                     to={'/purchase-history'}
                     className={({ isActive}) => `${isActive ? 'bg-bg-gray-surface' : ''} px-5 py-4 flex flex-row items-center gap-3`}  
                     >
-                    <p>Pruchases</p>
+                    <p>Purchases</p>
                   </NavLink>
 
                   <NavLink 

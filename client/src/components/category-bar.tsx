@@ -16,6 +16,7 @@ export default function CategoryBar(){
     { id: 'womens_clothing', label: "Women" },
   ];
 
+  
   const handleChangeCategory = (id: string) => {
     navigate(`/shop`, {
       state: {
@@ -24,13 +25,14 @@ export default function CategoryBar(){
     })
   }
   
+  const isShopPage = window.location.pathname === '/shop'
 
   return(
-    <div className={`hidden lg:flex fixed w-full font-semibold top-12 px-5 border-t border-b border-border-color/40 bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+    <div className={`${isShopPage && 'invisible'} hidden lg:flex fixed w-full font-semibold top-13 px-5 border-t border-b border-border-color/40 bg-bg-canvas flex-row items-center z-50 `}>
       {CATEGORIES.map((category) => (
         <div 
           onClick={() => handleChangeCategory(category.id)}
-          className={`cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}>
+          className={`cursor-pointer py-3 px-5 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}>
           {category.label}
         </div>
       ))}

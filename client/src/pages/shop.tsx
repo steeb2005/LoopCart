@@ -115,10 +115,10 @@ function Home(){
   
   return(
     <>  
-      <div className={`hidden lg:flex fixed w-full border-b border-border-color/40 font-semibold top-12 px-5 border-t  bg-bg-canvas flex-row items-center gap-6 z-50 `}>
+      <div className={`hidden lg:flex fixed w-full border-b border-border-color/40 font-semibold top-13 px-5 border-t  bg-bg-canvas flex-row items-center z-50 `}>
         {CATEGORIES.map((category) => (
           <div 
-            className={`${currentCategory === category.id ? 'border-button-color' : 'border-bg-canvas'} cursor-pointer py-3 px-3 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}
+            className={`${currentCategory === category.id ? 'border-button-color' : 'border-bg-canvas'} cursor-pointer py-3 px-5 border-b-3 hover:border-button-color border-bg-canvas hover:bg-accent`}
             onClick={() => handleCategoryChange(category.id)}>
             {category.label}
           </div>

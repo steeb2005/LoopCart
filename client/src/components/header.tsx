@@ -11,6 +11,16 @@ import Light from '../assets/light_mode.svg'
 import Inbox from '../assets/inbox.svg'
 import { Spinner } from './ui/spinner';
 import Heart from '../assets/Heart.svg'
+import SearchBar from './search-bar';
+
+
+/* 
+  TODO 
+  - Finish the Search bar
+  - Make the search bar only search from the backend
+  - In mobile view keep the previous bar as is
+  - In desktop view update the search bar to the top
+*/
 
 export function Header({openSidebar, isDesktop}: {
   openSidebar: () => void,
@@ -48,7 +58,6 @@ export function Header({openSidebar, isDesktop}: {
   })
 
   const scrollDirection = useScrollDirection();
-  
   const isHidden = scrollDirection === 'down';
   
 
@@ -83,7 +92,7 @@ export function Header({openSidebar, isDesktop}: {
     <div className={`fixed top-0 left-0 right-0 z-60 transition-transform duration-300 ease-in-out
       ${isDesktop ? 'translate-y-0' : isHidden ? '-translate-y-full' : 'translate-y-0'}`}
     >
-      <div className="justify-between bg-bg-canvas text-primary-text border-b border-border-color items-center flex flex-row py-2 px-3">
+      <div className="justify-between gap-10 bg-bg-canvas text-primary-text border-b border-border-color items-center flex flex-row py-2 px-3">
         <div className='flex flex-row gap-2 items-center'>
           {/* MENU BUTTON */}
           <div onClick={openSidebar} className='lg:hidden relative cursor-pointer font-bold'>
@@ -94,12 +103,14 @@ export function Header({openSidebar, isDesktop}: {
             <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
           </Link>
         </div>
-      
-          
+
+        <SearchBar/>
+
+        
 
         <div className='flex flex-row items-center gap-3'>
           {/* Search (Always shows) */}
-          <Link to={'/search'}>
+          <Link to={'/search'} className='flex lg:hidden'>
             <img src={Search} alt="search" className='h-7 w-7 filter-(--icon-filter)'/>
           </Link>
 
