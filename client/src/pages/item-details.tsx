@@ -2,7 +2,6 @@ import {useAppContext} from '../context/context'
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
-import Back from '../assets/back.svg'
 import Goto from '../assets/goto.svg'
 import Heart from '../assets/Heart.svg'
 import Location from '../assets/location.svg'
@@ -191,14 +190,9 @@ export default function ItemDetails(){
   if(dataLoading || pageLoading ){
     return(
       <div className="mx-5 p-0 m-0 pb-5 h-dvh flex flex-col lg:mx-30"> 
-          <div className='head flex flex-row gap-8 pt-3 text-primary-text font-semibold'>
-            <img src={Back} alt="back" className='cursor-pointer filter-(--icon-filter)'/>
-            Item details
-          </div>
+            
           <div className='grid grid-cols-1 md:grid-cols-2 gap-5 mt-5 h-full'>
-            
-            <Skeleton className='bg-bg-surface w-full h-full min-h-90'/>
-            
+            <Skeleton className='bg-bg-surface w-full h-full min-h-90'/>  
             <div className='flex flex-col flex-1 h-full space-y-2'>
               <Skeleton className='bg-bg-surface w-3/4 h-5 mt-2'/>
               <Skeleton className='bg-bg-surface w-2/6 h-5 mt-2'/>
