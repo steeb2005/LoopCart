@@ -1,7 +1,7 @@
 import { useLocation} from 'react-router-dom'
 import { useEffect, useState, useRef } from 'react'
 import Location from '../assets/location.svg'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 import { useNavigate, Link } from 'react-router-dom'
 import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'

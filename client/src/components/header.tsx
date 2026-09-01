@@ -2,7 +2,7 @@ import Logo from '../assets/Logo.svg'
 import Menu from '../assets/Menu.svg'
 import { useScrollDirection } from '../hooks/scrollDirection';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/context';
+import { useAppContext } from '../services';
 import Search from '../assets/search.svg'
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';

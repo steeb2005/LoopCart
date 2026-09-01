@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
-import {useAppContext} from "../context/context"
+import {useAppContext} from "../services"
 import React from "react"
 import { toast } from "sonner"
 import Logo from '../assets/Logo.svg'

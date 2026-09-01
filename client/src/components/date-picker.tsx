@@ -3,7 +3,7 @@ import {Popover, PopoverContent, PopoverTrigger} from './ui/popover'
 import {Button} from './ui/button'
 import { useState } from 'react'
 import {format} from "date-fns"
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 
 export function DatePicker({ onSelect, error }: { onSelect: (date: string) => void, error: string }) {
   const {user} = useAppContext()

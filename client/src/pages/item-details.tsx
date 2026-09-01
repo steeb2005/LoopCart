@@ -1,4 +1,4 @@
-import {useAppContext} from '../context/context'
+import {useAppContext} from '../services'
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'

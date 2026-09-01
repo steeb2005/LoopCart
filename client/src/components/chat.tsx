@@ -8,7 +8,7 @@ import CheckCircle from '../assets/check_circle.svg'
 import ArrowRight from '../assets/ArrowRight.svg'
 import { useNavigate } from 'react-router-dom'
 import { useRef, useState, useEffect } from 'react'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 import { Spinner } from './ui/spinner'
 
 type Item = {

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 import {format} from "date-fns"
 import { Skeleton } from '../components/ui/skeleton'
 import History from '../assets/history.svg'

@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useAppContext } from "../context/context"
+import { useAppContext } from "../services"
 import Edit from '../assets/edit.svg'
 import React, { useEffect, useState, useRef } from "react"
 import TextareaAutosize from "react-textarea-autosize"

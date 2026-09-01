@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
-import { useAppContext } from "../context/context"
+import { useAppContext } from "../services"
 import { useEffect, useState } from "react"
 import Items from '../assets/items.svg' 
 import { format } from "date-fns"

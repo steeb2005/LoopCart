@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { useAppContext } from "../context/context.tsx"
+import { useAppContext } from "../services/index.tsx"
 import { useLocation } from "react-router-dom"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import Sort from "../assets/sort.svg"

@@ -1,5 +1,5 @@
 import { motion ,AnimatePresence } from 'framer-motion'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 import { useLocation, useNavigate, NavLink } from 'react-router-dom'
 import { useState, useEffect } from 'react'  
 import Light from '../assets/light_mode.svg'

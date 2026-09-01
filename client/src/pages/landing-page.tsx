@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from "react"
-import { useAppContext } from "../context/context"
+import { useAppContext } from "../services/index.tsx"
 import { Skeleton } from "../components/ui/skeleton.tsx"
 import ItemCard from "../components/item-card.tsx"
 import HomeBuyerImage from '../assets/buyer-mobile-kinawat.webp'

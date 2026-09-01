@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useParams } from "react-router-dom";
-import { useAppContext } from "../context/context";
+import { useAppContext } from "../services";
 import InboxIcon from "../assets/inbox.svg"
 import Chat from '../components/chat'
 import { useNavigate, Link } from 'react-router-dom'

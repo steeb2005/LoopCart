@@ -3,7 +3,7 @@ import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services'
 import { useNavigate } from 'react-router-dom'
 import GoogleIcon from '../assets/google_icon.svg'
 import { useGoogleLogin } from "@react-oauth/google";

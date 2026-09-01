@@ -1,5 +1,5 @@
 import ItemCard from "./item-card"
-import { useAppContext } from "../context/context"
+import { useAppContext } from "../services"
 
 
 type Item = {

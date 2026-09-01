@@ -1,6 +1,6 @@
 import Back from '../assets/back.svg'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAppContext } from '../context/context'
+import { useAppContext } from '../services/index.tsx'
 import { useState, useEffect } from 'react'
 import { useScrollDirection } from "../hooks/scrollDirection.tsx"
 import ItemCard from '../components/item-card'
