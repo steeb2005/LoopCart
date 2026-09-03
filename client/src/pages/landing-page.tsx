@@ -59,7 +59,6 @@ export default function LandingPage(){
 
           <div className='relative z-0 flex justify-center items-center overflow-hidden'>
             <div className='flex lg:hidden absolute top-0 left-0 w-full h-1/2 bg-bg-surface z-[-1]'></div>
-
             <img 
               src={HomeBuyerImage} 
               alt="home-buyer-image" 

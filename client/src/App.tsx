@@ -44,10 +44,11 @@ function AppRoute(){
 
   return(
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      
       <Route element={<Layout/>}>
+      
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
         <Route path="/" element={
           <LandingPage/>
         }/>

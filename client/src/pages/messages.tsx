@@ -675,7 +675,7 @@ export default function MessagesInterface(){
     flex-1 min-w-0
   `
   return(
-    <div className="flex bg-bg-root flex-col flex-1 min-h-0 lg:mt-10 lg:p-2">
+    <div className="flex bg-bg-root flex-col flex-1 min-h-0 lg:mt-11 lg:p-2">
       <div className="flex flex-col lg:flex-row gap-5 flex-1 min-h-0">
 
         <div className={inboxClass}>

@@ -5,7 +5,6 @@ import EyeOff from '../assets/eye_off.svg'
 import {useAppContext} from "../services"
 import React from "react"
 import { toast } from "sonner"
-import Logo from '../assets/Logo.svg'
 import { Spinner } from "../components/ui/spinner"
 
 
@@ -111,12 +110,8 @@ export default function Register(){
 
   return(
     <>
-      <div className='flex flex-row text-xl z-50 items-center gap-2 font-bold fixed w-full justify-center top-0 border-b border-border-color py-3'>
-        <h1>LoopCart</h1>   
-        <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
-      </div>
-        {/* Header */}
-      <div className="flex flex-col items-center justify-center h-dvh">
+    
+      <div className="flex flex-col items-center justify-center min-h-screen">
 
         <div className='rounded-md w-70 lg:w-100 flex flex-col items-center justify-center border border-border-color px-5 pt-9 pb-5'>
           <p className='font-semibold lg:text-xl mb-5 text-center'>

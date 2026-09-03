@@ -1,4 +1,3 @@
-import Logo from '../assets/Logo.svg'
 import Eye from '../assets/Eye.svg'
 import EyeOff from '../assets/eye_off.svg'
 import { Link } from 'react-router-dom'
@@ -127,12 +126,6 @@ export default function Login(){
   return(
 
     <div className="flex items-center justify-center h-dvh">
-      {/* Header */}
-      <div className='flex flex-row text-xl items-center gap-2 font-bold fixed w-full justify-center top-0 border-b border-border-color py-3'>
-        <h1>LoopCart</h1>   
-        <img src={Logo} alt="logo" className='h-7 filter-(--icon-filter)'/>
-      </div>
-
       {/* Login/Signin Form */}
       {usingEmail ? (
         <div className='rounded-md  flex flex-col items-center justify-center border border-border-color px-5 py-9'>

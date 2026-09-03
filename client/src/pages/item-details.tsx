@@ -16,6 +16,11 @@ import Time from '../assets/clock.svg'
 import Close from '../assets/close.svg'
 import { toast } from 'sonner'
 import { RelativeTime } from '../hooks/handle-relative-time'
+import NotFound from './not-found'
+
+// TODO 
+// item/(garbage_id) => This should show a message that the item has been deleted or does not exist
+
 
 
 type Item = {
@@ -58,14 +63,14 @@ type AddressDetails = {
 }
 
 type User = {
-  _id: string;
-  username: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  join_date: string;
-  avatar_url?: string | null;
-  address?: AddressDetails | null 
+  _id: string
+  username: string
+  firstname: string
+  lastname: string
+  email: string
+  join_date: string
+  avatar_url?: string
+  address?: AddressDetails
   gender?: string 
   bio?: string 
   birthdate?: string
@@ -75,7 +80,7 @@ type User = {
 export default function ItemDetails(){
   const navigate = useNavigate()
   const {id} = useParams() 
-  const {items, user, getUsername, users, dataLoading, delete_item, get_item} = useAppContext()
+  const {items, user, getUsername, users, dataLoading, delete_item, get_item, get_user} = useAppContext()
   
   const [item, setItem] = useState<Item | null>(null)
   const [otherUser, setOtherUser] = useState<User | null>(null)
@@ -85,7 +90,8 @@ export default function ItemDetails(){
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayImage, setDisplayImage] = useState(false)
   const dropDownRef = useRef<HTMLDivElement>(null)
-  
+  const [notFound, setNotFound] = useState(false)
+
   useEffect(() => {
     if(dataLoading){
       setPageLoading(true)
@@ -99,23 +105,27 @@ export default function ItemDetails(){
           return 
         }
         const res = await get_item(id)
-        if(res){
+        if(res?._id){
           setItem(res)
           setSellerUsername(getUsername(res?.seller_id || 'Unkown Seller'))
-          const foundSeller = users?.find(user => user._id === res?.seller_id)
-          if(foundSeller){
+
+          // const foundSeller = users?.find(user => user._id === res?.seller_id)
+          const foundSeller = await get_user(res?.seller_id)
+          if(foundSeller?._id){
             setOtherUser(foundSeller)
           }
         }else{
           setItem(null)
           setSellerUsername('Unknown Seller')
           setOtherUser(null)  
+          setNotFound(true)
         }
       }catch{
         console.error('error in finding item');
         setItem(null)
         setSellerUsername('Unknown Seller')
         setOtherUser(null)
+        setNotFound(true)
       }finally{
         setPageLoading(false)
       }
@@ -214,7 +224,16 @@ export default function ItemDetails(){
     )
   }
 
-   if(!item){
+  if(notFound){
+    return(
+      <NotFound/>
+    )
+  }
+
+
+
+
+  if(!item){
     return(
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
         <div className='text-primary-text gap-2 flex flex-col'>

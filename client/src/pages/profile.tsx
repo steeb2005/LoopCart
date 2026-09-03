@@ -12,12 +12,8 @@ import Edit from '../assets/edit.svg'
 import Footer from "../components/footer"
 import NotFound from "./not-found"
 
-/*
-  TODO 
-  - Finish the likes and items in this page
-  - Redo the likes and make it like /:username/likes. Making it public 
-  - Use the get_user_liked_items in the context and use them here
-*/
+// TODO 
+// profile/(garbage_id) => This should show a message that the profile has been deleted or does not exist
 
 type AddressDetails = { 
   country?: string,
@@ -116,9 +112,7 @@ export default function ProfilePage(){
         setSellerLoading(false)
       }
     }
-    
     fetchUserData()
-    
   }, [username, get_user_items, get_user])
 
   const date = new Date(profileUser?.join_date!) // sure there is a date
