@@ -33,13 +33,7 @@ app = FastAPI(lifespan=lifespan)
 # Origins should be in the .env
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000", 
-        "http://localhost:5173", 
-        "http://127.0.0.1:5173", 
-        "http://192.168.1.15:5173",
-        settings.ALLOWED_ORIGINS
-        ],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True
