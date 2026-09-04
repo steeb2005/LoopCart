@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from database import users
 from auth import get_current_user
 from bson import ObjectId
+from bson.errors import InvalidId
 from models.models import BioUpdate, AddressUpdate, GenderUpdate, BirthdateUpdate, UsernameUpdate
 from upload import upload_image
 router = APIRouter()
@@ -56,9 +57,16 @@ async def get_users():
 
 
 # Gets a single user
-@router.get('/users/{username}')
-async def find_user(username: str):
-    user = await users.find_one({"username": username})
+@router.get('/users/{identifier}')
+async def find_user(identifier: str):
+    # Finds the user using Id or Username
+    try:
+        query = {"_id": ObjectId(identifier)}
+    except InvalidId:
+        query = {"username": identifier}
+
+    user = await users.find_one(query)
+
     if not user: 
         raise HTTPException(status_code=404, detail="User not found")
         
