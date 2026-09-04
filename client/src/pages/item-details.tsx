@@ -1,4 +1,4 @@
-import {useAppContext} from '../services'
+import {useAppContext} from '../services/index'
 import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
@@ -16,12 +16,8 @@ import Time from '../assets/clock.svg'
 import Close from '../assets/close.svg'
 import { toast } from 'sonner'
 import { RelativeTime } from '../hooks/handle-relative-time'
+import Footer from '../components/footer'
 import NotFound from './not-found'
-
-// TODO 
-// item/(garbage_id) => This should show a message that the item has been deleted or does not exist
-
-
 
 type Item = {
   _id?: string;
@@ -63,17 +59,17 @@ type AddressDetails = {
 }
 
 type User = {
-  _id: string
-  username: string
-  firstname: string
-  lastname: string
-  email: string
-  join_date: string
-  avatar_url?: string
-  address?: AddressDetails
+  _id?: string;
+  username?: string;
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  join_date?: string;
+  avatar_url?: string | null; 
+  address?: AddressDetails | null 
   gender?: string 
   bio?: string 
-  birthdate?: string
+  birthdate?: string 
 }
 
 
@@ -90,8 +86,7 @@ export default function ItemDetails(){
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [displayImage, setDisplayImage] = useState(false)
   const dropDownRef = useRef<HTMLDivElement>(null)
-  const [notFound, setNotFound] = useState(false)
-
+  
   useEffect(() => {
     if(dataLoading){
       setPageLoading(true)
@@ -108,24 +103,21 @@ export default function ItemDetails(){
         if(res?._id){
           setItem(res)
           setSellerUsername(getUsername(res?.seller_id || 'Unkown Seller'))
-
-          // const foundSeller = users?.find(user => user._id === res?.seller_id)
           const foundSeller = await get_user(res?.seller_id)
-          if(foundSeller?._id){
+
+          if(foundSeller){
             setOtherUser(foundSeller)
           }
         }else{
           setItem(null)
           setSellerUsername('Unknown Seller')
           setOtherUser(null)  
-          setNotFound(true)
         }
       }catch{
         console.error('error in finding item');
         setItem(null)
         setSellerUsername('Unknown Seller')
         setOtherUser(null)
-        setNotFound(true)
       }finally{
         setPageLoading(false)
       }
@@ -224,33 +216,14 @@ export default function ItemDetails(){
     )
   }
 
-  if(notFound){
+   if(!item){
     return(
       <NotFound/>
     )
   }
 
 
-
-
-  if(!item){
-    return(
-      <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
-        <div className='text-primary-text gap-2 flex flex-col'>
-          <h1>Error 404 Item not found</h1>
-          
-          <div className='flex flex-row justify-start'>
-            <Link to={'/shop'} className='rounded-md p-2 cursor-pointer bg-bg-inverse text-primary-text-inverse font-semibold'>Back</Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-
-  
-
-
+ 
   if(item.deleted === true){
     return(
       <div className="mx-5 p-0 m-0 h-dvh pb-5 flex justify-center items-center">
@@ -293,7 +266,7 @@ export default function ItemDetails(){
   return(
     <>
       
-      <div className='p-5 lg:mx-30 bg-bg-canvas lg:mt-10 lg:p-5 rounded-lg shadow-md'> 
+      <div className='p-5 lg:mx-30 bg-bg-canvas lg:mt-10 lg:p-5 rounded-lg '> 
         <div className='head items-center flex flex-row justify-between text-primary-text font-semibold'>
           
 
@@ -375,7 +348,7 @@ export default function ItemDetails(){
               to={`/${sellerUsername}`}
               className='flex flex-row gap-3 text-primary-text items-center mb-5 cursor-pointer'>
               <div className='bg-bg-inverse rounded-full w-10 h-10 ring ring-border-color flex justify-center items-center overflow-hidden'>
-                {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username.charAt(0).toUpperCase()}</span>) }
+                {otherUser?.avatar_url ? (<img src={otherUser.avatar_url} alt="avatar" referrerPolicy="no-referrer"/>) : (<span className='text-primary-text-inverse text-xl font-bold'>{otherUser?.username?.charAt(0).toUpperCase()}</span>) }
               </div>
               <h1>@{sellerUsername}</h1>
             </Link>
@@ -401,6 +374,7 @@ export default function ItemDetails(){
             )}
           </div>
         </div>
+        
 
         
         
@@ -446,6 +420,7 @@ export default function ItemDetails(){
           </div>
         )}
       </div>    
+      <Footer/>
     </>
   )    
 }

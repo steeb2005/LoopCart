@@ -128,7 +128,7 @@ export default function Login(){
     <div className="flex items-center justify-center h-dvh">
       {/* Login/Signin Form */}
       {usingEmail ? (
-        <div className='rounded-md  flex flex-col items-center justify-center border border-border-color px-5 py-9'>
+        <div className='rounded-md  flex flex-col items-center justify-center border border-border-color px-5 pt-9 pb-3'>
           <p className='font-semibold lg:text-xl mb-5 text-center'>
             Login with email
           </p>
@@ -186,11 +186,11 @@ export default function Login(){
                 </button>
               )}
             </form>
-            <div 
-              onClick={() => handleToggleUseEmail(false)}
-              className='text-secondary-text mt-3 cursor-pointer hover:text-primary-text flex flex-row justify-start text-sm'>
-              Back
-            </div>
+            
+            <button onClick={() => handleGoogleLogin()} type='button' className='mt-2 hover:bg-bg-surface duration-100 items-center gap-2 flex flex-row justify-center text-primary-text border-border-color border w-full font-semibold cursor-pointer lg:px-15 rounded-md py-2'>
+              <img src={GoogleIcon} alt="google" className='h-5'/>
+              Continue with Google
+            </button>
           </div>
         </div>        
       ) : (
