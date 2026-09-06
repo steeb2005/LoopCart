@@ -15,7 +15,7 @@ import SkeletonCard from '../components/skeletons/skeleton-card.tsx'
 export default function SearchPage(){
   
   const navigate = useNavigate()
-  const {items, getUsername, users, load_items, load_users, dataLoading, search_items} = useAppContext()
+  const {items, getUsername, users, load_items, load_users, dataLoading, search_items, search_users} = useAppContext()
   const [itemResults, setItemResults] = useState<(typeof items[0])[]>([])
   const [userResults, setUserResults] = useState<(typeof users[0])[]>([])
   const [searchingLoader, setSearchingLoader] = useState(false)
@@ -37,7 +37,7 @@ export default function SearchPage(){
   // Runs when category or query changes
   useEffect(() => {
     getSearchResults(query)
-  },[category, query, items, users])
+  },[category, query])
 
 
   const handleBackClick = () => {
@@ -55,9 +55,11 @@ export default function SearchPage(){
         // const itemsRes = items?.filter(item => 
         //   item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
         // )
-        const itemsRes = await search_items(searchQuery);
 
-        const usersRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
+        // const usersRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
+        const itemsRes = await search_items(searchQuery);
+        const usersRes = await search_users(searchQuery);
+
         setUserResults(usersRes || [])
         setItemResults(itemsRes || [])
       }else{
@@ -93,12 +95,8 @@ export default function SearchPage(){
 
      
       <div className={`mx-5 py-2 mt-15 rounded-md`}>
-        {searchingLoader && (
-          Array.from({ length: 15 }).map((_, index) => (
-            <SkeletonCard key={index} />
-          )))  
-        }
-        {query.length === 0 ? (
+       
+        {!searchingLoader && query.length === 0 ? (
           <div className="flex flex-col justify-center mt-10 mb-10">
             <div className="flex flex-col justify-center mx-5 select-none">
               <h1 className="lg:text-2xl text-xl font-bold">Looking for something?</h1> 
@@ -106,7 +104,7 @@ export default function SearchPage(){
             </div>
           </div>
         ) : (
-          itemResults.length === 0 && userResults.length === 0 && (
+          !searchingLoader && itemResults.length === 0 && userResults.length === 0 && (
             (
               <div className="flex flex-col justify-center mt-10 mb-10">
                 <div className="flex flex-col justify-center mx-5 select-none">
@@ -134,10 +132,14 @@ export default function SearchPage(){
             </div>
           </>
         )}
+        <div className='mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
         {
-          itemResults.length > 0 && (
-            <div className='mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
-              {itemResults.map(item => (
+          searchingLoader ? (
+            Array.from({ length: 15 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))
+            ) : (
+               itemResults.map(item => (
                 <ItemCard 
                   key={item._id} 
                   image={item.image}
@@ -148,10 +150,12 @@ export default function SearchPage(){
                   likes={item.likes}
                   status={item.status}
                 />
-              ))}
-            </div>
-          )
-        }
+              ))
+               
+            )
+          }
+            
+          </div>
               
         <h1 className='text-xl lg:text-2xl font-bold text-center mt-30'>Browse LoopCart</h1>
         <div className='mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>

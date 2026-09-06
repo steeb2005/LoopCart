@@ -2,10 +2,8 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 import { useAppContext } from '../services'
 import {format} from "date-fns"
-import { Skeleton } from '../components/ui/skeleton'
 import History from '../assets/history.svg'
-
-
+import PurchaseSkeleton from '../components/skeletons/skeleton-purchase'
 
 function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, username, seller_id }: {
   itemId: string,
@@ -62,29 +60,6 @@ function ItemEntry({itemId, title, price, image, sold_at, isUserTheBuyer, userna
   )
 }
 
-
-function EntrySkeleton(){
-  return(
-    <div className="rounded-lg flex flex-row items-center overflow-hidden p-2">
-      <div className='flex-1 flex flex-col gap-2'>
-        <Skeleton className="h-4 w-3/4 bg-bg-gray-surface"/>
-        <div className='flex flex-row items-center'>
-          <Skeleton className="h-20 w-20 bg-bg-gray-surface"/>
-          <div className="p-2 space-y-3 flex flex-col flex-1">
-            <Skeleton className="h-4 w-3/4 bg-bg-gray-surface" />
-            <Skeleton className="h-4 w-1/2 bg-bg-gray-surface" />
-            <Skeleton className="h-4 w-2/3 bg-bg-gray-surface" />
-          </div>
-        </div>
-        <div className='flex-1 flex-row flex items-center gap-2'>
-          <Skeleton className="h-8 w-8 rounded-full bg-bg-gray-surface"/>
-          <Skeleton className="h-4 w-2/8 bg-bg-gray-surface"/>
-          <Skeleton className="h-4 w-2/8 bg-bg-gray-surface"/>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 
 
@@ -152,10 +127,10 @@ export default function PurchaseHistory(){
           
           {dataLoading ? (
             <>
-              <EntrySkeleton/>
-              <EntrySkeleton/>
-              <EntrySkeleton/>
-              <EntrySkeleton/>
+              <PurchaseSkeleton/>
+              <PurchaseSkeleton/>
+              <PurchaseSkeleton/>
+              <PurchaseSkeleton/>
             </>
           ): (
             itemHistory?.length === 0 ? 

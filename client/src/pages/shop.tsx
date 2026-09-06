@@ -8,13 +8,6 @@ import Footer from "../components/footer.tsx"
 import SkeletonCard from "../components/skeletons/skeleton-card.tsx"
 
 
-/**
-  TODO
-  - Test in mobile use npm run dev -- --host and fastapi --host 0.0.0.0 --port 8000 --reload
-  - Make the item details load as get_item so it no longer searches for the item using find
- */
-
-
 
 
 function Home(){

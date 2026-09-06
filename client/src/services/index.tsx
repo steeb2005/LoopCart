@@ -159,6 +159,7 @@ export type ContextType = {
   authLoading: boolean;
   theme: 'light' | 'dark';
 
+  search_users: (query: string) => Promise<RequestUsers[] | []>;
   search_items: (query: string) => Promise<Item[] | []>;
   get_user_items: (seller_id: string) => Promise<void>;
   update_username: (userId: string, username: string) => Promise<{
@@ -1104,6 +1105,20 @@ export function AppContext({children}: {children: React.ReactNode}) {
       return []
     }
   }
+
+  const search_users = async (query: string) => {
+    try{
+      if (!query) return []
+
+      const res = await fetch(`${API_URL}/users/search?q=${encodeURIComponent(query)}`);
+      if(res.ok){
+        return res.json()
+      }
+    }catch{
+      console.error('network error in searching items');
+      return []
+    }
+  } 
   
   // Websocket ------------------------------------------------------------------------------------
   const wsRef = useRef<WebSocket | null>(null)
@@ -1140,6 +1155,7 @@ export function AppContext({children}: {children: React.ReactNode}) {
     authLoading,
     theme,
 
+    search_users,
     search_items,
     get_user_liked_items,
     get_user_items,
