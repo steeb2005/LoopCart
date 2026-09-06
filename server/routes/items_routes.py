@@ -1,11 +1,12 @@
 from database import items, users, conversations
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Form, Query
 from bson import ObjectId
 from auth import get_current_user
 from upload import upload_image
 from datetime import datetime, timezone
 from typing import Optional
 from websocket_manager import manager
+
 
 router = APIRouter()
 
@@ -88,6 +89,88 @@ async def create_item(
     }
 
 
+# Loads all items
+@router.get('/items')
+async def get_items():
+    items_list = []
+    async for item in items.find():
+        items_list.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item["price"],
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
+
+    return items_list
+
+
+@router.get('/items/search')
+async def search_items(q: Optional[str] = Query(None, description="Search query")):
+
+    if not q:
+        return []
+    
+    query = {"title": {"$regex": q, "$options": "i"}}
+    cursor = items.find(query)
+    
+    results = []
+    async for item in cursor:
+        results.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item.get("price", 0),
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
+
+    return results
+
+
+
+# Gets all items from a users seller_id
+@router.get('/items/user/{seller_id}')
+async def get_user_items(seller_id: str):
+    
+    items_list = []
+    async for item in items.find({"seller_id": seller_id}):
+        items_list.append({
+            "_id": str(item["_id"]),
+            "title": item["title"],
+            "price": item.get("price", 0),
+            "category": item["category"],
+            "condition": item["condition"],
+            "description": item["description"],
+            "created_at": item["created_at"],
+            "status": item["status"],
+            "sold_at": item.get("sold_at"),
+            "seller_id": item["seller_id"],
+            "buyer_id": item.get("buyer_id"),
+            "image": item["image"],
+            "likes": item.get("likes", 0),
+            "deleted": item.get("deleted", False)
+        })
+
+    return items_list
+
 
 
 # Edit item
@@ -153,7 +236,7 @@ async def update_item(
     return {"success": True}    
 
 
-# Get specific item
+# Get specific single item
 @router.get('/items/{item_id}')
 async def get_single_item(item_id: str):
     if not ObjectId.is_valid(item_id):
@@ -181,58 +264,59 @@ async def get_single_item(item_id: str):
 
 
 
-# Gets all items from a users seller_id
-@router.get('/items/user/{seller_id}')
-async def get_user_items(seller_id: str):
+@router.patch('/items/{item_id}/delete')
+async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        item = await items.find_one({"_id": ObjectId(item_id)})
+
+        if not item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        if item["seller_id"] != current_user["sub"]: 
+            raise HTTPException(status_code=403, detail="Unauthorized")
+        
+        await items.update_one(
+            {"_id": ObjectId(item_id)},
+            {"$set": {
+                "deleted": True,    # Soft Deletes the data
+                "deleted_at": datetime.now(tz=timezone.utc).isoformat()}
+            }
+        )
+        return {"success": True}
+
+    except HTTPException:
+        raise
+    except:
+        raise HTTPException(status_code=400, detail="Invalid request")
+
+
+
+@router.post('/items/{item_id}/{user_id}/image')
+async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if userId != current_user["sub"]:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    contents = await file.read()
     
-    items_list = []
-    async for item in items.find({"seller_id": seller_id}):
-        items_list.append({
-            "_id": str(item["_id"]),
-            "title": item["title"],
-            "price": item.get("price", 0),
-            "category": item["category"],
-            "condition": item["condition"],
-            "description": item["description"],
-            "created_at": item["created_at"],
-            "status": item["status"],
-            "sold_at": item.get("sold_at"),
-            "seller_id": item["seller_id"],
-            "buyer_id": item.get("buyer_id"),
-            "image": item["image"],
-            "likes": item.get("likes", 0),
-            "deleted": item.get("deleted", False)
-        })
+    if len(contents) > (2 * 1024 * 1024):
+        raise HTTPException(status_code=400, detail="File size too large")
 
-    return items_list
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type")    
 
+    try:
+        result = await upload_image(file.file, "LoopCart/images", f"image_{itemId}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
 
+    image_url = result.get("secure_url")
 
-# Loads all items
-@router.get('/items')
-async def get_items():
-    items_list = []
-    async for item in items.find():
-        items_list.append({
-            "_id": str(item["_id"]),
-            "title": item["title"],
-            "price": item["price"],
-            "category": item["category"],
-            "condition": item["condition"],
-            "description": item["description"],
-            "created_at": item["created_at"],
-            "status": item["status"],
-            "sold_at": item.get("sold_at"),
-            "seller_id": item["seller_id"],
-            "buyer_id": item.get("buyer_id"),
-            "image": item["image"],
-            "likes": item.get("likes", 0),
-            "deleted": item.get("deleted", False)
-        })
-
-    return items_list
-
-
+    await items.update_one(
+        {"_id": ObjectId(itemId)},
+        {"$set": {"image": image_url}}
+    )
+    
+    return {"image_url": image_url}
 
 
 @router.patch('/items/{item_id}/{user_id}/{status}/sold')
@@ -290,56 +374,3 @@ async def update_item_sold(item_id: str, user_id: str, status: str, conversation
         raise HTTPException(status_code=400, detail="Invalid request")
             
 
-
-@router.post('/items/{item_id}/{user_id}/image')
-async def upload_item_image(itemId: str, userId: str, file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
-    if userId != current_user["sub"]:
-        raise HTTPException(status_code=403, detail="Unauthorized")
-
-    contents = await file.read()
-    
-    if len(contents) > (2 * 1024 * 1024):
-        raise HTTPException(status_code=400, detail="File size too large")
-
-    if file.content_type not in ALLOWED_TYPES:
-        raise HTTPException(status_code=400, detail="Invalid file type")    
-
-    try:
-        result = await upload_image(file.file, "LoopCart/images", f"image_{itemId}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload image: {str(e)}")
-
-    image_url = result.get("secure_url")
-
-    await items.update_one(
-        {"_id": ObjectId(itemId)},
-        {"$set": {"image": image_url}}
-    )
-    
-    return {"image_url": image_url}
-
-
-@router.patch('/items/{item_id}/delete')
-async def delete_item(item_id: str, current_user: dict = Depends(get_current_user)):
-    try:
-        item = await items.find_one({"_id": ObjectId(item_id)})
-
-        if not item:
-            raise HTTPException(status_code=404, detail="Item not found")
-
-        if item["seller_id"] != current_user["sub"]: 
-            raise HTTPException(status_code=403, detail="Unauthorized")
-        
-        await items.update_one(
-            {"_id": ObjectId(item_id)},
-            {"$set": {
-                "deleted": True,    # Soft Deletes the data
-                "deleted_at": datetime.now(tz=timezone.utc).isoformat()}
-            }
-        )
-        return {"success": True}
-
-    except HTTPException:
-        raise
-    except:
-        raise HTTPException(status_code=400, detail="Invalid request")

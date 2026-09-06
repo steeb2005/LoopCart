@@ -1,38 +1,17 @@
 
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, Query
 from database import users
 from auth import get_current_user
 from bson import ObjectId
 from bson.errors import InvalidId
 from models.models import BioUpdate, AddressUpdate, GenderUpdate, BirthdateUpdate, UsernameUpdate
 from upload import upload_image
+from typing import Optional
 router = APIRouter()
 
 
 MAX_FILE_SIZE = 2 * 1024 * 1024
 ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
-
-
-@router.get("/users/me")       
-async def get_me(current_user: dict = Depends(get_current_user)):
-    user = await users.find_one({"_id" : ObjectId(current_user["sub"])})
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {
-        "_id": str(user["_id"]),
-        "username": user["username"],
-        "firstname": user["firstname"],
-        "lastname": user["lastname"],
-        "email": user["email"],
-        "join_date": user["join_date"],
-        "avatar_url": user.get("avatar_url"),
-        "address": user.get("address"),
-        "gender": user.get("gender"),
-        "bio": user.get("bio"),
-        "birthdate": user.get("birthdate")
-    }
-
 
 
 # Reads the whole db and returns the users
@@ -55,6 +34,53 @@ async def get_users():
         })
     return users_list
 
+@router.get("/users/me")       
+async def get_me(current_user: dict = Depends(get_current_user)):
+    user = await users.find_one({"_id" : ObjectId(current_user["sub"])})
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "_id": str(user["_id"]),
+        "username": user["username"],
+        "firstname": user["firstname"],
+        "lastname": user["lastname"],
+        "email": user["email"],
+        "join_date": user["join_date"],
+        "avatar_url": user.get("avatar_url"),
+        "address": user.get("address"),
+        "gender": user.get("gender"),
+        "bio": user.get("bio"),
+        "birthdate": user.get("birthdate")
+    }
+
+
+# Searches for the users
+@router.get('/users/search')
+async def search_users(q: Optional[str] = Query(None, description="Search users query")):
+    if not q:
+        return []
+
+    query = {"username": {"$regex": q, "$options": "i"}}
+    cursor = users.find(query)
+
+    results = []
+    async for user in cursor:
+        results.append({
+            "_id": str(user["_id"]),
+            "username": user["username"],
+            "firstname": user["firstname"],
+            "lastname": user["lastname"],
+            "email": user["email"],
+            "join_date": user["join_date"],
+            "avatar_url": user.get("avatar_url"),
+            "address": user.get("address"),
+            "gender": user.get("gender"),
+            "bio": user.get("bio"),
+            "birthdate": user.get("birthdate")
+        })
+
+    return results
 
 # Gets a single user
 @router.get('/users/{identifier}')
