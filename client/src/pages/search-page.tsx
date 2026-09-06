@@ -7,7 +7,7 @@ import ItemCard from '../components/item-card'
 import UserCard from '../components/user-card'
 import SearchBar from '../components/search-bar.tsx'
 import Footer from '../components/footer.tsx'
-
+import SkeletonCard from '../components/skeletons/skeleton-card.tsx'
 
 
 
@@ -15,10 +15,10 @@ import Footer from '../components/footer.tsx'
 export default function SearchPage(){
   
   const navigate = useNavigate()
-  const {items, getUsername, users, load_items, load_users} = useAppContext()
+  const {items, getUsername, users, load_items, load_users, dataLoading, search_items} = useAppContext()
   const [itemResults, setItemResults] = useState<(typeof items[0])[]>([])
   const [userResults, setUserResults] = useState<(typeof users[0])[]>([])
-
+  const [searchingLoader, setSearchingLoader] = useState(false)
   const [searchParams] = useSearchParams()
 
 
@@ -46,21 +46,33 @@ export default function SearchPage(){
 
 
 
-  const getSearchResults = (searchQuery: string) => {
+  const getSearchResults = async (searchQuery: string) => {
     const trimmedQuery = searchQuery.trim()
+    setSearchingLoader(true)
 
-    if(trimmedQuery.length > 0){
-       
-      const itemsRes = items?.filter(item => 
-        item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
-      )
-      const usersRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
-      setUserResults(usersRes || [])
-      setItemResults(itemsRes || [])
-    }else{
+    try{
+      if(trimmedQuery.length > 0){
+        // const itemsRes = items?.filter(item => 
+        //   item.deleted === false && item.status === 'available' && item.title.toLowerCase().includes(searchQuery.toLowerCase())        
+        // )
+        const itemsRes = await search_items(searchQuery);
+
+        const usersRes = users?.filter(user => user.username.toLowerCase().includes(searchQuery.toLowerCase()))
+        setUserResults(usersRes || [])
+        setItemResults(itemsRes || [])
+      }else{
+        setItemResults([])
+        setUserResults([])
+      }
+    }catch{
       setItemResults([])
       setUserResults([])
+      console.error('Client Error: Search has ran into issues')
+    }finally{
+      setSearchingLoader(false)
     }
+
+    
   }
 
  
@@ -81,6 +93,11 @@ export default function SearchPage(){
 
      
       <div className={`mx-5 py-2 mt-15 rounded-md`}>
+        {searchingLoader && (
+          Array.from({ length: 15 }).map((_, index) => (
+            <SkeletonCard key={index} />
+          )))  
+        }
         {query.length === 0 ? (
           <div className="flex flex-col justify-center mt-10 mb-10">
             <div className="flex flex-col justify-center mx-5 select-none">
@@ -138,18 +155,25 @@ export default function SearchPage(){
               
         <h1 className='text-xl lg:text-2xl font-bold text-center mt-30'>Browse LoopCart</h1>
         <div className='mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3'>
-          {items.filter(item => item.status === 'available').map(item => (
-            <ItemCard 
-              key={item._id} 
-              image={item.image}
-              item_id={item._id!} 
-              title={item.title} 
-              price={item.price} 
-              seller_name={getUsername(item.seller_id)} 
-              likes={item.likes}
-              status={item.status}
-            />
-          ))}
+          {dataLoading ? (
+            Array.from({ length: 15 }).map((_, index) => (
+              <SkeletonCard key={index} />
+            ))
+          ) : (
+            items.filter(item => item.status === 'available').map(item => (
+              <ItemCard 
+                key={item._id} 
+                image={item.image}
+                item_id={item._id!} 
+                title={item.title} 
+                price={item.price} 
+                seller_name={getUsername(item.seller_id)} 
+                likes={item.likes}
+                status={item.status}
+              />
+            ))
+          )
+          }
         </div>
       </div>
       <Footer/>
