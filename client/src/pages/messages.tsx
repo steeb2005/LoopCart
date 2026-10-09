@@ -315,7 +315,6 @@ function Inbox({onSelectChat}:{
     inbox?.forEach(entry => {
       allUnreadCount += entry.unread_count!
     })
-
   }
 
   getUnreadCount()
@@ -347,8 +346,6 @@ function Inbox({onSelectChat}:{
     setSearchParams({tab: id})
   }
 
-
-  
   const filteredInbox = getFilteredInbox()
 
   // Sorts from most to least unread

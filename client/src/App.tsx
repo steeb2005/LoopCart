@@ -16,6 +16,11 @@ import { Spinner } from './components/ui/spinner'
 import MessagesInterface from './pages/messages'
 import Profile from './pages/profile'
 import Likes from './pages/likes'
+/*
+  TODO:
+  - Redo services to use Tan stack
+ */
+
 
 {/* Reroutes to Login page if user is not logged in */}
 function ProtectedRoute({children}: {children: React.ReactNode}){  

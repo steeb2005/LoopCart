@@ -284,9 +284,13 @@ export default function ItemDetails(){
         
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-10 items-center mt-5'>
-          <div className='border border-border-color f-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
+          <div className='relative border border-border-color h-full overflow-hidden bg-bg-canvas rounded-md flex justify-center flex-col items-center'>
             {item?.image ? (
-              <img onClick={() => setDisplayImage(true)} src={item.image} className="cursor-pointer w-full h-full object-contain" alt="image"/>
+              <>
+                <img src={item.image} className="absolute inset-0 w-full h-full object-cover blur-md opacity-30 scale-110" alt="bg-blur" />
+                <img  src={item.image} onClick={() => setDisplayImage(true)} className="cursor-pointer relative z-10 max-w-full max-h-full object-contain" alt="image"/>
+                {/* <img   className="cursor-pointer w-full h-full object-contain" alt="image"/> */}
+              </>
             ) : (
               <div className=" h-full flex justify-center items-center text-secondary-text">
                 No Image

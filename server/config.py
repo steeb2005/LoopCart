@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: str = ""
 
     API_URL : str = ""
+    IS_PROD : str = ""
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()
