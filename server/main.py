@@ -9,7 +9,7 @@ from database import conversations, client
 from routes import auth_routes, items_routes, users_routes, messages_routes, websockets_routes, likes_routes
 PORT = settings.PORT
 
-
+IS_PROD = settings.IS_PROD == "production"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,7 +28,12 @@ async def lifespan(app: FastAPI):
     client.close()
     print("LoopCart stopped")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    docs_url=None if IS_PROD else "/docs",
+    redoc_url=None if IS_PROD else "/redoc",
+    openapi_url=None if IS_PROD else "/openapi.json",
+    )
 
 # Origins should be in the .env
 app.add_middleware(

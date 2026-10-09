@@ -37,6 +37,7 @@ env/
 .env.local
 .env.*.local
 
-
+// 
 temp.py
+temp.tsx
 temp.tsx
